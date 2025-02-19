@@ -1,4 +1,4 @@
-# Deep Fund
+# DeepFund
 
 This is a proof of concept for an AI-powered hedge fund.  The goal of this project is to explore the use of AI to make trading decisions.  This project is for **educational** purposes only and is not intended for real trading or investment.
 
@@ -19,7 +19,6 @@ This system employs several agents working together:
 
 **Note**: the system simulates trading decisions, it does not actually trade.
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/virattt?style=social)](https://twitter.com/virattt)
 
 ## Disclaimer
 
@@ -47,8 +46,8 @@ By using this software, you agree to use it solely for learning purposes.
 
 Clone the repository:
 ```bash
-git clone https://github.com/virattt/ai-hedge-fund.git
-cd ai-hedge-fund
+git clone https://github.com/tigerlcl/deepfund.git
+cd deepfund
 ```
 
 1. Install Poetry (if not already installed):
@@ -84,7 +83,7 @@ FINANCIAL_DATASETS_API_KEY=your-financial-datasets-api-key
 
 **Important**: You must set `OPENAI_API_KEY`, `GROQ_API_KEY`, or `ANTHROPIC_API_KEY` for the hedge fund to work.  If you want to use LLMs from all providers, you will need to set all API keys.
 
-Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is free and does not require an API key.
+Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is `free` and does not require an API key.
 
 For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
 
