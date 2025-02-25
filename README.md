@@ -1,87 +1,47 @@
 # DeepFund
 
-This is a proof of concept for an AI-powered hedge fund.  The goal of this project is to explore the use of AI to make trading decisions.  This project is for **educational** purposes only and is not intended for real trading or investment.
+This project serves as an ideal solution to the below key question:
 
-This system employs several agents working together:
+**Will LLM Be Professional At Fund Investment? A Live Arena perspective**
 
-1. Ben Graham Agent - The godfather of value investing, only buys hidden gems with a margin of safety
-2. Bill Ackman Agent - An activist investors, takes bold positions and pushes for change
-3. Warren Buffett Agent - The oracle of Omaha, seeks wonderful companies at a fair price
-4. Valuation Agent - Calculates the intrinsic value of a stock and generates trading signals
-5. Sentiment Agent - Analyzes market sentiment and generates trading signals
-6. Fundamentals Agent - Analyzes fundamental data and generates trading signals
-7. Technicals Agent - Analyzes technical indicators and generates trading signals
-8. Risk Manager - Calculates risk metrics and sets position limits
-9. Portfolio Manager - Makes final trading decisions and generates orders
-
-<img width="1117" alt="Screenshot 2025-02-09 at 11 26 14 AM" src="https://github.com/user-attachments/assets/16509cc2-4b64-4c67-8de6-00d224893d58" />
-
-
-**Note**: the system simulates trading decisions, it does not actually trade.
+We evaluate the trading capability of LLM across various financial market given a standard environment. We present the performance in a nearly live view of trading arena. The LLM shall ingest external information and make trading decisions. 
 
 
 ## Disclaimer
 
-This project is for **educational and research purposes only**.
+This project is for **educational and research purposes only, it does not actually trade.** 
 
-- Not intended for real trading or investment
-- No warranties or guarantees provided
-- Past performance does not indicate future results
-- Creator assumes no liability for financial losses
-- Consult a financial advisor for investment decisions
 
-By using this software, you agree to use it solely for learning purposes.
+## Overview
+This project covers four key services, which are Data Ingestion, Trading Simulator, Report Analytics and Live Arena.
 
-## Table of Contents
-- [Setup](#setup)
-- [Usage](#usage)
-  - [Running the Hedge Fund](#running-the-hedge-fund)
-  - [Running the Backtester](#running-the-backtester)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [Feature Requests](#feature-requests)
-- [License](#license)
+DONE: Trading Simulator
+
+TODO: Data Ingestion | Report Analytics | Live Arena
+
+
 
 ## Setup
+Pre-requisite: Install Conda (if not already installed): Go to [anaconda.com/download](https://www.anaconda.com/download/).
 
-Clone the repository:
+1. Clone the repository:
 ```bash
-git clone https://github.com/tigerlcl/deepfund.git
+git clone https://github.com/IatomicreactorI/deepfund.git
 cd deepfund
 ```
 
-1. Install Poetry (if not already installed):
+2. Create an virtual env from the conda file:
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+conda env create -f environment.yml
 ```
 
-2. Install dependencies:
-```bash
-poetry install
-```
-
-3. Set up your environment variables:
+3. Set up environment variables:
 ```bash
 # Create .env file for your API keys
 cp .env.example .env
 ```
 
-4. Set your API keys:
-```bash
-# For running LLMs hosted by openai (gpt-4o, gpt-4o-mini, etc.)
-# Get your OpenAI API key from https://platform.openai.com/
-OPENAI_API_KEY=your-openai-api-key
-
-# For running LLMs hosted by groq (deepseek, llama3, etc.)
-# Get your Groq API key from https://groq.com/
-GROQ_API_KEY=your-groq-api-key
-
-# For getting financial data to power the hedge fund
-# Get your Financial Datasets API key from https://financialdatasets.ai/
-FINANCIAL_DATASETS_API_KEY=your-financial-datasets-api-key
-```
-
-**Important**: You must set `OPENAI_API_KEY`, `GROQ_API_KEY`, or `ANTHROPIC_API_KEY` for the hedge fund to work.  If you want to use LLMs from all providers, you will need to set all API keys.
+**Important**: You must set API keys for the services to work.  If you want to use LLMs from all providers, you will need to set all API keys.
 
 Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is `free` and does not require an API key.
 
@@ -89,9 +49,9 @@ For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in t
 
 ## Usage
 
-### Running the Hedge Fund
+### Running the System
 ```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA
+python src/main.py --ticker NVDA
 ```
 
 **Example Output:**
@@ -100,18 +60,18 @@ poetry run python src/main.py --ticker AAPL,MSFT,NVDA
 You can also specify a `--show-reasoning` flag to print the reasoning of each agent to the console.
 
 ```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --show-reasoning
+python src/main.py --ticker AAPL,MSFT,NVDA --show-reasoning
 ```
 You can optionally specify the start and end dates to make decisions for a specific time period.
 
 ```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 
+python src/main.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 
 ```
 
 ### Running the Backtester
 
 ```bash
-poetry run python src/backtester.py --ticker AAPL,MSFT,NVDA
+python src/backtester.py --ticker AAPL,MSFT,NVDA
 ```
 
 **Example Output:**
@@ -120,12 +80,12 @@ poetry run python src/backtester.py --ticker AAPL,MSFT,NVDA
 You can optionally specify the start and end dates to backtest over a specific time period.
 
 ```bash
-poetry run python src/backtester.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01
+python src/backtester.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01
 ```
 
 ## Project Structure 
 ```
-ai-hedge-fund/
+deepfund/
 ├── src/
 │   ├── agents/                   # Agent definitions and workflow
 │   │   ├── bill_ackman.py        # Bill Ackman agent
@@ -140,7 +100,7 @@ ai-hedge-fund/
 │   │   ├── api.py                # API tools
 │   ├── backtester.py             # Backtesting tools
 │   ├── main.py # Main entry point
-├── pyproject.toml
+├── environment.yml # For Conda
 ├── ...
 ```
 

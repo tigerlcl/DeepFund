@@ -1,0 +1,25 @@
+name: deepfund-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - pandas
+  - numpy
+  - matplotlib
+  - colorama
+  - python-dotenv
+  - requests
+  - tabulate
+  - pip:
+    - langgraph
+    - langchain-core
+    - langchain-openai
+    - langchain-anthropic
+    - langchain-groq
+    - langchain-ollama
+    - questionary
+    - rich
+    - python-dateutil
+    - typing-extensions 
