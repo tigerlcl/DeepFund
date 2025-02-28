@@ -13,11 +13,11 @@ This project is for **educational and research purposes only, it does not actual
 
 
 ## Overview
-This project covers four key services, which are Data Ingestion, Trading Simulator, Report Analytics and Live Arena.
+This environment covers 5 key services, which are Data Ingestion, Trading Simulator, Analytics, Live Arena and Storage.
 
 DONE: Trading Simulator
 
-TODO: Data Ingestion | Report Analytics | Live Arena
+TODO: Data Ingestion | Analytics | Live Arena | Storage
 
 
 
@@ -30,7 +30,7 @@ git clone https://github.com/IatomicreactorI/deepfund.git
 cd deepfund
 ```
 
-2. Create an virtual env from the conda file:
+2. Create an virtual env from the conda env configuration file:
 ```bash
 conda env create -f environment.yml
 ```
