@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from typing import Dict, List, Any, Optional
+from core.logger import logger
 
 
 class ConfigManager:
@@ -36,7 +37,7 @@ class ConfigManager:
             with open('tickers.json', 'r') as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(f"Error loading ticker scopes: {e}")
+            logger.error(f"Error loading ticker scopes: {e}")
             return {"default": []}
 
     def _validate_and_normalize_config(self) -> None:
@@ -58,38 +59,4 @@ class ConfigManager:
         else:
             # If scope not found, use default or empty list
             self.config.setdefault('trading', {})['tickers'] = self.ticker_scopes.get('default', [])
-            print(f"Warning: Ticker scope '{ticker_scope}' not found, using default scope")
-            
-        # Ensure tickers are properly formatted
-        if isinstance(self.config.get('trading', {}).get('tickers'), list):
-            self.config['trading']['tickers'] = [
-                ticker.strip() for ticker in self.config['trading']['tickers']
-            ]
-            
-        # Ensure logging directory exists
-        log_dir = self.config.get('logging', {}).get('log_dir', 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-
-    def get_config(self) -> Dict[str, Any]:
-        """Get the full configuration."""
-        return self.config
-
-    def get_portfolio_config(self) -> Dict[str, Any]:
-        """Get portfolio configuration."""
-        return self.config.get('portfolio', {})
-
-    def get_trading_config(self) -> Dict[str, Any]:
-        """Get trading configuration."""
-        return self.config.get('trading', {})
-
-    def get_analysts_config(self) -> List[str]:
-        """Get analysts."""
-        return self.config.get('analysts', {})
-
-    def get_llm_config(self) -> Dict[str, str]:
-        """Get LLM configuration."""
-        return self.config.get('llm', {})
-
-    def get_logging_config(self) -> Dict[str, Any]:
-        """Get logging configuration."""
-        return self.config.get('logging', {})
+            logger.warning(f"Warning: Ticker scope '{ticker_scope}' not found, using default scope")

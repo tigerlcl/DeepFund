@@ -20,7 +20,7 @@ analysts:
 
 # LLM model settings
 llm:
-  provider: "OpenAI"  # OpenAI, Groq, Anthropic, Ollama, Custom
+  provider: "Custom"  # OpenAI, Groq, Anthropic, Ollama, Custom
   model: "gpt-4o"
   # Custom API endpoint settings (used when provider is "Custom")
   custom_endpoint:
@@ -28,9 +28,3 @@ llm:
     api_key_env_var: "CUSTOM_API_KEY"
     headers:
       Content-Type: "application/json"
-
-# Logging settings
-logging:
-  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-  log_dir: "logs"
-  file_prefix: "deep_fund" 
