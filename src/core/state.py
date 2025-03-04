@@ -3,7 +3,7 @@ from typing_extensions import Annotated, Sequence, TypedDict
 import operator
 from langchain_core.messages import BaseMessage
 import json
-from utils.logger import logger
+from core.logger import logger
 
 
 def merge_dicts(a: dict[str, any], b: dict[str, any]) -> dict[str, any]:

@@ -4,7 +4,7 @@ from time import perf_counter
 from dotenv import load_dotenv
 from config.config_manager import ConfigManager
 from core.deep_fund import DeepFund
-from utils.logger import logger
+from core.logger import logger
 
 # Load environment variables from .env file
 load_dotenv()
@@ -58,9 +58,7 @@ def main():
     parser.add_argument(
         "--config", type=str, help="Path to configuration file"
     )
-    parser.add_argument(
-        "--ticker", type=str, help="Comma-separated list of ticker symbols"
-    )
+
     args = parser.parse_args()
     
     # Load configuration

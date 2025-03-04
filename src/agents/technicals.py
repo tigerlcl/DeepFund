@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 
 from tools.api import get_prices, prices_to_df
-from utils.logger import logger
+from core.logger import logger
 
 
 ##### Technical Analyst #####

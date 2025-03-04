@@ -3,7 +3,7 @@
 from typing import Dict, List, Any, Optional
 from time import perf_counter
 from langchain_core.messages import HumanMessage
-from utils.logger import logger
+from core.logger import logger
 from core.factory import WorkflowFactory
 import json
 

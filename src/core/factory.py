@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, END
 from agents import get_analyst_nodes
 from agents.risk_manager import risk_management_agent
 from agents.portfolio_manager import portfolio_management_agent
-from utils.logger import logger
+from core.logger import logger
 
 
 class WorkflowFactory:

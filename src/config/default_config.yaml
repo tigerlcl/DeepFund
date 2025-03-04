@@ -7,17 +7,16 @@ portfolio:
 
 # Trading settings
 trading:
-  tickers: ["AAPL", "MSFT", "GOOGL"]
-  start_date: "2023-01-01"  # Optional, defaults to 3 months before end_date
-  end_date: "2023-04-01"    # Optional, defaults to today
+  start_date: "2025-01-01"  # Optional, defaults to 3 months before end_date
+  end_date: "2025-03-01"    # Optional, defaults to today
+  ticker_scope: "test"   # References a scope in tickers.json
 
-# Analyst settings
+# Analyst settings (specify which analysts to use)
 analysts:
-  enabled:
-    - technical_analyst
-    - fundamentals_analyst
-    - sentiment_analyst
-    - valuation_analyst
+  - technical_analyst
+  - fundamentals_analyst
+  - sentiment_analyst
+  - valuation_analyst
 
 # LLM model settings
 llm:

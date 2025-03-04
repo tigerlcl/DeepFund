@@ -3,7 +3,7 @@
 import json
 from typing import TypeVar, Type, Optional, Any, Dict
 from pydantic import BaseModel
-from utils.logger import logger
+from core.logger import logger
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -31,6 +31,7 @@ def call_llm(
     Returns:
         An instance of the specified Pydantic model
     """
+    # Import here to avoid circular imports
     from llm.models import get_model
     
     # Get model configuration
@@ -117,4 +118,4 @@ def extract_json_from_deepseek_response(content: str) -> Optional[dict]:
                 return json.loads(json_text)
     except Exception as e:
         logger.error(f"Error extracting JSON from Deepseek response: {e}")
-    return None
+    return None 
