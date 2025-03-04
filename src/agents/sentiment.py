@@ -1,11 +1,10 @@
 from langchain_core.messages import HumanMessage
-from graph.state import AgentState, show_agent_reasoning
-from utils.progress import progress
+from utils.logger import logger
+from core.state import AgentState, show_agent_reasoning
+from tools.api import get_insider_trades, get_company_news
 import pandas as pd
 import numpy as np
 import json
-
-from tools.api import get_insider_trades, get_company_news
 
 
 ##### Sentiment Agent #####
@@ -19,7 +18,7 @@ def sentiment_agent(state: AgentState):
     sentiment_analysis = {}
 
     for ticker in tickers:
-        progress.update_status("sentiment_agent", ticker, "Fetching insider trades")
+        logger.update_agent_status("sentiment_agent", ticker, "Fetching insider trades")
 
         # Get the insider trades
         insider_trades = get_insider_trades(
@@ -28,13 +27,13 @@ def sentiment_agent(state: AgentState):
             limit=1000,
         )
 
-        progress.update_status("sentiment_agent", ticker, "Analyzing trading patterns")
+        logger.update_agent_status("sentiment_agent", ticker, "Analyzing trading patterns")
 
         # Get the signals from the insider trades
         transaction_shares = pd.Series([t.transaction_shares for t in insider_trades]).dropna()
         insider_signals = np.where(transaction_shares < 0, "bearish", "bullish").tolist()
 
-        progress.update_status("sentiment_agent", ticker, "Fetching company news")
+        logger.update_agent_status("sentiment_agent", ticker, "Fetching company news")
 
         # Get the company news
         company_news = get_company_news(ticker, end_date, limit=100)
@@ -44,7 +43,7 @@ def sentiment_agent(state: AgentState):
         news_signals = np.where(sentiment == "negative", "bearish", 
                               np.where(sentiment == "positive", "bullish", "neutral")).tolist()
         
-        progress.update_status("sentiment_agent", ticker, "Combining signals")
+        logger.update_agent_status("sentiment_agent", ticker, "Combining signals")
         # Combine signals from both sources with weights
         insider_weight = 0.3
         news_weight = 0.7
@@ -79,7 +78,7 @@ def sentiment_agent(state: AgentState):
             "reasoning": reasoning,
         }
 
-        progress.update_status("sentiment_agent", ticker, "Done")
+        logger.update_agent_status("sentiment_agent", ticker, "Done")
 
     # Create the sentiment message
     message = HumanMessage(

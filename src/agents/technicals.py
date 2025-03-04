@@ -2,14 +2,14 @@ import math
 
 from langchain_core.messages import HumanMessage
 
-from graph.state import AgentState, show_agent_reasoning
+from core.state import AgentState, show_agent_reasoning
 
 import json
 import pandas as pd
 import numpy as np
 
 from tools.api import get_prices, prices_to_df
-from utils.progress import progress
+from utils.logger import logger
 
 
 ##### Technical Analyst #####
@@ -31,7 +31,7 @@ def technical_analyst_agent(state: AgentState):
     technical_analysis = {}
 
     for ticker in tickers:
-        progress.update_status("technical_analyst_agent", ticker, "Analyzing price data")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Analyzing price data")
 
         # Get the historical price data
         prices = get_prices(
@@ -41,25 +41,25 @@ def technical_analyst_agent(state: AgentState):
         )
 
         if not prices:
-            progress.update_status("technical_analyst_agent", ticker, "Failed: No price data found")
+            logger.update_agent_status("technical_analyst_agent", ticker, "Failed: No price data found")
             continue
 
         # Convert prices to a DataFrame
         prices_df = prices_to_df(prices)
 
-        progress.update_status("technical_analyst_agent", ticker, "Calculating trend signals")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Calculating trend signals")
         trend_signals = calculate_trend_signals(prices_df)
 
-        progress.update_status("technical_analyst_agent", ticker, "Calculating mean reversion")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Calculating mean reversion")
         mean_reversion_signals = calculate_mean_reversion_signals(prices_df)
 
-        progress.update_status("technical_analyst_agent", ticker, "Calculating momentum")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Calculating momentum")
         momentum_signals = calculate_momentum_signals(prices_df)
 
-        progress.update_status("technical_analyst_agent", ticker, "Analyzing volatility")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Analyzing volatility")
         volatility_signals = calculate_volatility_signals(prices_df)
 
-        progress.update_status("technical_analyst_agent", ticker, "Statistical analysis")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Statistical analysis")
         stat_arb_signals = calculate_stat_arb_signals(prices_df)
 
         # Combine all signals using a weighted ensemble approach
@@ -71,7 +71,7 @@ def technical_analyst_agent(state: AgentState):
             "stat_arb": 0.15,
         }
 
-        progress.update_status("technical_analyst_agent", ticker, "Combining signals")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Combining signals")
         combined_signal = weighted_signal_combination(
             {
                 "trend": trend_signals,
@@ -115,7 +115,7 @@ def technical_analyst_agent(state: AgentState):
                 },
             },
         }
-        progress.update_status("technical_analyst_agent", ticker, "Done")
+        logger.update_agent_status("technical_analyst_agent", ticker, "Done")
 
     # Create the technical analyst message
     message = HumanMessage(

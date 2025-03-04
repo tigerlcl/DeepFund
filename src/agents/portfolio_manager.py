@@ -1,12 +1,14 @@
 import json
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from utils.logger import logger
 
-from graph.state import AgentState, show_agent_reasoning
+from core.state import AgentState, show_agent_reasoning
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
-from utils.progress import progress
 from utils.llm import call_llm
+from tools.api import get_prices, prices_to_df
+import pandas as pd
 
 
 class PortfolioDecision(BaseModel):
@@ -29,7 +31,7 @@ def portfolio_management_agent(state: AgentState):
     analyst_signals = state["data"]["analyst_signals"]
     tickers = state["data"]["tickers"]
 
-    progress.update_status("portfolio_management_agent", None, "Analyzing signals")
+    logger.update_agent_status("portfolio_management_agent", None, "Analyzing signals")
 
     # Get position limits, current prices, and signals for every ticker
     position_limits = {}
@@ -37,7 +39,7 @@ def portfolio_management_agent(state: AgentState):
     max_shares = {}
     signals_by_ticker = {}
     for ticker in tickers:
-        progress.update_status("portfolio_management_agent", ticker, "Processing analyst signals")
+        logger.update_agent_status("portfolio_management_agent", ticker, "Processing analyst signals")
 
         # Get position limits and current prices for the ticker
         risk_data = analyst_signals.get("risk_management_agent", {}).get(ticker, {})
@@ -57,7 +59,7 @@ def portfolio_management_agent(state: AgentState):
                 ticker_signals[agent] = {"signal": signals[ticker]["signal"], "confidence": signals[ticker]["confidence"]}
         signals_by_ticker[ticker] = ticker_signals
 
-    progress.update_status("portfolio_management_agent", None, "Making trading decisions")
+    logger.update_agent_status("portfolio_management_agent", None, "Making trading decisions")
 
     # Generate the trading decision
     result = generate_trading_decision(
@@ -80,7 +82,7 @@ def portfolio_management_agent(state: AgentState):
     if state["metadata"]["show_reasoning"]:
         show_agent_reasoning({ticker: decision.model_dump() for ticker, decision in result.decisions.items()}, "Portfolio Management Agent")
 
-    progress.update_status("portfolio_management_agent", None, "Done")
+    logger.update_agent_status("portfolio_management_agent", None, "Done")
 
     return {
         "messages": state["messages"] + [message],

@@ -1,281 +1,127 @@
 import sys
-from time import perf_counter
-
-from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
-from langgraph.graph import END, StateGraph
-from colorama import Fore, Back, Style, init
-from agents.portfolio_manager import portfolio_management_agent
-from agents.risk_manager import risk_management_agent
-from graph.state import AgentState
-from utils.display import print_trading_output
-from utils.analysts import ANALYST_ORDER, get_analyst_nodes
-from utils.progress import progress
-from llm.models import LLM_ORDER, get_model_info
-
-import questionary
 import argparse
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from tabulate import tabulate
-from utils.visualize import save_graph_as_png
+from time import perf_counter
+from dotenv import load_dotenv
+from config.config_manager import ConfigManager
+from core.deep_fund import DeepFund
+from utils.logger import logger
 
 # Load environment variables from .env file
 load_dotenv()
 
-init(autoreset=True)
 
-
-def parse_hedge_fund_response(response):
-    import json
-
-    try:
-        return json.loads(response)
-    except:
-        print(f"Error parsing response: {response}")
-        return None
-
-
-##### Run the Hedge Fund #####
-def run_hedge_fund(
+def run_deep_fund(
     tickers: list[str],
     start_date: str,
     end_date: str,
     portfolio: dict,
-    show_reasoning: bool = False,
     selected_analysts: list[str] = [],
     model_name: str = "gpt-4o",
     model_provider: str = "OpenAI",
 ):
-    # Start progress tracking
-    progress.start()
-
-    try:
-        # Create a new workflow if analysts are customized
-        if selected_analysts:
-            workflow = create_workflow(selected_analysts)
-            agent = workflow.compile()
-        else:
-            agent = app
-
-        final_state = agent.invoke(
-            {
-                "messages": [
-                    HumanMessage(
-                        content="Make trading decisions based on the provided data.",
-                    )
-                ],
-                "data": {
-                    "tickers": tickers,
-                    "portfolio": portfolio,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "analyst_signals": {},
-                },
-                "metadata": {
-                    "show_reasoning": show_reasoning,
-                    "model_name": model_name,
-                    "model_provider": model_provider,
-                },
-            },
-        )
-
-        return {
-            "decisions": parse_hedge_fund_response(final_state["messages"][-1].content),
-            "analyst_signals": final_state["data"]["analyst_signals"],
-        }
-    finally:
-        # Stop progress tracking
-        progress.stop()
-
-
-def start(state: AgentState):
-    """Initialize the workflow with the input message."""
-    return state
-
-
-def create_workflow(selected_analysts=None):
-    """Create the workflow with selected analysts."""
-    workflow = StateGraph(AgentState)
-    workflow.add_node("start_node", start)
-
-    # Get analyst nodes from the configuration
-    analyst_nodes = get_analyst_nodes()
-
-    # Default to all analysts if none selected
-    if selected_analysts is None:
-        selected_analysts = list(analyst_nodes.keys())
-    # Add selected analyst nodes
-    for analyst_key in selected_analysts:
-        node_name, node_func = analyst_nodes[analyst_key]
-        workflow.add_node(node_name, node_func)
-        workflow.add_edge("start_node", node_name)
-
-    # Always add risk and portfolio management
-    workflow.add_node("risk_management_agent", risk_management_agent)
-    workflow.add_node("portfolio_management_agent", portfolio_management_agent)
-
-    # Connect selected analysts to risk management
-    for analyst_key in selected_analysts:
-        node_name = analyst_nodes[analyst_key][0]
-        workflow.add_edge(node_name, "risk_management_agent")
-
-    workflow.add_edge("risk_management_agent", "portfolio_management_agent")
-    workflow.add_edge("portfolio_management_agent", END)
-
-    workflow.set_entry_point("start_node")
-    return workflow
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run the hedge fund trading system")
-    parser.add_argument(
-        "--initial-cash",
-        type=float,
-        default=100000.0,
-        help="Initial cash position. Defaults to 100000.0)"
-    )
-    parser.add_argument(
-        "--margin-requirement",
-        type=float,
-        default=0.0,
-        help="Initial margin requirement. Defaults to 0.0"
-    )
-    parser.add_argument("--tickers", type=str, required=True, help="Comma-separated list of stock ticker symbols")
-    parser.add_argument(
-        "--start-date",
-        type=str,
-        help="Start date (YYYY-MM-DD). Defaults to 3 months before end date",
-    )
-    parser.add_argument("--end-date", type=str, help="End date (YYYY-MM-DD). Defaults to today")
-    parser.add_argument("--show-reasoning", action="store_true", help="Show reasoning from each agent")
-    parser.add_argument(
-        "--show-agent-graph", action="store_true", help="Show the agent graph"
-    )
-
-    args = parser.parse_args()
-
-    # set perf counter
-    start_time = perf_counter()
-
-    # Parse tickers from comma-separated string
-    tickers = [ticker.strip() for ticker in args.tickers.split(",")]
-
-    # Select analysts
-    selected_analysts = None
-    choices = questionary.checkbox(
-        "Select your AI analysts.",
-        choices=[questionary.Choice(display, value=value) for display, value in ANALYST_ORDER],
-        instruction="\n\nInstructions: \n1. Press Space to select/unselect analysts.\n2. Press 'a' to select/unselect all.\n3. Press Enter when done to run the hedge fund.\n",
-        validate=lambda x: len(x) > 0 or "You must select at least one analyst.",
-        style=questionary.Style(
-            [
-                ("checkbox-selected", "fg:green"),
-                ("selected", "fg:green noinherit"),
-                ("highlighted", "noinherit"),
-                ("pointer", "noinherit"),
-            ]
-        ),
-    ).ask()
-
-    if not choices:
-        print("\n\nInterrupt received. Exiting...")
-        sys.exit(0)
-    else:
-        selected_analysts = choices
-        print(f"\nSelected analysts: {', '.join(Fore.GREEN + choice.title().replace('_', ' ') + Style.RESET_ALL for choice in choices)}\n")
-
-    # Select LLM model
-    model_choice = questionary.select(
-        "Select your LLM model:",
-        choices=[questionary.Choice(display, value=value) for display, value, _ in LLM_ORDER],
-        style=questionary.Style([
-            ("selected", "fg:green bold"),
-            ("pointer", "fg:green bold"),
-            ("highlighted", "fg:green"),
-            ("answer", "fg:green bold"),
-        ])
-    ).ask()
-
-    if not model_choice:
-        print("\n\nInterrupt received. Exiting...")
-        sys.exit(0)
-    else:
-        # Get model info using the helper function
-        model_info = get_model_info(model_choice)
-        if model_info:
-            model_provider = model_info.provider.value
-            print(f"\nSelected {Fore.CYAN}{model_provider}{Style.RESET_ALL} model: {Fore.GREEN + Style.BRIGHT}{model_choice}{Style.RESET_ALL}\n")
-        else:
-            model_provider = "Unknown"
-            print(f"\nSelected model: {Fore.GREEN + Style.BRIGHT}{model_choice}{Style.RESET_ALL}\n")
-
-    # Create the workflow with selected analysts
-    workflow = create_workflow(selected_analysts)
-    app = workflow.compile()
-
-    if args.show_agent_graph:
-        file_path = ""
-        if selected_analysts is not None:
-            for selected_analyst in selected_analysts:
-                file_path += selected_analyst + "_"
-            file_path += "graph.png"
-        save_graph_as_png(app, file_path)
-
-    # Validate dates if provided
-    if args.start_date:
-        try:
-            datetime.strptime(args.start_date, "%Y-%m-%d")
-        except ValueError:
-            raise ValueError("Start date must be in YYYY-MM-DD format")
-
-    if args.end_date:
-        try:
-            datetime.strptime(args.end_date, "%Y-%m-%d")
-        except ValueError:
-            raise ValueError("End date must be in YYYY-MM-DD format")
-
-    # Set the start and end dates
-    end_date = args.end_date or datetime.now().strftime("%Y-%m-%d")
-    if not args.start_date:
-        # Calculate 3 months before end_date
-        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-        start_date = (end_date_obj - relativedelta(months=3)).strftime("%Y-%m-%d")
-    else:
-        start_date = args.start_date
-
-    # Initialize portfolio with cash amount and stock positions
-    portfolio = {
-        "cash": args.initial_cash,  # Initial cash amount
-        "margin_requirement": args.margin_requirement,  # Initial margin requirement
-        "positions": {
-            ticker: {
-                "long": 0,  # Number of shares held long
-                "short": 0,  # Number of shares held short
-                "long_cost_basis": 0.0,  # Average cost basis for long positions
-                "short_cost_basis": 0.0,  # Average price at which shares were sold short
-            } for ticker in tickers
-        },
-        "realized_gains": {
-            ticker: {
-                "long": 0.0,  # Realized gains from long positions
-                "short": 0.0,  # Realized gains from short positions
-            } for ticker in tickers
-        }
-    }
-
-    # Run the hedge fund
-    result = run_hedge_fund(
+    """Run the deep fund with the given parameters.
+    
+    Args:
+        tickers: List of stock ticker symbols.
+        start_date: Start date in YYYY-MM-DD format.
+        end_date: End date in YYYY-MM-DD format.
+        portfolio: Portfolio configuration.
+        selected_analysts: List of selected analysts.
+        model_name: Name of the LLM model to use.
+        model_provider: Provider of the LLM model.
+        
+    Returns:
+        Dictionary containing trading decisions and analyst signals.
+    """
+    logger.info("Initializing DeepFund")
+    deep_fund = DeepFund(
         tickers=tickers,
         start_date=start_date,
         end_date=end_date,
         portfolio=portfolio,
-        show_reasoning=args.show_reasoning,
+        show_reasoning=False,  # Always set to False for automatic workflow
         selected_analysts=selected_analysts,
-        model_name=model_choice,
+        model_name=model_name,
         model_provider=model_provider,
     )
-    print_trading_output(result)
+    
+    logger.info("Running DeepFund")
+    return deep_fund.run()
 
-    # print perf counter
-    print(f"\nTotal execution time: {perf_counter() - start_time:.2f} seconds")
+
+def main():
+    """Main entry point for the deep fund CLI."""
+    start_time = perf_counter()
+    
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Run the deep fund trading system")
+    parser.add_argument(
+        "--config", type=str, help="Path to configuration file"
+    )
+    parser.add_argument(
+        "--ticker", type=str, help="Comma-separated list of ticker symbols"
+    )
+    args = parser.parse_args()
+    
+    # Load configuration
+    config_manager = ConfigManager(args.config)
+    
+    # Get configuration sections
+    portfolio_config = config_manager.get_portfolio_config()
+    trading_config = config_manager.get_trading_config()
+    analysts_config = config_manager.get_analysts_config()
+    llm_config = config_manager.get_llm_config()
+    
+    # Override tickers if provided via command line
+    tickers = trading_config.get("tickers", [])
+    if args.ticker:
+        tickers = [ticker.strip() for ticker in args.ticker.split(",")]
+    
+    if not tickers:
+        logger.error("No tickers specified")
+        sys.exit(1)
+    
+    logger.info(f"Running deep fund for tickers: {', '.join(tickers)}")
+    
+    # Initialize portfolio
+    portfolio = {
+        "cash": portfolio_config.get("initial_cash", 100000.0),
+        "margin_requirement": portfolio_config.get("margin_requirement", 0.0),
+        "positions": {
+            ticker: {
+                "long": 0,
+                "short": 0,
+                "long_cost_basis": 0.0,
+                "short_cost_basis": 0.0,
+            } for ticker in tickers
+        },
+        "realized_gains": {
+            ticker: {
+                "long": 0.0,
+                "short": 0.0,
+            } for ticker in tickers
+        }
+    }
+    
+    # Run the deep fund
+    result = run_deep_fund(
+        tickers=tickers,
+        start_date=trading_config.get("start_date"),
+        end_date=trading_config.get("end_date"),
+        portfolio=portfolio,
+        selected_analysts=analysts_config,
+        model_name=llm_config.get("model", "gpt-4o"),
+        model_provider=llm_config.get("provider", "OpenAI"),
+    )
+    
+    # Log the trading decisions
+    logger.info(f"Trading run completed for tickers: {', '.join(tickers)}")
+    for ticker, decision in result.get("decisions", {}).items():
+        logger.info(f"Decision for {ticker}: {decision.get('action')} {decision.get('quantity')} shares (Confidence: {decision.get('confidence'):.1f}%)")
+    
+    # Print performance information
+    logger.info(f"Total execution time: {perf_counter() - start_time:.2f} seconds")
+
+
+if __name__ == "__main__":
+    main()

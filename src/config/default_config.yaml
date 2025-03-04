@@ -1,0 +1,37 @@
+# Deep Fund Configuration
+
+# Portfolio settings
+portfolio:
+  initial_cash: 100000.0
+  margin_requirement: 0.0
+
+# Trading settings
+trading:
+  tickers: ["AAPL", "MSFT", "GOOGL"]
+  start_date: "2023-01-01"  # Optional, defaults to 3 months before end_date
+  end_date: "2023-04-01"    # Optional, defaults to today
+
+# Analyst settings
+analysts:
+  enabled:
+    - technical_analyst
+    - fundamentals_analyst
+    - sentiment_analyst
+    - valuation_analyst
+
+# LLM model settings
+llm:
+  provider: "OpenAI"  # OpenAI, Groq, Anthropic, Ollama, Custom
+  model: "gpt-4o"
+  # Custom API endpoint settings (used when provider is "Custom")
+  custom_endpoint:
+    url: "https://vip.yi-zhan.top/v1/chat/completions"
+    api_key_env_var: "CUSTOM_API_KEY"
+    headers:
+      Content-Type: "application/json"
+
+# Logging settings
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_dir: "logs"
+  file_prefix: "deep_fund" 

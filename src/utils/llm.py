@@ -1,9 +1,9 @@
 """Helper functions for LLM"""
 
 import json
-from typing import TypeVar, Type, Optional, Any
+from typing import TypeVar, Type, Optional, Any, Dict
 from pydantic import BaseModel
-from utils.progress import progress
+from utils.logger import logger
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -24,20 +24,29 @@ def call_llm(
         model_name: Name of the model to use
         model_provider: Provider of the model
         pydantic_model: The Pydantic model class to structure the output
-        agent_name: Optional name of the agent for progress updates
+        agent_name: Optional name of the agent for logging
         max_retries: Maximum number of retries (default: 3)
         default_factory: Optional factory function to create default response on failure
         
     Returns:
         An instance of the specified Pydantic model
     """
-    from llm.models import get_model, get_model_info
+    from llm.models import get_model
     
-    model_info = get_model_info(model_name)
-    llm = get_model(model_name, model_provider)
+    # Get model configuration
+    model_config = {
+        "provider": model_provider,
+        "model": model_name
+    }
+    
+    # Get the model
+    llm = get_model(model_config)
+    
+    # Check if it's a Deepseek model
+    is_deepseek = model_name.startswith("deepseek")
     
     # For non-Deepseek models, we can use structured output
-    if not (model_info and model_info.is_deepseek()):
+    if not is_deepseek:
         llm = llm.with_structured_output(
             pydantic_model,
             method="json_mode",
@@ -46,11 +55,15 @@ def call_llm(
     # Call the LLM with retries
     for attempt in range(max_retries):
         try:
+            # Log the attempt
+            if agent_name:
+                logger.update_agent_status(agent_name, None, f"Calling LLM (attempt {attempt + 1}/{max_retries})")
+            
             # Call the LLM
             result = llm.invoke(prompt)
             
             # For Deepseek, we need to extract and parse the JSON manually
-            if model_info and model_info.is_deepseek():
+            if is_deepseek:
                 parsed_result = extract_json_from_deepseek_response(result.content)
                 if parsed_result:
                     return pydantic_model(**parsed_result)
@@ -59,10 +72,10 @@ def call_llm(
                 
         except Exception as e:
             if agent_name:
-                progress.update_status(agent_name, None, f"Error - retry {attempt + 1}/{max_retries}")
+                logger.update_agent_status(agent_name, None, f"Error - retry {attempt + 1}/{max_retries}")
             
             if attempt == max_retries - 1:
-                print(f"Error in LLM call after {max_retries} attempts: {e}")
+                logger.error(f"Error in LLM call after {max_retries} attempts: {e}")
                 # Use default_factory if provided, otherwise create a basic default
                 if default_factory:
                     return default_factory()
@@ -103,5 +116,5 @@ def extract_json_from_deepseek_response(content: str) -> Optional[dict]:
                 json_text = json_text[:json_end].strip()
                 return json.loads(json_text)
     except Exception as e:
-        print(f"Error extracting JSON from Deepseek response: {e}")
+        logger.error(f"Error extracting JSON from Deepseek response: {e}")
     return None

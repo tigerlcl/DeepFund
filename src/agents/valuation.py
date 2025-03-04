@@ -1,9 +1,8 @@
 from langchain_core.messages import HumanMessage
-from graph.state import AgentState, show_agent_reasoning
-from utils.progress import progress
+from utils.logger import logger
+from core.state import AgentState, show_agent_reasoning
+from tools.api import get_financial_metrics, get_market_cap, search_line_items, get_financial_line_items, get_prices
 import json
-
-from tools.api import get_financial_metrics, get_market_cap, search_line_items
 
 
 ##### Valuation Agent #####
@@ -17,7 +16,7 @@ def valuation_agent(state: AgentState):
     valuation_analysis = {}
 
     for ticker in tickers:
-        progress.update_status("valuation_agent", ticker, "Fetching financial data")
+        logger.update_agent_status("valuation_agent", ticker, "Fetching financial data")
 
         # Fetch the financial metrics
         financial_metrics = get_financial_metrics(
@@ -28,12 +27,12 @@ def valuation_agent(state: AgentState):
 
         # Add safety check for financial metrics
         if not financial_metrics:
-            progress.update_status("valuation_agent", ticker, "Failed: No financial metrics found")
+            logger.update_agent_status("valuation_agent", ticker, "Failed: No financial metrics found")
             continue
         
         metrics = financial_metrics[0]
 
-        progress.update_status("valuation_agent", ticker, "Gathering line items")
+        logger.update_agent_status("valuation_agent", ticker, "Gathering line items")
         # Fetch the specific line_items that we need for valuation purposes
         financial_line_items = search_line_items(
             ticker=ticker,
@@ -51,14 +50,14 @@ def valuation_agent(state: AgentState):
 
         # Add safety check for financial line items
         if len(financial_line_items) < 2:
-            progress.update_status("valuation_agent", ticker, "Failed: Insufficient financial line items")
+            logger.update_agent_status("valuation_agent", ticker, "Failed: Insufficient financial line items")
             continue
 
         # Pull the current and previous financial line items
         current_financial_line_item = financial_line_items[0]
         previous_financial_line_item = financial_line_items[1]
 
-        progress.update_status("valuation_agent", ticker, "Calculating owner earnings")
+        logger.update_agent_status("valuation_agent", ticker, "Calculating owner earnings")
         # Calculate working capital change
         working_capital_change = current_financial_line_item.working_capital - previous_financial_line_item.working_capital
 
@@ -73,7 +72,7 @@ def valuation_agent(state: AgentState):
             margin_of_safety=0.25,
         )
 
-        progress.update_status("valuation_agent", ticker, "Calculating DCF value")
+        logger.update_agent_status("valuation_agent", ticker, "Calculating DCF value")
         # DCF Valuation
         dcf_value = calculate_intrinsic_value(
             free_cash_flow=current_financial_line_item.free_cash_flow,
@@ -83,7 +82,7 @@ def valuation_agent(state: AgentState):
             num_years=5,
         )
 
-        progress.update_status("valuation_agent", ticker, "Comparing to market value")
+        logger.update_agent_status("valuation_agent", ticker, "Comparing to market value")
         # Get the market cap
         market_cap = get_market_cap(ticker=ticker, end_date=end_date)
 
@@ -118,7 +117,7 @@ def valuation_agent(state: AgentState):
             "reasoning": reasoning,
         }
 
-        progress.update_status("valuation_agent", ticker, "Done")
+        logger.update_agent_status("valuation_agent", ticker, "Done")
 
     message = HumanMessage(
         content=json.dumps(valuation_analysis),

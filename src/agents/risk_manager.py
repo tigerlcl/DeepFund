@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage
-from graph.state import AgentState, show_agent_reasoning
-from utils.progress import progress
+from utils.logger import logger
+from core.state import AgentState, show_agent_reasoning
 from tools.api import get_prices, prices_to_df
 import json
 
@@ -17,7 +17,7 @@ def risk_management_agent(state: AgentState):
     current_prices = {}  # Store prices here to avoid redundant API calls
 
     for ticker in tickers:
-        progress.update_status("risk_management_agent", ticker, "Analyzing price data")
+        logger.update_agent_status("risk_management_agent", ticker, "Analyzing price data")
 
         prices = get_prices(
             ticker=ticker,
@@ -26,12 +26,12 @@ def risk_management_agent(state: AgentState):
         )
 
         if not prices:
-            progress.update_status("risk_management_agent", ticker, "Failed: No price data found")
+            logger.update_agent_status("risk_management_agent", ticker, "Failed: No price data found")
             continue
 
         prices_df = prices_to_df(prices)
 
-        progress.update_status("risk_management_agent", ticker, "Calculating position limits")
+        logger.update_agent_status("risk_management_agent", ticker, "Calculating position limits")
 
         # Calculate portfolio value
         current_price = prices_df["close"].iloc[-1]
@@ -64,7 +64,7 @@ def risk_management_agent(state: AgentState):
             },
         }
 
-        progress.update_status("risk_management_agent", ticker, "Done")
+        logger.update_agent_status("risk_management_agent", ticker, "Done")
 
     message = HumanMessage(
         content=json.dumps(risk_analysis),

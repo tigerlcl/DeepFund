@@ -1,9 +1,8 @@
 from langchain_core.messages import HumanMessage
-from graph.state import AgentState, show_agent_reasoning
-from utils.progress import progress
-import json
-
+from utils.logger import logger
+from core.state import AgentState, show_agent_reasoning
 from tools.api import get_financial_metrics
+import json
 
 
 ##### Fundamental Agent #####
@@ -17,7 +16,7 @@ def fundamentals_agent(state: AgentState):
     fundamental_analysis = {}
 
     for ticker in tickers:
-        progress.update_status("fundamentals_agent", ticker, "Fetching financial metrics")
+        logger.update_agent_status("fundamentals_agent", ticker, "Fetching financial metrics")
 
         # Get the financial metrics
         financial_metrics = get_financial_metrics(
@@ -28,7 +27,7 @@ def fundamentals_agent(state: AgentState):
         )
 
         if not financial_metrics:
-            progress.update_status("fundamentals_agent", ticker, "Failed: No financial metrics found")
+            logger.update_agent_status("fundamentals_agent", ticker, "Failed: No financial metrics found")
             continue
 
         # Pull the most recent financial metrics
@@ -38,7 +37,7 @@ def fundamentals_agent(state: AgentState):
         signals = []
         reasoning = {}
 
-        progress.update_status("fundamentals_agent", ticker, "Analyzing profitability")
+        logger.update_agent_status("fundamentals_agent", ticker, "Analyzing profitability")
         # 1. Profitability Analysis
         return_on_equity = metrics.return_on_equity
         net_margin = metrics.net_margin
@@ -57,7 +56,7 @@ def fundamentals_agent(state: AgentState):
             "details": (f"ROE: {return_on_equity:.2%}" if return_on_equity else "ROE: N/A") + ", " + (f"Net Margin: {net_margin:.2%}" if net_margin else "Net Margin: N/A") + ", " + (f"Op Margin: {operating_margin:.2%}" if operating_margin else "Op Margin: N/A"),
         }
 
-        progress.update_status("fundamentals_agent", ticker, "Analyzing growth")
+        logger.update_agent_status("fundamentals_agent", ticker, "Analyzing growth")
         # 2. Growth Analysis
         revenue_growth = metrics.revenue_growth
         earnings_growth = metrics.earnings_growth
@@ -76,7 +75,7 @@ def fundamentals_agent(state: AgentState):
             "details": (f"Revenue Growth: {revenue_growth:.2%}" if revenue_growth else "Revenue Growth: N/A") + ", " + (f"Earnings Growth: {earnings_growth:.2%}" if earnings_growth else "Earnings Growth: N/A"),
         }
 
-        progress.update_status("fundamentals_agent", ticker, "Analyzing financial health")
+        logger.update_agent_status("fundamentals_agent", ticker, "Analyzing financial health")
         # 3. Financial Health
         current_ratio = metrics.current_ratio
         debt_to_equity = metrics.debt_to_equity
@@ -97,7 +96,7 @@ def fundamentals_agent(state: AgentState):
             "details": (f"Current Ratio: {current_ratio:.2f}" if current_ratio else "Current Ratio: N/A") + ", " + (f"D/E: {debt_to_equity:.2f}" if debt_to_equity else "D/E: N/A"),
         }
 
-        progress.update_status("fundamentals_agent", ticker, "Analyzing valuation ratios")
+        logger.update_agent_status("fundamentals_agent", ticker, "Analyzing valuation ratios")
         # 4. Price to X ratios
         pe_ratio = metrics.price_to_earnings_ratio
         pb_ratio = metrics.price_to_book_ratio
@@ -116,7 +115,7 @@ def fundamentals_agent(state: AgentState):
             "details": (f"P/E: {pe_ratio:.2f}" if pe_ratio else "P/E: N/A") + ", " + (f"P/B: {pb_ratio:.2f}" if pb_ratio else "P/B: N/A") + ", " + (f"P/S: {ps_ratio:.2f}" if ps_ratio else "P/S: N/A"),
         }
 
-        progress.update_status("fundamentals_agent", ticker, "Calculating final signal")
+        logger.update_agent_status("fundamentals_agent", ticker, "Calculating final signal")
         # Determine overall signal
         bullish_signals = signals.count("bullish")
         bearish_signals = signals.count("bearish")
@@ -138,7 +137,7 @@ def fundamentals_agent(state: AgentState):
             "reasoning": reasoning,
         }
 
-        progress.update_status("fundamentals_agent", ticker, "Done")
+        logger.update_agent_status("fundamentals_agent", ticker, "Done")
 
     # Create the fundamental analysis message
     message = HumanMessage(

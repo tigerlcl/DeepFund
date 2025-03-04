@@ -1,8 +1,5 @@
 """Constants and utilities related to analysts configuration."""
 
-from agents.ben_graham import ben_graham_agent
-from agents.bill_ackman import bill_ackman_agent
-from agents.warren_buffett import warren_buffett_agent
 from agents.technicals import technical_analyst_agent
 from agents.fundamentals import fundamentals_agent
 from agents.sentiment import sentiment_agent
@@ -10,40 +7,25 @@ from agents.valuation import valuation_agent
 
 # Define analyst configuration - single source of truth
 ANALYST_CONFIG = {
-    "ben_graham": {
-        "display_name": "Ben Graham",
-        "agent_func": ben_graham_agent,
-        "order": 0,
-    },
-    "bill_ackman": {
-        "display_name": "Bill Ackman",
-        "agent_func": bill_ackman_agent,
-        "order": 1,
-    },
-    "warren_buffett": {
-        "display_name": "Warren Buffett",
-        "agent_func": warren_buffett_agent,
-        "order": 2,
-    },
     "technical_analyst": {
         "display_name": "Technical Analyst",
         "agent_func": technical_analyst_agent,
-        "order": 3,
+        "order": 0,
     },
     "fundamentals_analyst": {
         "display_name": "Fundamentals Analyst",
         "agent_func": fundamentals_agent,
-        "order": 4,
+        "order": 1,
     },
     "sentiment_analyst": {
         "display_name": "Sentiment Analyst",
         "agent_func": sentiment_agent,
-        "order": 5,
+        "order": 2,
     },
     "valuation_analyst": {
         "display_name": "Valuation Analyst",
         "agent_func": valuation_agent,
-        "order": 6,
+        "order": 3,
     },
 }
 
@@ -58,4 +40,4 @@ def get_analyst_nodes():
     return {
         key: (f"{key}_agent", config["agent_func"])
         for key, config in ANALYST_CONFIG.items()
-    }
+    } 

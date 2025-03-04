@@ -2,9 +2,8 @@ from typing_extensions import Annotated, Sequence, TypedDict
 
 import operator
 from langchain_core.messages import BaseMessage
-
-
 import json
+from utils.logger import logger
 
 
 def merge_dicts(a: dict[str, any], b: dict[str, any]) -> dict[str, any]:
@@ -19,7 +18,15 @@ class AgentState(TypedDict):
 
 
 def show_agent_reasoning(output, agent_name):
-    print(f"\n{'=' * 10} {agent_name.center(28)} {'=' * 10}")
+    """
+    Log agent reasoning instead of printing to console.
+    This function is called when show_reasoning is True.
+    
+    Args:
+        output: The output to log
+        agent_name: The name of the agent
+    """
+    logger.info(f"Agent reasoning from {agent_name}")
 
     def convert_to_serializable(obj):
         if hasattr(obj, "to_dict"):  # Handle Pandas Series/DataFrame
@@ -38,14 +45,12 @@ def show_agent_reasoning(output, agent_name):
     if isinstance(output, (dict, list)):
         # Convert the output to JSON-serializable format
         serializable_output = convert_to_serializable(output)
-        print(json.dumps(serializable_output, indent=2))
+        logger.debug(json.dumps(serializable_output, indent=2))
     else:
         try:
             # Parse the string as JSON and pretty print it
             parsed_output = json.loads(output)
-            print(json.dumps(parsed_output, indent=2))
+            logger.debug(json.dumps(parsed_output, indent=2))
         except json.JSONDecodeError:
             # Fallback to original string if not valid JSON
-            print(output)
-
-    print("=" * 48)
+            logger.debug(output) 
