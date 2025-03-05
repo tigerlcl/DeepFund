@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional, List, Tuple
 import requests
 import json
-from core.logger import logger
+from util.logger import logger
 
 
 class ModelProvider(str, Enum):

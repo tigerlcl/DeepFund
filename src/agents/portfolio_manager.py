@@ -1,12 +1,13 @@
 import json
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from core.logger import logger
+from util.logger import logger
 
-from core.state import AgentState, show_agent_reasoning
-from pydantic import BaseModel, Field
+from agents.state import AgentState, AgentReasoningLogger
+from pydantic import BaseModel, Field, create_model
 from typing_extensions import Literal
-from llm import call_llm
+from typing import Dict, Optional, List
+from util.llm import call_llm
 from tools.api import get_prices, prices_to_df
 import pandas as pd
 
@@ -80,7 +81,7 @@ def portfolio_management_agent(state: AgentState):
 
     # Print the decision if the flag is set
     if state["metadata"]["show_reasoning"]:
-        show_agent_reasoning({ticker: decision.model_dump() for ticker, decision in result.decisions.items()}, "Portfolio Management Agent")
+        AgentReasoningLogger.log_reasoning({ticker: decision.model_dump() for ticker, decision in result.decisions.items()}, "Portfolio Management Agent")
 
     logger.update_agent_status("portfolio_management_agent", None, "Done")
 

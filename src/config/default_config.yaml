@@ -13,18 +13,24 @@ trading:
 
 # Analyst settings (specify which analysts to use)
 analysts:
-  - technical_analyst
+  # - technical_analyst
   - fundamentals_analyst
-  - sentiment_analyst
-  - valuation_analyst
+  # - sentiment_analyst
+  # - valuation_analyst
 
 # LLM model settings
 llm:
   provider: "Custom"  # OpenAI, Groq, Anthropic, Ollama, Custom
-  model: "gpt-4o"
+  model: "gpt-4o-mini"
   # Custom API endpoint settings (used when provider is "Custom")
   custom_endpoint:
-    url: "https://vip.yi-zhan.top/v1/chat/completions"
-    api_key_env_var: "CUSTOM_API_KEY"
+    url: "https://vip.yi-zhan.top/v1"
+    api_key_env_var: "YI_ZHAN_API_KEY"
     headers:
       Content-Type: "application/json"
+
+# Logging settings
+log:
+  log_dir: "logs"
+  log_level: "INFO"
+  file_prefix: "deep_fund"

@@ -2,14 +2,14 @@ import math
 
 from langchain_core.messages import HumanMessage
 
-from core.state import AgentState, show_agent_reasoning
+from agents.state import AgentState, AgentReasoningLogger
 
 import json
 import pandas as pd
 import numpy as np
 
 from tools.api import get_prices, prices_to_df
-from core.logger import logger
+from util.logger import logger
 
 
 ##### Technical Analyst #####
@@ -124,7 +124,7 @@ def technical_analyst_agent(state: AgentState):
     )
 
     if state["metadata"]["show_reasoning"]:
-        show_agent_reasoning(technical_analysis, "Technical Analyst")
+        AgentReasoningLogger.log_reasoning(technical_analysis, "Technical Analyst")
 
     # Add the signal to the analyst_signals list
     state["data"]["analyst_signals"]["technical_analyst_agent"] = technical_analysis

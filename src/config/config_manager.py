@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from typing import Dict, List, Any, Optional
-from core.logger import logger
+from util.logger import logger
 
 
 class ConfigManager:

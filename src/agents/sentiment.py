@@ -1,6 +1,5 @@
 from langchain_core.messages import HumanMessage
-from core.logger import logger
-from core.state import AgentState, show_agent_reasoning
+from agents.state import AgentState, AgentReasoningLogger
 from tools.api import get_insider_trades, get_company_news
 import pandas as pd
 import numpy as np
@@ -88,7 +87,7 @@ def sentiment_agent(state: AgentState):
 
     # Print the reasoning if the flag is set
     if state["metadata"]["show_reasoning"]:
-        show_agent_reasoning(sentiment_analysis, "Sentiment Analysis Agent")
+        AgentReasoningLogger.log_reasoning(sentiment_analysis, "Sentiment Analysis Agent")
 
     # Add the signal to the analyst_signals list
     state["data"]["analyst_signals"]["sentiment_agent"] = sentiment_analysis

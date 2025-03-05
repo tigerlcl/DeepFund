@@ -7,7 +7,7 @@ from typing import Dict, Optional
 class DeepFundLogger:
     """Logger for the Deep Fund application."""
 
-    def __init__(self, log_dir: str = "logs", log_level: str = "INFO", file_prefix: str = "deep_fund"):
+    def __init__(self, log_dir: str, log_level: str, file_prefix: str):
         """Initialize the logger.
         
         Args:
@@ -101,7 +101,3 @@ class DeepFundLogger:
             log_message += f" | Status: {status}"
         
         self.info(log_message)
-
-
-# Create a global instance
-logger = DeepFundLogger() 

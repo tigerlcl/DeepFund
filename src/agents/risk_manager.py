@@ -1,9 +1,8 @@
 from langchain_core.messages import HumanMessage
-from core.logger import logger
-from core.state import AgentState, show_agent_reasoning
+from agents.state import AgentState, AgentReasoningLogger
 from tools.api import get_prices, prices_to_df
 import json
-
+from util.logger import logger
 
 ##### Risk Management Agent #####
 def risk_management_agent(state: AgentState):
@@ -72,7 +71,7 @@ def risk_management_agent(state: AgentState):
     )
 
     if state["metadata"]["show_reasoning"]:
-        show_agent_reasoning(risk_analysis, "Risk Management Agent")
+        AgentReasoningLogger.log_reasoning(risk_analysis, "Risk Management Agent")
 
     # Add the signal to the analyst_signals list
     state["data"]["analyst_signals"]["risk_management_agent"] = risk_analysis

@@ -2,11 +2,10 @@ import json
 import argparse
 from time import perf_counter
 from dotenv import load_dotenv
-from typing import Dict, Any
 
+from agents.state import WorkflowManager
 from config.config_manager import ConfigManager
-from core.logger import logger
-from core.factory import WorkflowFactory
+from util.logger import DeepFundLogger
 from langchain_core.messages import HumanMessage
 
 # Load environment variables from .env file
@@ -15,8 +14,6 @@ load_dotenv()
 def main():
     """Main entry point for the deep fund CLI."""
 
-    logger.info("Initializing DeepFund")
-
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
     parser.add_argument(
@@ -24,11 +21,28 @@ def main():
     )
     args = parser.parse_args()
     
-    # Load configuration and Run
+    # Load configuration
     config_manager = ConfigManager(args.config)
-    tickers = config_manager.config['trading']['tickers']
+    # set logger
+    logger = DeepFundLogger(
+        log_dir=config_manager.config['log']['log_dir'],
+        log_level=config_manager.config['log']['log_level'],
+        file_prefix=config_manager.config['log']['file_prefix']
+    )
+    logger.info("Initializing DeepFund")
+    
+     # Create workflow
+    logger.info("Creating workflow")
+    workflow = WorkflowManager.create_workflow(config_manager.config['analysts'])
+    agent = workflow.compile()
+    logger.info("Workflow compiled successfully")
+
+    start_date = config_manager.config['trading']['start_date']
+    end_date = config_manager.config['trading']['end_date']
+    logger.info(f"Date range: {start_date} to {end_date}")
 
     # Initialize portfolio
+    tickers = config_manager.config['trading']['tickers']
     init_portfolio = {
         "cash": config_manager.config['portfolio']['initial_cash'],
         "margin_requirement": config_manager.config['portfolio']['margin_requirement'],
@@ -48,19 +62,8 @@ def main():
             }
         }
         
-     # Create workflow
-    logger.info("Creating workflow")
-    workflow = WorkflowFactory.create_workflow(config_manager.config['analysts'])
-    agent = workflow.compile()
-    logger.info("Workflow compiled successfully")
-
-
-    start_date = config_manager.config['trading']['start_date']
-    end_date = config_manager.config['trading']['end_date']
-    logger.info(f"Date range: {start_date} to {end_date}")
     
     start_time = perf_counter()
-        
     try:
         logger.info("Invoking agent workflow")
         final_state = agent.invoke(
@@ -89,9 +92,6 @@ def main():
     except Exception as e:
         logger.error(f"Error running deep fund: {str(e)}")
         raise
-
-    # Parse the response
-    logger.info(f"Trading run completed for tickers: {', '.join(tickers)}")
 
     # Log the trading decisions
     decisions = json.loads(final_state["messages"][-1].content)

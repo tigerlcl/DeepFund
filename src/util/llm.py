@@ -3,7 +3,7 @@
 import json
 from typing import TypeVar, Type, Optional, Any, Dict
 from pydantic import BaseModel
-from core.logger import logger
+from util.logger import logger
 
 T = TypeVar('T', bound=BaseModel)
 

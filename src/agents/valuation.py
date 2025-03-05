@@ -1,6 +1,5 @@
 from langchain_core.messages import HumanMessage
-from core.logger import logger
-from core.state import AgentState, show_agent_reasoning
+from agents.state import AgentState, AgentReasoningLogger
 from tools.api import get_financial_metrics, get_market_cap, search_line_items
 import json
 
@@ -126,7 +125,7 @@ def valuation_agent(state: AgentState):
 
     # Print the reasoning if the flag is set
     if state["metadata"]["show_reasoning"]:
-        show_agent_reasoning(valuation_analysis, "Valuation Analysis Agent")
+        AgentReasoningLogger.log_reasoning(valuation_analysis, "Valuation Analysis Agent")
 
     # Add the signal to the analyst_signals list
     state["data"]["analyst_signals"]["valuation_agent"] = valuation_analysis

@@ -1,6 +1,5 @@
 from langchain_core.messages import HumanMessage
-from core.logger import logger
-from core.state import AgentState, show_agent_reasoning
+from agents.state import AgentState, AgentReasoningLogger
 from tools.api import get_financial_metrics
 import json
 
@@ -147,7 +146,7 @@ def fundamentals_agent(state: AgentState):
 
     # Print the reasoning if the flag is set
     if state["metadata"]["show_reasoning"]:
-        show_agent_reasoning(fundamental_analysis, "Fundamental Analysis Agent")
+        AgentReasoningLogger.log_reasoning(fundamental_analysis, "Fundamental Analysis Agent")
 
     # Add the signal to the analyst_signals list
     state["data"]["analyst_signals"]["fundamentals_agent"] = fundamental_analysis
