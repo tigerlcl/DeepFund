@@ -3,10 +3,9 @@ import argparse
 from time import perf_counter
 from dotenv import load_dotenv
 
-from agents.state import WorkflowManager
-from config.config_manager import ConfigManager
+from agents.workflow import AgentWorkflow
+from util.config import ConfigManager
 from util.logger import DeepFundLogger
-from langchain_core.messages import HumanMessage
 
 # Load environment variables from .env file
 load_dotenv()
@@ -22,30 +21,29 @@ def main():
     args = parser.parse_args()
     
     # Load configuration
-    config_manager = ConfigManager(args.config)
+    cfg = ConfigManager(args.config)
     # set logger
     logger = DeepFundLogger(
-        log_dir=config_manager.config['log']['log_dir'],
-        log_level=config_manager.config['log']['log_level'],
-        file_prefix=config_manager.config['log']['file_prefix']
+        log_dir = cfg.config['log']['log_dir'],
+        log_level   = cfg.config['log']['log_level'],
+        file_prefix = cfg.config['log']['file_prefix']
     )
     logger.info("Initializing DeepFund")
     
      # Create workflow
-    logger.info("Creating workflow")
-    workflow = WorkflowManager.create_workflow(config_manager.config['analysts'])
+    workflow = AgentWorkflow(cfg)
     agent = workflow.compile()
-    logger.info("Workflow compiled successfully")
+    
 
-    start_date = config_manager.config['trading']['start_date']
-    end_date = config_manager.config['trading']['end_date']
+    start_date =    cfg.config['trading']['start_date']
+    end_date =  cfg.config['trading']['end_date']
     logger.info(f"Date range: {start_date} to {end_date}")
 
     # Initialize portfolio
-    tickers = config_manager.config['trading']['tickers']
+    tickers =   cfg.config['trading']['tickers']
     init_portfolio = {
-        "cash": config_manager.config['portfolio']['initial_cash'],
-        "margin_requirement": config_manager.config['portfolio']['margin_requirement'],
+        "cash": cfg.config['portfolio']['initial_cash'],
+        "margin_requirement":   cfg.config['portfolio']['margin_requirement'],
         "positions": {
                 ticker: {
                     "long": 0,
@@ -81,8 +79,8 @@ def main():
                     "analyst_signals": {},
                 },
                 "metadata": {
-                    "model_name": config_manager.config['llm']['model'],
-                    "model_provider": config_manager.config['llm']['provider'],
+                    "model_name":   cfg.config['llm']['model'],
+                    "model_provider":   cfg.config['llm']['provider'],
                 },
             },
         )
