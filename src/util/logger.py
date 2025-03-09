@@ -8,17 +8,15 @@ from typing import Dict, Optional, Any
 class DeepFundLogger:
     """Logger for the Deep Fund application."""
 
-    def __init__(self, log_dir: str, log_level: str, file_prefix: str):
+    def __init__(self, log_dict: Dict[str, Any]):
         """Initialize the logger.
         
         Args:
-            log_dir: Directory to store log files.
-            log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-            file_prefix: Prefix for log files.
+            log_dict: Dictionary containing log configuration.
         """
-        self.log_dir = log_dir
-        self.log_level = self._get_log_level(log_level)
-        self.file_prefix = file_prefix
+        self.log_dir = log_dict['log_dir']
+        self.log_level = self._get_log_level(log_dict['log_level'])
+        self.file_prefix = log_dict['file_prefix']
         
         # Create log directory if it doesn't exist
         os.makedirs(self.log_dir, exist_ok=True)

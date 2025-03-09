@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage
-from agents.workflow import AgentState
-from agents.logging import AgentReasoningLogger
+from flow.workflow import AgentState
+from agent.logging import AgentReasoningLogger
 from util.logger import logger
 from tools.api import get_insider_trades, get_company_news
 import pandas as pd

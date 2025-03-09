@@ -3,8 +3,8 @@ from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from util.logger import logger
 
-from agents.workflow import AgentState
-from agents.logging import AgentReasoningLogger
+from flow.workflow import AgentState
+from agent.logging import AgentReasoningLogger
 from pydantic import BaseModel, Field, create_model
 from typing_extensions import Literal
 from typing import Dict, Optional, List
@@ -25,7 +25,7 @@ class PortfolioManagerOutput(BaseModel):
 
 
 ##### Portfolio Management Agent #####
-def portfolio_management_agent(state: AgentState):
+def portfolio_agent(state: AgentState):
     """Makes final trading decisions and generates orders for multiple tickers"""
 
     # Get the portfolio and analyst signals

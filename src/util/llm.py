@@ -32,7 +32,7 @@ def call_llm(
         An instance of the specified Pydantic model
     """
     # Import here to avoid circular imports
-    from llm.models import get_model
+    from util.models import get_model
     
     # Get model configuration
     model_config = {

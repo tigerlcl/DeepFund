@@ -115,7 +115,7 @@ def get_model(config: Dict[str, Any]) -> BaseChatModel:
         A chat model instance
     """
     provider = config.get("provider", "OpenAI")
-    model_name = config.get("model", "gpt-4o")
+    model_name = config.get("model", "gpt-4o-mini")
     
     if provider == ModelProvider.GROQ.value:
         api_key = os.getenv("GROQ_API_KEY")

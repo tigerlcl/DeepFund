@@ -1,11 +1,6 @@
 # Deep Fund Configuration
-
-# Portfolio settings
-portfolio:
-  initial_cash: 100000.0
-  margin_requirement: 0.0
-
 # Trading settings
+cashflow: 100000.0
 trading:
   start_date: "2025-01-01"  # Optional, defaults to 3 months before end_date
   end_date: "2025-03-01"    # Optional, defaults to today
@@ -13,15 +8,15 @@ trading:
 
 # Analyst settings (specify which analysts to use)
 analysts:
-  # - technical_analyst
-  - fundamentals_analyst
-  # - sentiment_analyst
-  # - valuation_analyst
+  - technical
+  - fundamental
+  # - sentiment
+  # - valuation
 
 # LLM model settings
 llm:
-  provider: "Custom"  # OpenAI, Groq, Anthropic, Ollama, Custom
-  model: "gpt-4o-mini"
+  provider: "Ollama"  # OpenAI, Groq, Anthropic, Ollama, Custom
+  model: "deepseek-r1:latest"
   # Custom API endpoint settings (used when provider is "Custom")
   custom_endpoint:
     url: "https://vip.yi-zhan.top/v1"

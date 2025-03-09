@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage
 
-from agents.workflow import AgentState
-from agents.logging import AgentReasoningLogger
+from flow.workflow import AgentState
+from agent.logging import AgentReasoningLogger
 from util.logger import logger
 from tools.api import get_financial_metrics, get_market_cap, search_line_items
 import json

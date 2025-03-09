@@ -2,8 +2,8 @@ import math
 
 from langchain_core.messages import HumanMessage
 
-from agents.workflow import AgentState
-from agents.logging import AgentReasoningLogger
+from flow.workflow import AgentState
+from agent.logging import AgentReasoningLogger
 
 import json
 import pandas as pd
@@ -14,7 +14,7 @@ from util.logger import logger
 
 
 ##### Technical Analyst #####
-def technical_analyst_agent(state: AgentState):
+def technical_agent(state: AgentState):
     """
     Sophisticated technical analysis system that combines multiple trading strategies for multiple tickers:
     1. Trend Following

@@ -3,9 +3,8 @@ import argparse
 from time import perf_counter
 from dotenv import load_dotenv
 
-from agents.workflow import AgentWorkflow
-from util.config import ConfigManager
-from util.logger import DeepFundLogger
+from flow.workflow import AgentWorkflow
+from util import ConfigManager, DeepFundLogger
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,26 +15,24 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
     parser.add_argument(
-        "--config", type=str, help="Path to configuration file"
+        "--config", type=str, 
+        default="../config/default_config.yaml",
+        help="Path to configuration file"
     )
     args = parser.parse_args()
     
     # Load configuration
     cfg = ConfigManager(args.config)
     # set logger
-    logger = DeepFundLogger(
-        log_dir = cfg.config['log']['log_dir'],
-        log_level   = cfg.config['log']['log_level'],
-        file_prefix = cfg.config['log']['file_prefix']
-    )
+    logger = DeepFundLogger(log_dict=cfg.config['log'])
     logger.info("Initializing DeepFund")
     
-     # Create workflow
+    # Create workflow
     workflow = AgentWorkflow(cfg)
     agent = workflow.compile()
     
 
-    start_date =    cfg.config['trading']['start_date']
+    start_date =  cfg.config['trading']['start_date']
     end_date =  cfg.config['trading']['end_date']
     logger.info(f"Date range: {start_date} to {end_date}")
 
@@ -66,11 +63,6 @@ def main():
         logger.info("Invoking agent workflow")
         final_state = agent.invoke(
             {
-                "messages": [
-                    HumanMessage(
-                        content="Make trading decisions based on the provided data.",
-                    )
-                ],
                 "data": {
                     "tickers": tickers,
                     "portfolio": init_portfolio,

@@ -1,14 +1,14 @@
 from langchain_core.messages import HumanMessage
 
-from agents.workflow import AgentState
-from agents.logging import AgentReasoningLogger
+from flow.workflow import AgentState
+from agent.logging import AgentReasoningLogger
 from util.logger import logger
 from tools.api import get_financial_metrics
 import json
 
 
 ##### Fundamental Agent #####
-def fundamentals_agent(state: AgentState):
+def fundamental_agent(state: AgentState):
     """Analyzes fundamental data and generates trading signals for multiple tickers."""
     data = state["data"]
     end_date = data["end_date"]
