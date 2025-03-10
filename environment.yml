@@ -22,4 +22,5 @@ dependencies:
     - questionary
     - rich
     - python-dateutil
+    - IPython
     - typing-extensions 

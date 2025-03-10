@@ -4,22 +4,27 @@ import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from typing import Dict, List, Any, Optional
-from util.logger import logger
 
 
 class ConfigManager:
     """Manages configuration loading and validation."""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_file: Optional[str] = None):
         """Initialize the configuration manager.
         
         Args:
-            config_path: Path to the configuration file. If None, uses default.
+            config_file: Name of the configuration file.
         """
-        self.config_path = config_path or os.path.join(
+
+        self.config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "config",
-            "default_config.yaml"
+            config_file
+        )
+        self.ticker_scope_json =  os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "config",
+            "tickers.json"
         )
 
         self.config = self._load_config()
@@ -28,35 +33,38 @@ class ConfigManager:
 
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML file."""
-        with open(self.config_path, 'r') as f:
-            return yaml.safe_load(f)
+        try:
+            with open(self.config_path, 'r') as f:
+                return yaml.safe_load(f)
+        except FileNotFoundError:
+            raise ValueError(f"Configuration file not found: {self.config_path}")
+        except yaml.YAMLError as e:
+            raise ValueError(f"Error parsing configuration file: {e}")
             
     def _load_ticker_scopes(self) -> Dict[str, List[str]]:
         """Load ticker scopes from tailor-made JSON file."""
         try:
-            with open('tickers.json', 'r') as f:
+            with open(self.ticker_scope_json, 'r') as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            logger.error(f"Error loading ticker scopes: {e}")
-            return {"default": []}
+            raise ValueError(f"Error loading ticker scopes: {e}")
 
     def _validate_and_normalize_config(self) -> None:
         """Validate and normalize configuration values."""
         # Set default dates if not provided
-        if not self.config.get('trading', {}).get('end_date'):
-            self.config.setdefault('trading', {})['end_date'] = datetime.now().strftime("%Y-%m-%d")
+        if not self.config['trading']['end_date']:
+            self.config['trading']['end_date'] = datetime.now().strftime("%Y-%m-%d")
         
-        if not self.config.get('trading', {}).get('start_date'):
+        if not self.config['trading']['start_date']:
             end_date_obj = datetime.strptime(self.config['trading']['end_date'], "%Y-%m-%d")
             self.config['trading']['start_date'] = (
                 end_date_obj - relativedelta(months=3)
             ).strftime("%Y-%m-%d")
         
         # Load tickers from the specified scope
-        ticker_scope = self.config.get('trading', {}).get('ticker_scope', 'default')
+        ticker_scope = self.config['trading']['ticker_scope']
         if ticker_scope in self.ticker_scopes:
-            self.config.setdefault('trading', {})['tickers'] = self.ticker_scopes[ticker_scope]
+            self.config['trading']['tickers'] = self.ticker_scopes.get(ticker_scope)
         else:
-            # If scope not found, use default or empty list
-            self.config.setdefault('trading', {})['tickers'] = self.ticker_scopes.get('default', [])
-            logger.warning(f"Warning: Ticker scope '{ticker_scope}' not found, using default scope")
+            # If scope not found, use test list
+            self.config['trading']['tickers'] = self.ticker_scopes.get('test')

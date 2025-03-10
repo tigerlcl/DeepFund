@@ -4,6 +4,7 @@ from time import perf_counter
 from dotenv import load_dotenv
 
 from flow.workflow import AgentWorkflow
+from flow.schema import FundState
 from util import ConfigManager, DeepFundLogger
 
 # Load environment variables from .env file
@@ -15,68 +16,41 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
     parser.add_argument(
-        "--config", type=str, 
-        default="../config/default_config.yaml",
-        help="Path to configuration file"
+        "--config-file", type=str, 
+        default="default_config.yaml",
+        help="Name of configuration file"
     )
     args = parser.parse_args()
     
     # Load configuration
-    cfg = ConfigManager(args.config)
+    cfg = ConfigManager(args.config_file)
     # set logger
     logger = DeepFundLogger(log_dict=cfg.config['log'])
     logger.info("Initializing DeepFund")
+
+
+    # load portfolio
+    with open(cfg.config['trading']['portfolio_path'], 'r') as f:
+        portfolio = json.load(f)
+
+    start_time = perf_counter()
     
     # Create workflow
     workflow = AgentWorkflow(cfg)
-    agent = workflow.compile()
+    agent_app = workflow.build()
     
-
-    start_date =  cfg.config['trading']['start_date']
-    end_date =  cfg.config['trading']['end_date']
-    logger.info(f"Date range: {start_date} to {end_date}")
-
-    # Initialize portfolio
-    tickers =   cfg.config['trading']['tickers']
-    init_portfolio = {
-        "cash": cfg.config['portfolio']['initial_cash'],
-        "margin_requirement":   cfg.config['portfolio']['margin_requirement'],
-        "positions": {
-                ticker: {
-                    "long": 0,
-                    "short": 0,
-                    "long_cost_basis": 0.0,
-                    "short_cost_basis": 0.0,
-                } for ticker in tickers
-            },
-            "realized_gains": {
-                ticker: {
-                    "long": 0.0,
-                    "short": 0.0,
-                } for ticker in tickers
-            }
-        }
-        
+    # Initialize FundState
+    init_state = FundState(
+        balance = portfolio['balance'],
+        positions = portfolio['positions'],
+        start_date =  cfg.config['trading']['start_date'],
+        end_date =  cfg.config['trading']['end_date'],
+        tickers = cfg.config['trading']['tickers'],
+    )
     
-    start_time = perf_counter()
     try:
         logger.info("Invoking agent workflow")
-        final_state = agent.invoke(
-            {
-                "data": {
-                    "tickers": tickers,
-                    "portfolio": init_portfolio,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "analyst_signals": {},
-                },
-                "metadata": {
-                    "model_name":   cfg.config['llm']['model'],
-                    "model_provider":   cfg.config['llm']['provider'],
-                },
-            },
-        )
-        
+        final_state = agent_app.invoke(init_state)
         logger.info("Agent workflow completed successfully")
 
     except Exception as e:
@@ -84,7 +58,7 @@ def main():
         raise
 
     # Log the trading decisions
-    decisions = json.loads(final_state["messages"][-1].content)
+    decisions = final_state["decisions"]
     for ticker, decision in decisions.items():
         logger.info(f"Decision for {ticker}: {decision.get('action')} {decision.get('quantity')} shares (Confidence: {decision.get('confidence'):.1f}%)")
 

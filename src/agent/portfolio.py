@@ -7,10 +7,7 @@ from flow.workflow import AgentState
 from agent.logging import AgentReasoningLogger
 from pydantic import BaseModel, Field, create_model
 from typing_extensions import Literal
-from typing import Dict, Optional, List
 from llm import call_llm
-from tools.api import get_prices, prices_to_df
-import pandas as pd
 
 
 class PortfolioDecision(BaseModel):

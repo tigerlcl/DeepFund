@@ -1,17 +1,20 @@
 # Deep Fund Configuration
+
 # Trading settings
-cashflow: 100000.0
 trading:
+  portfolio_path: "../data/portfolio.json"
   start_date: "2025-01-01"  # Optional, defaults to 3 months before end_date
   end_date: "2025-03-01"    # Optional, defaults to today
   ticker_scope: "test"   # References a scope in tickers.json
 
-# Analyst settings (specify which analysts to use)
-analysts:
-  - technical
-  - fundamental
-  # - sentiment
-  # - valuation
+# Workflow settings
+workflow:
+  image_path: "../../image/workflow.png"
+  analysts:
+    - technical
+    - fundamental
+    # - sentiment
+    # - valuation
 
 # LLM model settings
 llm:
@@ -29,3 +32,4 @@ log:
   log_dir: "logs"
   log_level: "INFO"
   file_prefix: "deep_fund"
+
