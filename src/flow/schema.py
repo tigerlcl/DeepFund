@@ -59,15 +59,14 @@ class FundState(BaseModel):
 
     # from workflow
     analyst_in_the_loop: Optional[List[str]] = Field(
-        default=None,
+        default=[],
         description="List of analyst agents to analyze the ticker."
     )
     ticker: Optional[str] = Field(
-        default=None,
+        default="",
         description="Current ticker."
     )
-    # manager aggregated from analyst signals per ticker
     decisions: Optional[List[Dict[str, Decision]]] = Field(
-        default=None,
-        description="decisions for the portfolio in current workflow."
+        default=[],
+        description="decisions from all analyst agents."
     )

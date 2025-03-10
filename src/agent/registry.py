@@ -2,8 +2,8 @@ from typing import Dict, Callable, Union, List
 
 from .technical import technical_agent
 from .fundamental import fundamental_agent
-from .sentiment import sentiment_agent
-from .valuation import valuation_agent
+# from .sentiment import sentiment_agent
+# from .valuation import valuation_agent
 from .portfolio import portfolio_agent
 
 # Agent Key Identifiers
@@ -45,7 +45,7 @@ class AgentRegistry:
         return key in cls.ANALYST_KEYS
 
     @classmethod
-    def register_agent(cls, key: str, node_name: str, display_name: str, agent_func: Callable) -> None:
+    def register_agent(cls, key: str, display_name: str, agent_func: Callable) -> None:
         """
         Register a new agent.
         
@@ -76,17 +76,17 @@ class AgentRegistry:
             agent_func=fundamental_agent
             )
 
-        cls.register_agent(
-            key=AgentKey.SENTIMENT,
-            display_name="Sentiment Analyst",
-            agent_func=sentiment_agent
-        )
+        # cls.register_agent(
+        #     key=AgentKey.SENTIMENT,
+        #     display_name="Sentiment Analyst",
+        #     agent_func=sentiment_agent
+        # )
         
-        cls.register_agent(
-            key=AgentKey.VALUATION,
-            display_name="Valuation Analyst",
-            agent_func=valuation_agent
-        )
+        # cls.register_agent(
+        #     key=AgentKey.VALUATION,
+        #     display_name="Valuation Analyst",
+        #     agent_func=valuation_agent
+        # )
         
         cls.register_agent(
             key=AgentKey.TECHNICAL,

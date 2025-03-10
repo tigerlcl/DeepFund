@@ -1,7 +1,7 @@
 from IPython.display import Image, display
 from langgraph.graph import StateGraph, START, END
 from util.logger import logger
-from util.models import get_model
+# from util.models import get_model
 
 from flow.schema import FundState
 from agent.registry import AgentRegistry, AgentKey
@@ -13,14 +13,16 @@ class AgentWorkflow:
     def __init__(self, config):
 
         self.config = config
-        self.llm = get_model(self.config['llm'])
-        
-        # self.memory = None
+        # self.llm = get_model(self.config['llm'])
+    
 
     def build(self, state: FundState) -> StateGraph:
         """Build the workflow"""
         
         logger.info("Building workflow")
+
+        # Add LLM config to state
+        state["llm_config"] = self.config['llm']
 
         # Create the workflow
         workflow = StateGraph(state)

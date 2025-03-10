@@ -8,15 +8,14 @@ from typing import Dict, Optional, Any
 class DeepFundLogger:
     """Logger for the Deep Fund application."""
 
-    def __init__(self, log_dict: Dict[str, Any]):
+    def __init__(self):
         """Initialize the logger.
         
         Args:
             log_dict: Dictionary containing log configuration.
         """
-        self.log_dir = log_dict['log_dir']
-        self.log_level = self._get_log_level(log_dict['log_level'])
-        self.file_prefix = log_dict['file_prefix']
+        self.log_dir = 'logs'
+        self.log_level = 'INFO'
         
         # Create log directory if it doesn't exist
         os.makedirs(self.log_dir, exist_ok=True)
@@ -25,13 +24,10 @@ class DeepFundLogger:
         self.logger = logging.getLogger("deep_fund")
         self.logger.setLevel(self.log_level)
         
-        # Remove existing handlers if any
-        if self.logger.handlers:
-            self.logger.handlers.clear()
         
         # Create file handler
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_file = os.path.join(self.log_dir, f"{self.file_prefix}_{timestamp}.log")
+        log_file = os.path.join(self.log_dir, f"deepfund_{timestamp}.log")
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(self.log_level)
         
@@ -47,20 +43,7 @@ class DeepFundLogger:
         # Add handlers to logger
         self.logger.addHandler(file_handler)
         self.logger.addHandler(console_handler)
-        
-        # Store agent status
-        self.agent_status: Dict[str, Dict[str, str]] = {}
 
-    def _get_log_level(self, level_str: str) -> int:
-        """Convert string log level to logging level."""
-        levels = {
-            "DEBUG": logging.DEBUG,
-            "INFO": logging.INFO,
-            "WARNING": logging.WARNING,
-            "ERROR": logging.ERROR,
-            "CRITICAL": logging.CRITICAL
-        }
-        return levels.get(level_str.upper(), logging.INFO)
 
     def debug(self, message: str):
         """Log a debug message."""
@@ -82,24 +65,11 @@ class DeepFundLogger:
         """Log a critical message."""
         self.logger.critical(message)
 
-    def update_agent_status(self, agent_name: str, ticker: Optional[str] = None, status: str = ""):
-        """Update the status of an agent and log it."""
-        if agent_name not in self.agent_status:
-            self.agent_status[agent_name] = {"status": "", "ticker": None}
+    def log_agent_status(self, agent_name: str, ticker: str, status: str):
+        """Log the status of an agent."""
+        msg = f"Agent: {agent_name} | Ticker: {ticker} | Status: {status}"
 
-        if ticker:
-            self.agent_status[agent_name]["ticker"] = ticker
-        if status:
-            self.agent_status[agent_name]["status"] = status
-
-        # Log the status update
-        log_message = f"Agent: {agent_name}"
-        if ticker:
-            log_message += f" | Ticker: {ticker}"
-        if status:
-            log_message += f" | Status: {status}"
-        
-        self.info(log_message)
+        self.info(msg)
 
     def log_reasoning(self, output: Any, agent_name: str) -> None:
             """
@@ -139,3 +109,6 @@ class DeepFundLogger:
             return {key: self._convert_to_serializable(value) for key, value in obj.items()}
         else:
             return str(obj)  # Fallback to string representation 
+        
+# Create a global logger instance
+logger = DeepFundLogger() 

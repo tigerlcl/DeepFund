@@ -11,7 +11,7 @@ trading:
 workflow:
   image_path: "../../image/workflow.png"
   analysts:
-    - technical
+    # - technical
     - fundamental
     # - sentiment
     # - valuation
@@ -26,10 +26,4 @@ llm:
     api_key_env_var: "YI_ZHAN_API_KEY"
     headers:
       Content-Type: "application/json"
-
-# Logging settings
-log:
-  log_dir: "logs"
-  log_level: "INFO"
-  file_prefix: "deep_fund"
 

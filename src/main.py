@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 from flow.workflow import AgentWorkflow
 from flow.schema import FundState
-from util import ConfigManager, DeepFundLogger
-
+from util.config import ConfigManager
+from util.logger import logger
 # Load environment variables from .env file
 load_dotenv()
 
@@ -22,12 +22,10 @@ def main():
     )
     args = parser.parse_args()
     
+    logger.info("Initializing DeepFund")
+    
     # Load configuration
     cfg = ConfigManager(args.config_file)
-    # set logger
-    logger = DeepFundLogger(log_dict=cfg.config['log'])
-    logger.info("Initializing DeepFund")
-
 
     # load portfolio
     with open(cfg.config['trading']['portfolio_path'], 'r') as f:

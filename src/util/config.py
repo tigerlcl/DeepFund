@@ -23,7 +23,7 @@ class ConfigManager:
         )
         self.ticker_scope_json =  os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config",
+            "data",
             "tickers.json"
         )
 
