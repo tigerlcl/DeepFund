@@ -1,12 +1,12 @@
 from typing import Dict, Callable, Union, List
 
-from .technical import technical_agent
-from .fundamental import fundamental_agent
+# from .technical import technical_agent
 # from .sentiment import sentiment_agent
 # from .valuation import valuation_agent
 
+from .fundamental import fundamental_agent
+from .risk import risk_agent
 from .portfolio import portfolio_agent
-from .risk import risk_management_agent
 
 # Agent Key Identifiers
 class AgentKey:
@@ -14,8 +14,8 @@ class AgentKey:
     FUNDAMENTAL = "fundamental"
     SENTIMENT = "sentiment"
     VALUATION = "valuation"
-    PORTFOLIO = "portfolio"
     RISK = "risk"
+    PORTFOLIO = "portfolio"
 
 
 class AgentRegistry:
@@ -30,11 +30,6 @@ class AgentRegistry:
         AgentKey.FUNDAMENTAL, 
         AgentKey.SENTIMENT, 
         AgentKey.VALUATION,
-    ]
-
-    # Manager KEYs
-    MANAGER_KEYS = [
-        AgentKey.PORTFOLIO,
         AgentKey.RISK,
     ]
 
@@ -86,8 +81,8 @@ class AgentRegistry:
 
         cls.register_agent(
             key=AgentKey.RISK,
-            display_name="Risk Management Agent",
-            agent_func=risk_management_agent
+            display_name="Ticker Risk Agent",
+            agent_func=risk_agent
         )
 
         cls.register_agent(
@@ -107,10 +102,10 @@ class AgentRegistry:
         #     display_name="Valuation Analyst",
         #     agent_func=valuation_agent
         # )
-        
-        cls.register_agent(
-            key=AgentKey.TECHNICAL,
-            display_name="Technical Analyst",
-            agent_func=technical_agent
-        )
+        #         
+        # cls.register_agent(
+        #     key=AgentKey.TECHNICAL,
+        #     display_name="Technical Analyst",
+        #     agent_func=technical_agent
+        # )
         

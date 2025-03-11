@@ -1,27 +1,19 @@
-import os
 import yaml
 import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 
 class ConfigManager:
     """Manages configuration loading and validation."""
 
-    def __init__(self, config_file: Optional[str] = None):
+    def __init__(self, config_file: str):
         """Initialize the configuration manager."""
-        self.config_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config/trading",
-            config_file
-        )
-        self.ticker_scope_json =  os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config/param",
-            "tickers.json"
-        )
-        self.portfolio_path = os.path.join("data", "init_portfolio.json")
+        self.config_path = f"../config/{config_file}"
+        self.ticker_scope_json =  "../config/tickers.json"
+        self.portfolio_path = "portfolio/init.json"
+
         self.config = self._load_config()
         self.ticker_scopes = self._load_ticker_scopes()
         self._validate_and_normalize_config()

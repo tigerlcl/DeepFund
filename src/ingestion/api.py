@@ -2,8 +2,9 @@ import os
 import pandas as pd
 import requests
 
-from ingestion.cache import get_cache
-from tools.api_model import (
+from util.logger import logger
+from cache import get_cache
+from api_model import (
     CompanyNews,
     CompanyNewsResponse,
     FinancialMetrics,
@@ -278,5 +279,10 @@ def prices_to_df(prices: list[Price]) -> pd.DataFrame:
 
 # Update the get_price_data function to use the new functions
 def get_price_data(ticker: str, start_date: str, end_date: str) -> pd.DataFrame:
-    prices = get_prices(ticker, start_date, end_date)
-    return prices_to_df(prices)
+    try:
+        prices = get_prices(ticker, start_date, end_date)
+        return prices_to_df(prices)
+    except Exception as e:
+        logger.error(f"Failed to fetch price data for {ticker}: {e}")
+        return None
+

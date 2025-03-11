@@ -10,9 +10,9 @@ class AgentWorkflow:
     """Trading Decision Workflow."""
 
     def __init__(self, config):
-        self.llm_config = config['llm']
         self.workflow_config = config['workflow']
         self.selected_analysts = self._verify_analysts(self.workflow_config['analysts'])
+        self.tickers = config['trading']['tickers'] # to control the iteration
 
     def build(self, state: FundState) -> StateGraph:
         """Build the workflow"""
@@ -22,10 +22,9 @@ class AgentWorkflow:
         # Create the workflow
         workflow = StateGraph(state)
         
-        # create node for manager
-        for manager_key in AgentRegistry.get_all_manager_keys():
-            agent_cfg = AgentRegistry.get_agent_by_key(manager_key)
-            workflow.add_node(manager_key, agent_cfg["agent_func"])
+        # create node for portfolio manager
+        agent_cfg = AgentRegistry.get_agent_by_key(AgentKey.PORTFOLIO)
+        workflow.add_node(AgentKey.PORTFOLIO, agent_cfg["agent_func"])
 
         # create functional nodes
         workflow.add_node("ticker_iterator", self.ticker_iterator)
@@ -44,12 +43,10 @@ class AgentWorkflow:
             # create node for each analyst
             agent_cfg = AgentRegistry.get_agent_by_key(analyst)
             workflow.add_node(analyst, agent_cfg["agent_func"])
-            
-            workflow.add_edge("analyst_selector", analyst)
-            workflow.add_edge(analyst, AgentKey.RISK) # analyst signals to risk manager   
+
+            # link analyst to portfolio manager
+            workflow.add_edge(analyst, AgentKey.PORTFOLIO)
         
-        # risk manager to portfolio manager
-        workflow.add_edge(AgentKey.RISK, AgentKey.PORTFOLIO)
 
         # Add a loop back to ticker_iterator after portfolio manager
         workflow.add_edge(AgentKey.PORTFOLIO, "ticker_iterator")
@@ -66,15 +63,15 @@ class AgentWorkflow:
         
         return agent 
     
-    def ticker_iterator(self, state: FundState):
+    def ticker_iterator(self):
         """Iterate over the tickers. Return will update the FundState."""
 
-        current_ticker = state.tickers.pop(0)
+        current_ticker = self.tickers.pop(0)
         return {"ticker": current_ticker}
         
         
-    def should_continue(self, state: FundState) -> bool:
-        return len(state.tickers) > 0    
+    def should_continue(self) -> bool:
+        return len(self.tickers) > 0    
 
     def _verify_analysts(self, analysts: Optional[List[str]] = None) -> List[str]:
         """Verify the analysts are valid."""

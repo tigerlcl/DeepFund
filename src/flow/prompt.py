@@ -7,5 +7,18 @@ The following signals have been generated from our analysis:
 - Financial Health: {analysis[financial_health]}
 - Price Ratios: {analysis[price_ratios]}
 
-Based on this analysis, determine whether to Buy, Sell, or Hold the stock. Your response should be well-reasoned and consider all aspects of the analysis.
+Based on this analysis, determine action with your confidence score and justification. Your response should be well-reasoned and consider all aspects of the analysis.
+"""
+
+RISK_PROMPT = """
+You are a financial analyst evaluating {ticker} based on risk analysis.
+
+The following signals have been generated from our analysis:
+- Risk Signal: {analysis[risk_signal]}
+- Latest Price: {analysis[latest_price]}
+- Estimated Position Value: {analysis[estimated_position_value]}
+- Portfolio Value: {analysis[portfolio_value]}
+- Available Cash: {analysis[available_cash]}
+
+Based on this analysis, determine action with your confidence score and justification. Your response should be well-reasoned and consider all aspects of the analysis.
 """

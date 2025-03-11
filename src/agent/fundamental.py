@@ -1,21 +1,35 @@
-import os
-import json
 from typing import Dict, Any
 from flow.schema import FundState, Signal
 from flow.prompt import FUNDAMENTAL_PROMPT
 from ingestion.api import get_financial_metrics
 from util.logger import logger
 from util.agent import make_decision
+from agent.registry import AgentKey
 
 
-def load_thresholds() -> Dict[str, Any] | None:
-    """Load threshold values from external configuration file."""
-    config_path = "data/fundamental_thresholds.json"
-    if not os.path.exists(config_path):
-        return None
-    
-    with open(config_path, "r") as f:
-        return json.load(f)
+# Fundamental Thresholds
+thresholds = {
+    "profitability": {
+        "return_on_equity": 0.15,
+        "net_margin": 0.20,
+        "operating_margin": 0.15
+    },
+    "growth": {
+        "revenue_growth": 0.10,
+        "earnings_growth": 0.10,
+        "book_value_growth": 0.10
+    },
+    "financial_health": {
+        "current_ratio": 1.5,
+        "debt_to_equity": 0.5,
+        "fcf_to_eps_ratio": 0.8
+    },
+    "price_ratios": {
+        "pe_ratio": 25,
+        "pb_ratio": 3,
+        "ps_ratio": 5
+    }
+}
 
 def _analyze_profitability(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
     """Analyze company profitability metrics."""
@@ -72,7 +86,7 @@ def fundamental_agent(state: FundState):
         - Fundamental Thresholds
         - FUNDAMENTAL_PROMPT
     """
-    agent_name = "fundamentals_agent"
+    agent_name = AgentKey.FUNDAMENTAL
     end_date = state["end_date"]
     ticker = state["ticker"]
     llm_config = state["llm_config"]
@@ -88,17 +102,13 @@ def fundamental_agent(state: FundState):
 
     if not financial_metrics:
         logger.error(f"Failed to fetch financial metrics for {ticker}")
-        return {"decisions": state.get("decisions", [])}
+        return state
 
     # Pull the most recent metrics and thresholds
     metrics = financial_metrics[0]
-    thresholds = load_thresholds()
-    if not thresholds:
-        logger.error(f"Failed to load fundamental thresholds")
-        return {"decisions": state.get("decisions", [])}
     
     # Run analysis
-    analysis_results = {
+    signal_results = {
         "profitability": _analyze_profitability(metrics, thresholds["profitability"]),
         "growth": _analyze_growth(metrics, thresholds["growth"]),
         "financial_health": _analyze_financial_health(metrics, thresholds["financial_health"]),
@@ -106,11 +116,11 @@ def fundamental_agent(state: FundState):
     }
     
     # Make prompt
-    context = {
-        "ticker": ticker,
-        "analysis": analysis_results,
-    }
-    prompt = FUNDAMENTAL_PROMPT.format(**context)
+
+    prompt = FUNDAMENTAL_PROMPT.format(
+        ticker=ticker,
+        analysis=signal_results,
+    )
     
     # Get LLM decision
     decision = make_decision(
@@ -119,9 +129,5 @@ def fundamental_agent(state: FundState):
         agent_name=agent_name, 
         ticker=ticker)
     
-    # Update state
-    state["agent_decisions"].update({agent_name: decision})
-    
     logger.log_agent_status(agent_name, ticker, "Done")
-    
-    return {"agent_decisions": state["agent_decisions"]}
+    return {"agent_decisions": decision}

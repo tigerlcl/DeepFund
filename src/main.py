@@ -1,8 +1,8 @@
-import json
 import argparse
 from time import perf_counter
 from dotenv import load_dotenv
 
+from agent.registry import AgentKey
 from flow.workflow import AgentWorkflow
 from flow.schema import FundState
 from util.config import ConfigManager
@@ -45,23 +45,18 @@ def main():
     
     try:
         logger.info("Invoking agent workflow")
-        final_state = agent_app.invoke(init_state)
+        final_fund_state = agent_app.invoke(init_state)
         logger.info("Agent workflow completed successfully")
 
     except Exception as e:
         logger.error(f"Error running deep fund: {str(e)}")
         raise
 
-    # Log the trading decisions
-    decisions = final_state["decisions"]
-    for ticker, decision in decisions.items():
-        logger.info(f"Decision for {ticker}: {decision.get('action')} {decision.get('quantity')} shares (Confidence: {decision.get('confidence'):.1f}%)")
 
-    
-    # TODO: log analyst signals
-    analyst_signals = final_state["data"]["analyst_signals"]
-    # for ticker, signal in analyst_signals.items():
-    #     logger.info(f"Analyst signal for {ticker}: {signal}")
+    # log porfolio agent decisions
+    for d in final_fund_state["agent_decisions"]:
+        if d.agent_name == AgentKey.PORTFOLIO:
+            logger.info(f"Decision for {d.ticker}: {d.action} | {d.confidence:.1f}%\nReason: {d.justification}")
 
 
     # Log execution time

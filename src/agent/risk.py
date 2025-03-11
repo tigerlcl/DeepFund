@@ -1,80 +1,76 @@
-from langchain_core.messages import HumanMessage
-from flow.schema import FundState
+from agent.registry import AgentKey
+from flow.schema import FundState, Signal
+from flow.prompt import RISK_PROMPT
 from util.logger import logger
-from tools.api import get_prices, prices_to_df
-import json
+from util.agent import make_decision
+from ingestion.api import get_price_data
+from typing import Dict, Any
 
+# Risk Thresholds
+thresholds = {
+    "position_factor_lt": 0.15,
+    "position_factor_gt": 0.25, 
+}
 
-##### Risk Management Agent #####
-def risk_management_agent(state: FundState):
-    """Controls position sizing based on real-world risk factors for multiple tickers."""
-    portfolio = state["data"]["portfolio"]
-    data = state["data"]
-    tickers = data["tickers"]
+def _risk_analysis(portfolio, prices_df, ticker) -> Dict[str, Any]:
+    #  Calculate portfolio value
+    latest_price = prices_df["close"].iloc[-1]
 
-    # Initialize risk analysis for each ticker
-    risk_analysis = {}
-    current_prices = {}  # Store prices here to avoid redundant API calls
+    # Calculate current position value for this ticker
+    estimated_position_value = portfolio["positions"][ticker].shares * latest_price
 
-    for ticker in tickers:
-        logger.update_agent_status("risk_management_agent", ticker, "Analyzing price data")
+    # Calculate total portfolio value using stored prices
+    total_portfolio_value = portfolio["cashflow"]+ sum(portfolio["positions"][t].value for t in portfolio["positions"])
 
-        prices = get_prices(
-            ticker=ticker,
-            start_date=data["start_date"],
-            end_date=data["end_date"],
-        )
+    position_factor = estimated_position_value / total_portfolio_value
+    if position_factor < thresholds["position_factor_lt"]:
+        position_factor = Signal.BULLISH
+    elif position_factor > thresholds["position_factor_gt"]:
+        position_factor = Signal.BEARISH
+    else:
+        position_factor = Signal.NEUTRAL
 
-        if not prices:
-            logger.error(f"Failed to fetch price data for {ticker}")
-            continue
+    ticker_risk = {
+        "risk_signal": position_factor,
+        "latest_price": float(latest_price),
+        "estimated_position_value": float(estimated_position_value),
+        "portfolio_value": float(total_portfolio_value),
+        "available_cash": float(portfolio["cashflow"]),
+    }
 
-        prices_df = prices_to_df(prices)
+    return ticker_risk
 
-        logger.update_agent_status("risk_management_agent", ticker, "Calculating position limits")
+##### Ticker Risk Agent #####
+def risk_agent(state: FundState):
+    """Analyzes risk factors for the target ticker based on the portfolio."""
+    agent_name = AgentKey.RISK
+    portfolio = state["portfolio"]
+    end_date = state["end_date"]
+    ticker = state["ticker"]
+    llm_config = state["llm_config"]
 
-        # Calculate portfolio value
-        current_price = prices_df["close"].iloc[-1]
-        current_prices[ticker] = current_price  # Store the current price
+    logger.log_agent_status(agent_name, ticker, "Analyzing price data")
 
-        # Calculate current position value for this ticker
-        current_position_value = portfolio.get("cost_basis", {}).get(ticker, 0)
-
-        # Calculate total portfolio value using stored prices
-        total_portfolio_value = portfolio.get("cash", 0) + sum(portfolio.get("cost_basis", {}).get(t, 0) for t in portfolio.get("cost_basis", {}))
-
-        # Base limit is 20% of portfolio for any single position
-        position_limit = total_portfolio_value * 0.20
-
-        # For existing positions, subtract current position value from limit
-        remaining_position_limit = position_limit - current_position_value
-
-        # Ensure we don't exceed available cash
-        max_position_size = min(remaining_position_limit, portfolio.get("cash", 0))
-
-        risk_analysis[ticker] = {
-            "remaining_position_limit": float(max_position_size),
-            "current_price": float(current_price),
-            "reasoning": {
-                "portfolio_value": float(total_portfolio_value),
-                "current_position": float(current_position_value),
-                "position_limit": float(position_limit),
-                "remaining_limit": float(remaining_position_limit),
-                "available_cash": float(portfolio.get("cash", 0)),
-            },
-        }
-
-        logger.update_agent_status("risk_management_agent", ticker, "Done")
-
-    message = HumanMessage(
-        content=json.dumps(risk_analysis),
-        name="risk_management_agent",
+    prices_df = get_price_data(
+        ticker=ticker,
+        end_date=end_date,
     )
 
-    # Add the signal to the analyst_signals list
-    state["data"]["analyst_signals"]["risk_management_agent"] = risk_analysis
+    if not prices_df:
+        return state
 
-    return {
-        "messages": state["messages"] + [message],
-        "data": data,
-    }
+    ticker_risk = _risk_analysis(portfolio, prices_df, ticker)
+
+    prompt = RISK_PROMPT.format(
+        ticker=ticker,
+        analysis=ticker_risk,
+    )
+    # Get LLM decision
+    decision = make_decision(
+        prompt=prompt, 
+        llm_config=llm_config, 
+        agent_name=agent_name, 
+        ticker=ticker)
+
+    logger.log_agent_status(agent_name, ticker, "Done")
+    return {"agent_decisions": decision}

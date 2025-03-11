@@ -36,10 +36,12 @@ def make_decision(
             # Log the attempt
             logger.log_agent_status(agent_name, ticker, f"Calling LLM (attempt {attempt + 1}/{max_retries})")
             result = llm.invoke(prompt)
-            return result
+
+            return Decision(agent_name=agent_name, ticker=ticker, action=result.action, confidence=result.confidence, justification=result.justification)
+        
         except Exception as e:
             logger.log_agent_status(agent_name, ticker, f"Error - retry {attempt + 1}/{max_retries}")
             if attempt == max_retries - 1:
                 logger.error(f"Error in LLM call after {max_retries} attempts: {e}")
                 # Use model's default values when error occurs
-                return Decision(ticker=ticker)
+                return Decision(agent_name=agent_name, ticker=ticker)

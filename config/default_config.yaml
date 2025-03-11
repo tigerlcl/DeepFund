@@ -12,8 +12,9 @@ trading:
 workflow:
   image_path: "../image/workflow.png" # relative to main.py
   analysts:
-    # - technical
     - fundamental
+    - risk
+    # - technical
     # - sentiment
     # - valuation
 

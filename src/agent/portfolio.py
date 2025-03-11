@@ -1,23 +1,22 @@
 import json
 from flow.workflow import FundState
 from util.logger import logger
-from util.llm_model import call_llm
+from util.llm_model import make_decision
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-
-
-
+from agent.registry import AgentKey 
 
 ##### Portfolio Management Agent #####
 def portfolio_agent(state: FundState):
-    """Makes final trading decisions and generates orders for multiple tickers"""
+    """Makes final trading decisions and generates orders"""
 
-    # Get the portfolio and analyst signals
-    portfolio = state["data"]["portfolio"]
-    analyst_signals = state["data"]["analyst_signals"]
-    tickers = state["data"]["tickers"]
+    agent_name = AgentKey.PORTFOLIO
+    portfolio = state["portfolio"]
+    analyst_signals = state["agent_decisions"]
+    ticker = state["ticker"]
+    llm_config = state["llm_config"]
 
-    logger.update_agent_status("portfolio_management_agent", None, "Analyzing signals")
+    logger.log_agent_status("portfolio_management_agent", None, "Analyzing signals")
 
     # Get position limits, current prices, and signals for every ticker
     position_limits = {}
@@ -179,4 +178,4 @@ def generate_trading_decision(
     def create_default_portfolio_output():
         return PortfolioManagerOutput(decisions={ticker: PortfolioDecision(action="hold", quantity=0, confidence=0.0, reasoning="Error in portfolio management, defaulting to hold") for ticker in tickers})
 
-    return call_llm(prompt=prompt, model_name=model_name, model_provider=model_provider, pydantic_model=PortfolioManagerOutput, agent_name="portfolio_management_agent", default_factory=create_default_portfolio_output)
+    return make_decision(prompt=prompt, llm_config=llm_config, agent_name=agent_name, ticker=ticker)

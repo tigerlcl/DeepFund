@@ -1,7 +1,8 @@
-from typing import  List, Dict, Optional, Any
-from pydantic import BaseModel, Field
+from typing import  List, Dict, Any, Annotated
+from typing_extensions import TypedDict
+from pydantic import BaseModel, Field, Literal
 from enum import Enum
-
+import operator
 
 class Signal(str, Enum):
     """Signal type"""
@@ -17,8 +18,9 @@ class Action(str, Enum):
 
 class Decision(BaseModel):
     """Decision Structured Output from agent"""
+    agent_name: str
     ticker: str
-    action: Action = Field( 
+    action: Literal[Action.BUY, Action.SELL, Action.HOLD] = Field( 
         description="Choose from Buy, Sell, or Hold",
         default=Action.HOLD
     )
@@ -34,32 +36,25 @@ class Decision(BaseModel):
     )
 
 class Position(BaseModel):
-    cash: float = Field(
+    value: float = Field(
         default=0.0,
-        description="Cash for the position."
+        description="Monetary value for the position."
     )
     shares: int = Field(
         default=0,
         description="Shares for the position."
     )
-    ticker: str = Field(
-        default="",
-        description="Ticker for the position."
-    )
 
 class Portfolio(BaseModel):
     """Portfolio state when running the workflow."""
-    balance: float = Field(
-        description="Balance for the fund."
+    cashflow: float = Field(
+        description="Cashflow for the fund."
     )
     positions: dict[str, Position] = Field(
-        description="Positions for the fund."
-    )
-    trading_datetime: str = Field(
-        description="Trading datetime for the fund."
+        description="Positions for each ticker."
     )
 
-class FundState(BaseModel):
+class FundState(TypedDict):
     """Fund state when running the workflow."""
 
     # from environment
@@ -80,12 +75,6 @@ class FundState(BaseModel):
     )
 
     # from workflow
-    ticker: Optional[str] = Field(
-        default="",
-        description="Current ticker."
-    )
-    # agent_name -> decision
-    agent_decisions: Optional[Dict[str, Decision]] = Field(
-        default={},
-        description="decisions from all agents."
-    )
+    ticker: str
+    # ticker:->decision of all analyst agents
+    agent_decisions: Annotated[Decision, operator.add]
