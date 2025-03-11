@@ -1,7 +1,6 @@
 from IPython.display import Image, display
 from langgraph.graph import StateGraph, START, END
 from util.logger import logger
-# from util.models import get_model
 
 from flow.schema import FundState
 from agent.registry import AgentRegistry, AgentKey
@@ -11,10 +10,8 @@ class AgentWorkflow:
     """Trading Decision Workflow."""
 
     def __init__(self, config):
-
         self.config = config
-        # self.llm = get_model(self.config['llm'])
-    
+        self.selected_analysts = self._analyst_selector()
 
     def build(self, state: FundState) -> StateGraph:
         """Build the workflow"""
@@ -27,13 +24,14 @@ class AgentWorkflow:
         # Create the workflow
         workflow = StateGraph(state)
         
-        # create nodes for agents (including analyst and manager)
-        for node_key, node_value in AgentRegistry.AGENT_CONFIG.items():
-            workflow.add_node(node_key, node_value["agent_func"])
+        # create node for manager
+        for manager_key in AgentRegistry.get_all_manager_keys():
+            agent_cfg = AgentRegistry.get_agent_by_key(manager_key)
+            workflow.add_node(manager_key, agent_cfg["agent_func"])
 
         # create functional nodes
         workflow.add_node("ticker_iterator", self.ticker_iterator)
-        workflow.add_node("analyst_router", self.analyst_router)
+        workflow.add_node("analyst_selector") # no action
 
         # Add edges to connect nodes (Logically critical)
         workflow.add_edge(START, "ticker_iterator")
@@ -41,20 +39,22 @@ class AgentWorkflow:
         workflow.add_conditional_edges(
             "ticker_iterator",
             self.should_continue,
-            {"yes": "analyst_router", "no": END} # LangGraph auto-converts boolean to yes/no
+            {"yes": "analyst_selector", "no": END} # LangGraph auto-converts boolean to yes/no
         )
 
         # Route to selected analysts based on analyst_router output
-        workflow.add_conditional_edges(
-            "analyst_router",
-            lambda x: {"selected": x.analyst_in_the_loop},
-            {analyst_key: analyst_key for analyst_key in AgentRegistry.get_all_analyst_keys()}
-        )
-
-        # bind analyst to manager
-        for analyst_key in AgentRegistry.get_all_analyst_keys():
-            workflow.add_edge(analyst_key, AgentKey.PORTFOLIO)
+        for analyst in self.selected_analysts:
+            # create node for each analyst
+            agent_cfg = AgentRegistry.get_agent_by_key(analyst)
+            workflow.add_node(analyst, agent_cfg["agent_func"])
+            
+            workflow.add_edge("analyst_selector", analyst)
+            workflow.add_edge(analyst, AgentKey.RISK) # analyst signals to risk manager   
         
+        # risk manager to portfolio manager
+        workflow.add_edge(AgentKey.RISK, AgentKey.PORTFOLIO)
+        
+        # portfolio manager to end
         workflow.add_edge(AgentKey.PORTFOLIO, END)
 
         # compile the workflow
@@ -80,7 +80,7 @@ class AgentWorkflow:
         return len(state.tickers) > 0    
     
 
-    def analyst_router(self):
+    def _analyst_selector(self):
         """Choose analyst agents to analyze the ticker. Return will update the FundState."""
 
         # If analysts are pre-configured
@@ -97,4 +97,4 @@ class AgentWorkflow:
         if selected_analysts is None:
             selected_analysts = AgentRegistry.get_all_analyst_keys()
 
-        return {"analyst_in_the_loop": selected_analysts}
+        self.selected_analysts = selected_analysts

@@ -1,28 +1,15 @@
 import json
+from flow.workflow import FundState
+from util.logger import logger
+from util.llm_model import call_llm
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from util.logger import logger
-
-from flow.workflow import AgentState
-from agent.logging import AgentReasoningLogger
-from pydantic import BaseModel, Field, create_model
-from typing_extensions import Literal
-from llm import call_llm
 
 
-class PortfolioDecision(BaseModel):
-    action: Literal["buy", "sell", "short", "cover", "hold"]
-    quantity: int = Field(description="Number of shares to trade")
-    confidence: float = Field(description="Confidence in the decision, between 0.0 and 100.0")
-    reasoning: str = Field(description="Reasoning for the decision")
-
-
-class PortfolioManagerOutput(BaseModel):
-    decisions: dict[str, PortfolioDecision] = Field(description="Dictionary of ticker to trading decisions")
 
 
 ##### Portfolio Management Agent #####
-def portfolio_agent(state: AgentState):
+def portfolio_agent(state: FundState):
     """Makes final trading decisions and generates orders for multiple tickers"""
 
     # Get the portfolio and analyst signals

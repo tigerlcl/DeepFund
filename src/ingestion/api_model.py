@@ -113,23 +113,3 @@ class CompanyNews(BaseModel):
 class CompanyNewsResponse(BaseModel):
     news: list[CompanyNews]
 
-
-
-
-
-# class TickerAnalysis(BaseModel):
-#     ticker: str
-#     analyst_signals: dict[str, AnalystSignal]  # agent_name -> signal mapping
-
-
-# class AgentStateData(BaseModel):
-#     tickers: list[str]
-#     portfolio: Portfolio
-#     start_date: str
-#     end_date: str
-#     ticker_analyses: dict[str, TickerAnalysis]  # ticker -> analysis mapping
-
-
-# class AgentStateMetadata(BaseModel):
-#     show_reasoning: bool = False
-#     model_config = {"extra": "allow"}

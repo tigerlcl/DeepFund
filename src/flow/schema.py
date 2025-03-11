@@ -1,25 +1,37 @@
-from typing import  List, Dict, Any, Optional
+from typing import  List, Dict, Optional
 from pydantic import BaseModel, Field
+from enum import Enum
+
+
+class Signal(str, Enum):
+    """Signal type"""
+    BULLISH = "bullish"
+    BEARISH = "bearish"
+    NEUTRAL = "neutral"
+
+class Action(str, Enum):
+    """Action type"""
+    BUY = "buy"
+    SELL = "sell"
+    HOLD = "hold"
 
 class Decision(BaseModel):
     """Decision Structured Output from agent"""
 
-    name: str = Field(
-        description="Name for the agent",
-    )
-    action: str = Field( 
+    action: Action = Field( 
         description="Choose from Buy, Sell, or Hold",
-        enum=["Buy", "Sell", "Hold"]
+        default=Action.HOLD
     )
     confidence: float = Field(
         description="Confidence score between 0 and 1",
         ge=0.0,
-        le=1.0
+        le=1.0,
+        default=0.0
     )
     justification: str = Field(
-        description="Brief explanation for the decision"
+        description="Brief explanation for the decision",
+        default="No decision made due to error"
     )
-
 
 class Position(BaseModel):
     cash: float = Field(
@@ -35,17 +47,24 @@ class Position(BaseModel):
         description="Ticker for the position."
     )
 
+class Portfolio(BaseModel):
+    """Portfolio state when running the workflow."""
+    balance: float = Field(
+        description="Balance for the fund."
+    )
+    positions: dict[str, Position] = Field(
+        description="Positions for the fund."
+    )
+    trading_datetime: str = Field(
+        description="Trading datetime for the fund."
+    )
 
 class FundState(BaseModel):
     """Fund state when running the workflow."""
 
     # from environment
-    balance: float = Field(
-        default=100000.0,
-        description="Balance for the fund."
-    )
-    positions: dict[str, Position] = Field(
-        description="Positions for the fund."
+    portfolio: Portfolio = Field(
+        description="Portfolio for the fund."
     )
     start_date: str = Field(
         description="Start date for the information window."
@@ -58,15 +77,12 @@ class FundState(BaseModel):
     )
 
     # from workflow
-    analyst_in_the_loop: Optional[List[str]] = Field(
-        default=[],
-        description="List of analyst agents to analyze the ticker."
-    )
     ticker: Optional[str] = Field(
         default="",
         description="Current ticker."
     )
-    decisions: Optional[List[Dict[str, Decision]]] = Field(
-        default=[],
-        description="decisions from all analyst agents."
+    # agent_name -> decision
+    agent_decisions: Optional[Dict[str, Decision]] = Field(
+        default={},
+        description="decisions from all agents."
     )

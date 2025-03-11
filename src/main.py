@@ -7,6 +7,7 @@ from flow.workflow import AgentWorkflow
 from flow.schema import FundState
 from util.config import ConfigManager
 from util.logger import logger
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -27,10 +28,6 @@ def main():
     # Load configuration
     cfg = ConfigManager(args.config_file)
 
-    # load portfolio
-    with open(cfg.config['trading']['portfolio_path'], 'r') as f:
-        portfolio = json.load(f)
-
     start_time = perf_counter()
     
     # Create workflow
@@ -39,8 +36,7 @@ def main():
     
     # Initialize FundState
     init_state = FundState(
-        balance = portfolio['balance'],
-        positions = portfolio['positions'],
+        portfolio=portfolio,
         start_date =  cfg.config['trading']['start_date'],
         end_date =  cfg.config['trading']['end_date'],
         tickers = cfg.config['trading']['tickers'],

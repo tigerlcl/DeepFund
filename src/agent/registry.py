@@ -4,7 +4,9 @@ from .technical import technical_agent
 from .fundamental import fundamental_agent
 # from .sentiment import sentiment_agent
 # from .valuation import valuation_agent
+
 from .portfolio import portfolio_agent
+from .risk import risk_management_agent
 
 # Agent Key Identifiers
 class AgentKey:
@@ -13,6 +15,7 @@ class AgentKey:
     SENTIMENT = "sentiment"
     VALUATION = "valuation"
     PORTFOLIO = "portfolio"
+    RISK = "risk"
 
 
 class AgentRegistry:
@@ -29,6 +32,12 @@ class AgentRegistry:
         AgentKey.VALUATION,
     ]
 
+    # Manager KEYs
+    MANAGER_KEYS = [
+        AgentKey.PORTFOLIO,
+        AgentKey.RISK,
+    ]
+
     @classmethod
     def get_agent_by_key(cls, key: str) -> Dict[str, Union[str, str, Callable]]:
         """Get agent configuration by key."""
@@ -38,6 +47,11 @@ class AgentRegistry:
     def get_all_analyst_keys(cls) -> List[str]:
         """Get all analyst keys."""
         return cls.ANALYST_KEYS
+    
+    @classmethod
+    def get_all_manager_keys(cls) -> List[str]:
+        """Get all manager keys."""
+        return cls.MANAGER_KEYS
     
     @classmethod
     def check_agent_key(cls, key: str) -> bool:
@@ -68,6 +82,12 @@ class AgentRegistry:
             display_name="Portfolio Manager",
 
             agent_func=portfolio_agent
+        )
+
+        cls.register_agent(
+            key=AgentKey.RISK,
+            display_name="Risk Management Agent",
+            agent_func=risk_management_agent
         )
 
         cls.register_agent(

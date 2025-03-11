@@ -1,14 +1,12 @@
 import os
 import json
-from typing import Dict, Any, Literal
-from flow.schema import FundState, Decision
-from util.logger import logger
-from util.models import get_model
-from tools.api import get_financial_metrics
+from typing import Dict, Any
+from flow.schema import FundState, Signal
+from ingestion.api import get_financial_metrics
 from prompt.fundamental import FUNDAMENTAL_PROMPT
+from util.logger import logger
+from util.agent import make_decision
 
-# Define signal type
-Signal = Literal["bullish", "bearish", "neutral"]
 
 def load_thresholds() -> Dict[str, Any] | None:
     """Load threshold values from external configuration file."""
@@ -28,7 +26,7 @@ def _analyze_profitability(metrics: Dict[str, Any], thresholds: Dict[str, float]
             (metrics.get("operating_margin", 0), thresholds["operating_margin"])
         ] if metric is not None
     )
-    return "bullish" if score >= 2 else "bearish" if score == 0 else "neutral"
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
 def _analyze_growth(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
     """Analyze company growth metrics."""
@@ -39,7 +37,7 @@ def _analyze_growth(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Si
             (metrics.get("book_value_growth", 0), thresholds["book_value_growth"])
         ] if metric is not None
     )
-    return "bullish" if score >= 2 else "bearish" if score == 0 else "neutral"
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
 def _analyze_financial_health(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
     """Analyze company financial health metrics."""
@@ -51,7 +49,7 @@ def _analyze_financial_health(metrics: Dict[str, Any], thresholds: Dict[str, flo
     if (metrics.get("free_cash_flow_per_share") and metrics.get("earnings_per_share") and 
         metrics["free_cash_flow_per_share"] > metrics["earnings_per_share"] * thresholds["fcf_to_eps_ratio"]):
         score += 1
-    return "bullish" if score >= 2 else "bearish" if score == 0 else "neutral"
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
 def _analyze_price_ratios(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
     """Analyze company price ratio metrics."""
@@ -62,11 +60,18 @@ def _analyze_price_ratios(metrics: Dict[str, Any], thresholds: Dict[str, float])
             (metrics.get("price_to_sales_ratio", float('inf')), thresholds["ps_ratio"])
         ] if metric is not None
     )
-    return "bullish" if score >= 2 else "bearish" if score == 0 else "neutral"
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
 ##### Fundamental Agent #####
 def fundamental_agent(state: FundState):
-    """Analyzes fundamental data and generates trading signals using an LLM."""
+    """
+    Analyzes fundamental data and generates trading signals using an LLM.
+    
+    Dependencies:
+        - get_financial_metrics
+        - Fundamental Thresholds
+        - FUNDAMENTAL_PROMPT
+    """
     agent_name = "fundamentals_agent"
     end_date = state["end_date"]
     ticker = state["ticker"]
@@ -100,27 +105,25 @@ def fundamental_agent(state: FundState):
         "price_ratios": _analyze_price_ratios(metrics, thresholds["price_ratios"])
     }
     
-    # Initialize LLM
-    llm = get_model(llm_config)
-    structured_llm = llm.with_structured_output(Decision)
-    
-    # Prepare context for LLM
+    # Make prompt
     context = {
         "ticker": ticker,
         "metrics": metrics,
         "analysis": analysis_results,
         "agent_name": agent_name
     }
+    prompt = FUNDAMENTAL_PROMPT.format(**context)
     
     # Get LLM decision
-    try:
-        decision = structured_llm.invoke(FUNDAMENTAL_PROMPT.format(**context))
-    except Exception as e:
-        logger.error(f"fundamental agent failed: {e}")
+    decision = make_decision(
+        prompt=prompt, 
+        llm_config=llm_config, 
+        agent_name=agent_name, 
+        ticker=ticker)
     
     # Update state
-    state["decisions"].append(decision)
+    state["agent_decisions"].update({agent_name: decision})
     
-    logger.update_agent_status(agent_name, ticker, "Done")
+    logger.log_agent_status(agent_name, ticker, "Done")
     
-    return {"decisions": state["decisions"]}
+    return {"agent_decisions": state["agent_decisions"]}

@@ -2,8 +2,8 @@ import os
 import pandas as pd
 import requests
 
-from data.cache import get_cache
-from data.models import (
+from ingestion.cache import get_cache
+from tools.api_model import (
     CompanyNews,
     CompanyNewsResponse,
     FinancialMetrics,

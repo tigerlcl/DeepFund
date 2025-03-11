@@ -10,26 +10,22 @@ class ConfigManager:
     """Manages configuration loading and validation."""
 
     def __init__(self, config_file: Optional[str] = None):
-        """Initialize the configuration manager.
-        
-        Args:
-            config_file: Name of the configuration file.
-        """
-
+        """Initialize the configuration manager."""
         self.config_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config",
+            "config/trading",
             config_file
         )
         self.ticker_scope_json =  os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "data",
+            "config/param",
             "tickers.json"
         )
-
+        self.portfolio_path = os.path.join("data", "init_portfolio.json")
         self.config = self._load_config()
         self.ticker_scopes = self._load_ticker_scopes()
         self._validate_and_normalize_config()
+        self.init_portfolio = self._load_portfolio()
 
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML file."""
@@ -68,3 +64,14 @@ class ConfigManager:
         else:
             # If scope not found, use test list
             self.config['trading']['tickers'] = self.ticker_scopes.get('test')
+
+
+    def load_portfolio(self):
+        """Load portfolio from JSON file."""
+        try:
+            with open(self.portfolio_path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            raise ValueError(f"Portfolio file not found: {self.portfolio_path}")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error parsing portfolio file: {e}")

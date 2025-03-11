@@ -1,15 +1,16 @@
 # Deep Fund Configuration
 
+
 # Trading settings
 trading:
-  portfolio_path: "../data/portfolio.json"
   start_date: "2025-01-01"  # Optional, defaults to 3 months before end_date
   end_date: "2025-03-01"    # Optional, defaults to today
   ticker_scope: "test"   # References a scope in tickers.json
+  portfolio_dir: "portfolio" # relative to main.py
 
 # Workflow settings
 workflow:
-  image_path: "../../image/workflow.png"
+  image_path: "../image/workflow.png" # relative to main.py
   analysts:
     # - technical
     - fundamental
@@ -18,12 +19,6 @@ workflow:
 
 # LLM model settings
 llm:
-  provider: "Ollama"  # OpenAI, Groq, Anthropic, Ollama, Custom
+  provider: "Ollama"  # OpenAI, Groq, Anthropic, Deepseek, Ollama
   model: "deepseek-r1:latest"
-  # Custom API endpoint settings (used when provider is "Custom")
-  custom_endpoint:
-    url: "https://vip.yi-zhan.top/v1"
-    api_key_env_var: "YI_ZHAN_API_KEY"
-    headers:
-      Content-Type: "application/json"
 
