@@ -60,6 +60,7 @@ def get_model(config: Dict[str, Any]) -> BaseChatModel:
     """Get a model instance based on configuration."""
     provider = ModelProvider(config.get("provider", ModelProvider.OPENAI))
     model_name = config.get("model", "gpt-4o-mini")
+    temperature = config.get("temperature", 0.5)
     model_config = provider.config
 
     if model_config.requires_api_key:
@@ -71,7 +72,8 @@ def get_model(config: Dict[str, Any]) -> BaseChatModel:
     kwargs = {
         "model": model_name,
         **({"api_key": api_key} if model_config.requires_api_key else {}),
-        **({"base_url": model_config.base_url} if model_config.base_url else {})
+        **({"base_url": model_config.base_url} if model_config.base_url else {}),
+        **({"temperature": temperature} if temperature else {})
     }
     
     try:

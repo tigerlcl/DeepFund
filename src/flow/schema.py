@@ -1,4 +1,4 @@
-from typing import  List, Dict, Optional
+from typing import  List, Dict, Optional, Any
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -17,7 +17,7 @@ class Action(str, Enum):
 
 class Decision(BaseModel):
     """Decision Structured Output from agent"""
-
+    ticker: str
     action: Action = Field( 
         description="Choose from Buy, Sell, or Hold",
         default=Action.HOLD
@@ -74,6 +74,9 @@ class FundState(BaseModel):
     )
     tickers: List[str] = Field(
         description="List of tickers to analyze"
+    )
+    llm_config: Dict[str, Any] = Field(
+        description="LLM configuration."
     )
 
     # from workflow

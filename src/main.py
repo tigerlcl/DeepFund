@@ -36,10 +36,11 @@ def main():
     
     # Initialize FundState
     init_state = FundState(
-        portfolio=portfolio,
+        portfolio=cfg.init_portfolio,
         start_date =  cfg.config['trading']['start_date'],
         end_date =  cfg.config['trading']['end_date'],
         tickers = cfg.config['trading']['tickers'],
+        llm_config = cfg.config['llm'],
     )
     
     try:

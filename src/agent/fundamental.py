@@ -2,8 +2,8 @@ import os
 import json
 from typing import Dict, Any
 from flow.schema import FundState, Signal
+from flow.prompt import FUNDAMENTAL_PROMPT
 from ingestion.api import get_financial_metrics
-from prompt.fundamental import FUNDAMENTAL_PROMPT
 from util.logger import logger
 from util.agent import make_decision
 
@@ -108,9 +108,7 @@ def fundamental_agent(state: FundState):
     # Make prompt
     context = {
         "ticker": ticker,
-        "metrics": metrics,
         "analysis": analysis_results,
-        "agent_name": agent_name
     }
     prompt = FUNDAMENTAL_PROMPT.format(**context)
     

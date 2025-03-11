@@ -21,4 +21,5 @@ workflow:
 llm:
   provider: "Ollama"  # OpenAI, Groq, Anthropic, Deepseek, Ollama
   model: "deepseek-r1:latest"
+  temperature: 0.5
 

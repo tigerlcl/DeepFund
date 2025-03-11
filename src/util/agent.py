@@ -42,4 +42,4 @@ def make_decision(
             if attempt == max_retries - 1:
                 logger.error(f"Error in LLM call after {max_retries} attempts: {e}")
                 # Use model's default values when error occurs
-                return Decision()
+                return Decision(ticker=ticker)
