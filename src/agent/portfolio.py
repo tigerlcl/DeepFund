@@ -13,10 +13,10 @@ def portfolio_agent(state: FundState):
     agent_name = AgentKey.PORTFOLIO
     portfolio = state["portfolio"]
     analyst_signals = state["agent_decisions"]
-    ticker = state["ticker"]
+    tickers = state["tickers"]
     llm_config = state["llm_config"]
 
-    logger.log_agent_status("portfolio_management_agent", None, "Analyzing signals")
+    logger.log_agent_status(agent_name, None, "Analyzing signals")
 
     # Get position limits, current prices, and signals for every ticker
     position_limits = {}
@@ -53,8 +53,7 @@ def portfolio_agent(state: FundState):
         current_prices=current_prices,
         max_shares=max_shares,
         portfolio=portfolio,
-        model_name=state["metadata"]["model_name"],
-        model_provider=state["metadata"]["model_provider"],
+        llm_config=llm_config,
     )
 
     # Create the portfolio management message

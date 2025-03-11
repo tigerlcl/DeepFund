@@ -12,7 +12,7 @@ class ConfigManager:
         """Initialize the configuration manager."""
         self.config_path = f"../config/{config_file}"
         self.ticker_scope_json =  "../config/tickers.json"
-        self.portfolio_path = "portfolio/init.json"
+        self.portfolio_path = "../portfolio/init.json"
 
         self.config = self._load_config()
         self.ticker_scopes = self._load_ticker_scopes()
@@ -58,7 +58,7 @@ class ConfigManager:
             self.config['trading']['tickers'] = self.ticker_scopes.get('test')
 
 
-    def load_portfolio(self):
+    def _load_portfolio(self):
         """Load portfolio from JSON file."""
         try:
             with open(self.portfolio_path, 'r') as f:

@@ -15,9 +15,9 @@ This project is for **educational and research purposes only, it does not actual
 ## Overview
 This environment covers 5 key services, which are Data Ingestion, Trading Simulator, Analytics, Live Arena and Storage.
 
-DONE: Trading Simulator
+DONE: Data Ingestion | Analytics | Trading Simulator
 
-TODO: Data Ingestion | Analytics | Live Arena | Storage
+TODO: Live Arena | Storage
 
 
 
@@ -47,60 +47,30 @@ Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is `free` and does not requ
 
 For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
 
-## Usage
 
-### Running the System
+## Running the System
 ```bash
-python src/main.py --ticker NVDA
+python src/main.py --config default_config.yaml
+# file default_config.yaml is in the config folder
 ```
 
-**Example Output:**
-<img width="992" alt="Screenshot 2025-01-06 at 5 50 17 PM" src="https://github.com/user-attachments/assets/e8ca04bf-9989-4a7d-a8b4-34e04666663b" />
+<!-- **Example Output:** -->
 
-You can also specify a `--show-reasoning` flag to print the reasoning of each agent to the console.
-
-```bash
-python src/main.py --ticker AAPL,MSFT,NVDA --show-reasoning
-```
-You can optionally specify the start and end dates to make decisions for a specific time period.
-
-```bash
-python src/main.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01 
-```
-
-### Running the Backtester
-
-```bash
-python src/backtester.py --ticker AAPL,MSFT,NVDA
-```
-
-**Example Output:**
-<img width="941" alt="Screenshot 2025-01-06 at 5 47 52 PM" src="https://github.com/user-attachments/assets/00e794ea-8628-44e6-9a84-8f8a31ad3b47" />
-
-You can optionally specify the start and end dates to backtest over a specific time period.
-
-```bash
-python src/backtester.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01
-```
 
 ## Project Structure 
 ```
 deepfund/
 ├── src/
-│   ├── agents/                   # Agent definitions and workflow
-│   │   ├── bill_ackman.py        # Bill Ackman agent
-│   │   ├── fundamentals.py       # Fundamental analysis agent
-│   │   ├── portfolio_manager.py  # Portfolio management agent
-│   │   ├── risk_manager.py       # Risk management agent
-│   │   ├── sentiment.py          # Sentiment analysis agent
-│   │   ├── technicals.py         # Technical analysis agent
-│   │   ├── valuation.py          # Valuation analysis agent
-│   │   ├── warren_buffett.py     # Warren Buffett agent
-│   ├── tools/                    # Agent tools
-│   │   ├── api.py                # API tools
-│   ├── backtester.py             # Backtesting tools
-│   ├── main.py # Main entry point
-├── environment.yml # For Conda
+│   ├── agents/                   # Agent build and registry
+│   ├── ingestion/                # Ingest external data
+│   ├── util/                     # Utility functions and helpers
+│   ├── flow/                     # Workflow, prompt and schema
+│   ├── main.py                   # Main entry point
+├── config/                       # Configuration files
+├── logs/                         # Log files
+├── portfolio/                    # Portfolio updates
+├── environment.yml               # For Conda
+├── README.md                     # Project documentation
 ├── ...
 ```
 
@@ -108,8 +78,7 @@ deepfund/
 ## Acknowledgements
 - [AI Hedge Fund](https://github.com/virattt/ai-hedge-fund)
 - [Financial Datasets](https://financialdatasets.ai/)
-- [LangChain](https://langchain.com/)
+- [LangGraph Tutorial](https://langchain-ai.github.io/langgraph/tutorials/workflows)
 
 ## License
-
 This project is licensed under the MIT License - see the LICENSE file for details.

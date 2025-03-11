@@ -64,7 +64,10 @@ class DeepFundLogger:
 
     def log_agent_status(self, agent_name: str, ticker: str, status: str):
         """Log the status of an agent."""
-        msg = f"Agent: {agent_name} | Ticker: {ticker} | Status: {status}"
+        if ticker:
+            msg = f"Agent: {agent_name} | Ticker: {ticker} | Status: {status}"
+        else:
+            msg = f"Agent: {agent_name} | Status: {status}"
 
         self.info(msg)
         

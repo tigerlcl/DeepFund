@@ -12,12 +12,12 @@ from util.logger import logger
 load_dotenv()
 
 def main():
-    """Main entry point for the deep fund CLI."""
+    """Main entry point for the DeepFund multi-agent system."""
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
     parser.add_argument(
-        "--config-file", type=str, 
+        "--config", type=str, 
         default="default_config.yaml",
         help="Name of configuration file"
     )
@@ -26,7 +26,7 @@ def main():
     logger.info("Initializing DeepFund")
     
     # Load configuration
-    cfg = ConfigManager(args.config_file)
+    cfg = ConfigManager(args.config)
 
     start_time = perf_counter()
     

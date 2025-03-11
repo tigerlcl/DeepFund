@@ -32,10 +32,14 @@ class AgentWorkflow:
         # Add edges to connect nodes (Logically critical)
         workflow.add_edge(START, "ticker_iterator")
         
+        # LangGraph auto-converts boolean to yes/no
         workflow.add_conditional_edges(
             "ticker_iterator",
             self.should_continue,
-            {"yes": "analyst_selector", "no": END} # LangGraph auto-converts boolean to yes/no
+            {
+                "yes": "analyst_selector", 
+                "no": AgentKey.PORTFOLIO
+            } 
         )
 
         # Route to selected analysts
@@ -48,8 +52,8 @@ class AgentWorkflow:
             workflow.add_edge(analyst, AgentKey.PORTFOLIO)
         
 
-        # Add a loop back to ticker_iterator after portfolio manager
-        workflow.add_edge(AgentKey.PORTFOLIO, "ticker_iterator")
+        # Route to portfolio manager
+        workflow.add_edge(AgentKey.PORTFOLIO, END)
 
         # compile the workflow
         agent = workflow.compile()

@@ -1,63 +1,27 @@
 import math
-import json
 import pandas as pd
 import numpy as np
 
-from tools.api import get_prices, prices_to_df
-from langchain_core.messages import HumanMessage
+from ingestion.api import get_prices, prices_to_df
 from flow.schema import FundState, Decision
 from util.logger import logger
+from agent.registry import AgentKey
+from flow.schema import FundState, Signal
+from flow.prompt import TECHNICAL_PROMPT
+from util.logger import logger
+from util.agent import make_decision
+from ingestion.api import get_prices, prices_to_df
+from typing import Dict, Any
 
-
-##### Technical Analyst #####
-def technical_agent(state: FundState):
-    """
-    Sophisticated technical analysis system that combines multiple trading strategies for multiple tickers:
-    1. Trend Following
-    2. Mean Reversion
-    3. Momentum
-    4. Volatility Analysis
-    5. Statistical Arbitrage Signals
-    """
-
-    start_date = state["start_date"]
-    end_date = state["end_date"]
-    ticker = state["ticker"]
-
-    # Initialize analysis for each ticker
-    technical_analysis = {}
-
-    logger.update_agent_status("technical_analyst_agent", ticker, "Analyzing price data")
-
-    # Get the historical price data
-    prices = get_prices(
-        ticker=ticker,
-        start_date=start_date,
-        end_date=end_date,
-    )
-
-    if not prices:
-        logger.update_agent_status("technical_analyst_agent", ticker, "Failed: No price data found")
-
-    # Convert prices to a DataFrame
-    prices_df = prices_to_df(prices)
-
-    logger.update_agent_status("technical_analyst_agent", ticker, "Calculating trend signals")
+def _analyze_technical(prices_df) -> Dict[str, Any]:
+    """Combine all technical analysis signals."""
     trend_signals = calculate_trend_signals(prices_df)
-
-    logger.update_agent_status("technical_analyst_agent", ticker, "Calculating mean reversion")
     mean_reversion_signals = calculate_mean_reversion_signals(prices_df)
-
-    logger.update_agent_status("technical_analyst_agent", ticker, "Calculating momentum")
     momentum_signals = calculate_momentum_signals(prices_df)
-
-    logger.update_agent_status("technical_analyst_agent", ticker, "Analyzing volatility")
     volatility_signals = calculate_volatility_signals(prices_df)
-
-    logger.update_agent_status("technical_analyst_agent", ticker, "Statistical analysis")
     stat_arb_signals = calculate_stat_arb_signals(prices_df)
 
-    # Combine all signals using a weighted ensemble approach
+    # Keep your existing weighted combination logic
     strategy_weights = {
         "trend": 0.25,
         "mean_reversion": 0.20,
@@ -66,68 +30,57 @@ def technical_agent(state: FundState):
         "stat_arb": 0.15,
     }
 
-    logger.update_agent_status("technical_analyst_agent", ticker, "Combining signals")
-    combined_signal = weighted_signal_combination(
-        {
-            "trend": trend_signals,
-            "mean_reversion": mean_reversion_signals,
-            "momentum": momentum_signals,
-            "volatility": volatility_signals,
-            "stat_arb": stat_arb_signals,
-        },
-        strategy_weights,
-    )
-
-    # Generate detailed analysis report for this ticker
-    technical_analysis[ticker] = {
-        "signal": combined_signal["signal"],
-        "confidence": round(combined_signal["confidence"] * 100),
-        "strategy_signals": {
-            "trend_following": {
-                "signal": trend_signals["signal"],
-                "confidence": round(trend_signals["confidence"] * 100),
-                "metrics": normalize_pandas(trend_signals["metrics"]),
-            },
-            "mean_reversion": {
-                "signal": mean_reversion_signals["signal"],
-                "confidence": round(mean_reversion_signals["confidence"] * 100),
-                "metrics": normalize_pandas(mean_reversion_signals["metrics"]),
-            },
-            "momentum": {
-                "signal": momentum_signals["signal"],
-                "confidence": round(momentum_signals["confidence"] * 100),
-                "metrics": normalize_pandas(momentum_signals["metrics"]),
-            },
-            "volatility": {
-                "signal": volatility_signals["signal"],
-                "confidence": round(volatility_signals["confidence"] * 100),
-                "metrics": normalize_pandas(volatility_signals["metrics"]),
-            },
-            "statistical_arbitrage": {
-                "signal": stat_arb_signals["signal"],
-                "confidence": round(stat_arb_signals["confidence"] * 100),
-                "metrics": normalize_pandas(stat_arb_signals["metrics"]),
-            },
-        },
-    }
-    logger.update_agent_status("technical_analyst_agent", ticker, "Done")
-
-    # Create the technical analyst message
-    message = HumanMessage(
-        content=json.dumps(technical_analysis),
-        name="technical_analyst_agent",
-    )
-
-    if state["metadata"]["show_reasoning"]:
-        AgentReasoningLogger.log_reasoning(technical_analysis, "Technical Analyst")
-
-    # Add the signal to the analyst_signals list
-    state["data"]["analyst_signals"]["technical_analyst_agent"] = technical_analysis
-
     return {
-        "messages": state["messages"] + [message],
-        "data": data,
+        "trend": trend_signals,
+        "mean_reversion": mean_reversion_signals,
+        "momentum": momentum_signals,
+        "volatility": volatility_signals,
+        "stat_arb": stat_arb_signals,
+        "weights": strategy_weights
     }
+
+def technical_agent(state: FundState):
+    """Analyzes technical indicators and generates trading signals."""
+    agent_name = AgentKey.TECHNICAL
+    start_date = state["start_date"]
+    end_date = state["end_date"]
+    ticker = state["ticker"]
+    llm_config = state["llm_config"]
+
+    logger.log_agent_status(agent_name, ticker, "Analyzing price data")
+
+    # Get the price data
+    prices = get_prices(
+        ticker=ticker,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    if not prices:
+        return state
+
+    # Convert to dataframe
+    prices_df = prices_to_df(prices)
+    
+    # Analyze technical indicators
+    technical_analysis = _analyze_technical(prices_df)
+
+    # Make prompt
+    prompt = TECHNICAL_PROMPT.format(
+        ticker=ticker,
+        analysis=technical_analysis
+    )
+
+    # Get LLM decision
+    decision = make_decision(
+        prompt=prompt,
+        llm_config=llm_config,
+        agent_name=agent_name,
+        ticker=ticker
+    )
+
+    logger.log_agent_status(agent_name, ticker, "Done")
+    return {"agent_decisions": decision}
 
 
 def calculate_trend_signals(prices_df):
