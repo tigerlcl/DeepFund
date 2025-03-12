@@ -76,5 +76,5 @@ class FundState(TypedDict):
 
     # from workflow
     ticker: str
-    # ticker:->decision of all analyst agents
+    # ticker -> decision of all analyst agents
     agent_decisions: Annotated[Decision, operator.add]

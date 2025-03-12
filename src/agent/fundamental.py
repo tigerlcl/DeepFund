@@ -31,52 +31,7 @@ thresholds = {
     }
 }
 
-def _analyze_profitability(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
-    """Analyze company profitability metrics."""
-    score = sum(
-        metric > threshold for metric, threshold in [
-            (metrics.get("return_on_equity", 0), thresholds["return_on_equity"]),
-            (metrics.get("net_margin", 0), thresholds["net_margin"]),
-            (metrics.get("operating_margin", 0), thresholds["operating_margin"])
-        ] if metric is not None
-    )
-    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
-def _analyze_growth(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
-    """Analyze company growth metrics."""
-    score = sum(
-        metric > threshold for metric, threshold in [
-            (metrics.get("revenue_growth", 0), thresholds["revenue_growth"]),
-            (metrics.get("earnings_growth", 0), thresholds["earnings_growth"]),
-            (metrics.get("book_value_growth", 0), thresholds["book_value_growth"])
-        ] if metric is not None
-    )
-    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
-
-def _analyze_financial_health(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
-    """Analyze company financial health metrics."""
-    score = 0
-    if metrics.get("current_ratio") and metrics["current_ratio"] > thresholds["current_ratio"]:
-        score += 1
-    if metrics.get("debt_to_equity") and metrics["debt_to_equity"] < thresholds["debt_to_equity"]:
-        score += 1
-    if (metrics.get("free_cash_flow_per_share") and metrics.get("earnings_per_share") and 
-        metrics["free_cash_flow_per_share"] > metrics["earnings_per_share"] * thresholds["fcf_to_eps_ratio"]):
-        score += 1
-    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
-
-def _analyze_price_ratios(metrics: Dict[str, Any], thresholds: Dict[str, float]) -> Signal:
-    """Analyze company price ratio metrics."""
-    score = sum(
-        metric < threshold for metric, threshold in [
-            (metrics.get("price_to_earnings_ratio", float('inf')), thresholds["pe_ratio"]),
-            (metrics.get("price_to_book_ratio", float('inf')), thresholds["pb_ratio"]),
-            (metrics.get("price_to_sales_ratio", float('inf')), thresholds["ps_ratio"])
-        ] if metric is not None
-    )
-    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
-
-##### Fundamental Agent #####
 def fundamental_agent(state: FundState):
     """
     Analyzes fundamental data and generates trading signals using an LLM.
@@ -90,6 +45,7 @@ def fundamental_agent(state: FundState):
     end_date = state["end_date"]
     ticker = state["ticker"]
     llm_config = state["llm_config"]
+
     logger.log_agent_status(agent_name, ticker, "Fetching financial metrics")
 
     # Get the financial metrics
@@ -109,14 +65,13 @@ def fundamental_agent(state: FundState):
     
     # Run analysis
     signal_results = {
-        "profitability": _analyze_profitability(metrics, thresholds["profitability"]),
-        "growth": _analyze_growth(metrics, thresholds["growth"]),
-        "financial_health": _analyze_financial_health(metrics, thresholds["financial_health"]),
-        "price_ratios": _analyze_price_ratios(metrics, thresholds["price_ratios"])
+        "profitability": analyze_profitability(metrics, thresholds["profitability"]),
+        "growth": analyze_growth(metrics, thresholds["growth"]),
+        "financial_health": analyze_financial_health(metrics, thresholds["financial_health"]),
+        "price_ratios": analyze_price_ratios(metrics, thresholds["price_ratios"])
     }
     
     # Make prompt
-
     prompt = FUNDAMENTAL_PROMPT.format(
         ticker=ticker,
         analysis=signal_results,
@@ -131,3 +86,54 @@ def fundamental_agent(state: FundState):
     
     logger.log_agent_status(agent_name, ticker, "Done")
     return {"agent_decisions": decision}
+
+
+def analyze_profitability(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+    """Analyze company profitability metrics."""
+    score = sum(
+        metric > threshold for metric, threshold in [
+            (metrics.get("return_on_equity", 0), params["return_on_equity"]),
+            (metrics.get("net_margin", 0), params["net_margin"]),
+            (metrics.get("operating_margin", 0), params["operating_margin"])
+        ] if metric is not None
+    )
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
+
+
+def analyze_growth(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+    """Analyze company growth metrics."""
+    score = sum(
+        metric > threshold for metric, threshold in [
+            (metrics.get("revenue_growth", 0), params["revenue_growth"]),
+            (metrics.get("earnings_growth", 0), params["earnings_growth"]),
+            (metrics.get("book_value_growth", 0), params["book_value_growth"])
+        ] if metric is not None
+    )
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
+
+
+def analyze_financial_health(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+    """Analyze company financial health metrics."""
+    score = 0
+    if metrics.get("current_ratio") and metrics["current_ratio"] > params["current_ratio"]:
+        score += 1
+    if metrics.get("debt_to_equity") and metrics["debt_to_equity"] < params["debt_to_equity"]:
+        score += 1
+    if (metrics.get("free_cash_flow_per_share") and metrics.get("earnings_per_share") and 
+        metrics["free_cash_flow_per_share"] > metrics["earnings_per_share"] * params["fcf_to_eps_ratio"]):
+        score += 1
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
+
+
+def analyze_price_ratios(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+    """Analyze company price ratio metrics."""
+    score = sum(
+        metric < threshold for metric, threshold in [
+            (metrics.get("price_to_earnings_ratio", float('inf')), params["pe_ratio"]),
+            (metrics.get("price_to_book_ratio", float('inf')), params["pb_ratio"]),
+            (metrics.get("price_to_sales_ratio", float('inf')), params["ps_ratio"])
+        ] if metric is not None
+    )
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
+
+

@@ -12,7 +12,38 @@ thresholds = {
     "position_factor_gt": 0.25, 
 }
 
-def _risk_analysis(portfolio, prices_df, ticker) -> Dict[str, Any]:
+##### Ticker Risk Agent #####
+def risk_agent(state: FundState):
+    """Analyzes risk factors for the target ticker based on the portfolio."""
+    agent_name = AgentKey.RISK
+    portfolio = state["portfolio"]
+    end_date = state["end_date"]
+    ticker = state["ticker"]
+    llm_config = state["llm_config"]
+
+    logger.log_agent_status(agent_name, ticker, "Analyzing price data")
+
+    prices_df = get_price_data(ticker=ticker, end_date=end_date)
+    if not prices_df:
+        return state
+
+    ticker_risk = risk_analysis(portfolio, prices_df, ticker)
+
+    prompt = RISK_PROMPT.format(
+        ticker=ticker,
+        analysis=ticker_risk,
+    )
+    # Get LLM decision
+    decision = make_decision(
+        prompt=prompt, 
+        llm_config=llm_config, 
+        agent_name=agent_name, 
+        ticker=ticker)
+
+    logger.log_agent_status(agent_name, ticker, "Done")
+    return {"agent_decisions": decision}
+
+def risk_analysis(portfolio, prices_df, ticker) -> Dict[str, Any]:
     #  Calculate portfolio value
     latest_price = prices_df["close"].iloc[-1]
 
@@ -39,38 +70,3 @@ def _risk_analysis(portfolio, prices_df, ticker) -> Dict[str, Any]:
     }
 
     return ticker_risk
-
-##### Ticker Risk Agent #####
-def risk_agent(state: FundState):
-    """Analyzes risk factors for the target ticker based on the portfolio."""
-    agent_name = AgentKey.RISK
-    portfolio = state["portfolio"]
-    end_date = state["end_date"]
-    ticker = state["ticker"]
-    llm_config = state["llm_config"]
-
-    logger.log_agent_status(agent_name, ticker, "Analyzing price data")
-
-    prices_df = get_price_data(
-        ticker=ticker,
-        end_date=end_date,
-    )
-
-    if not prices_df:
-        return state
-
-    ticker_risk = _risk_analysis(portfolio, prices_df, ticker)
-
-    prompt = RISK_PROMPT.format(
-        ticker=ticker,
-        analysis=ticker_risk,
-    )
-    # Get LLM decision
-    decision = make_decision(
-        prompt=prompt, 
-        llm_config=llm_config, 
-        agent_name=agent_name, 
-        ticker=ticker)
-
-    logger.log_agent_status(agent_name, ticker, "Done")
-    return {"agent_decisions": decision}
