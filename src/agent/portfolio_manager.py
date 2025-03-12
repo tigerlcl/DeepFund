@@ -2,7 +2,7 @@ import json
 from agent.registry import AgentKey 
 from flow.workflow import FundState
 from util.logger import logger
-from flow.state import make_decision, search_decision
+from flow.state import make_decision
 from flow.prompt import PORTFOLIO_PROMPT
 
 def portfolio_agent(state: FundState):
@@ -10,49 +10,50 @@ def portfolio_agent(state: FundState):
 
     agent_name = AgentKey.PORTFOLIO
     portfolio = state["portfolio"]
-    analyst_decisions = state["agent_decisions"]
     tickers = state["tickers"]
+    analyst_decisions = state["analyst_decisions"]
+    risk_data = state["risk_data"]
     llm_config = state["llm_config"]
 
     logger.log_agent_status(agent_name, None, "Analyzing signals")
 
-    # Get position limits, current prices, and signals for every ticker
-    position_limits = {}
-    current_prices = {}
-    max_shares = {}
+    # Aggregate signals by ticker
     signals_by_ticker = {}
+    for decision in analyst_decisions:
+        signals_by_ticker[decision.ticker] = {
+            "agent_name": decision.agent_name,
+            "signal": decision.action, 
+            "confidence": decision.confidence, 
+            "justification": decision.justification
+        }
 
     all_decisions = []
     for ticker in tickers:
+        # Get position limits, current prices, and signals for every ticker
+
         logger.log_agent_status(agent_name, ticker, "Processing analyst signals")
 
-        # Get position limit and current price for the ticker
-        risk_data = search_decision(analyst_decisions, AgentKey.RISK, ticker)
-        position_limits[ticker] = risk_data.get("remaining_position_limit", 0)
-        current_prices[ticker] = risk_data.get("current_price", 0)
+        # Get position limit and current price from Risk Agent
+        position_limit = risk_data[ticker].get("position_limit", 0)
+        current_price = risk_data[ticker].get("latest_price", 0)
 
         # Calculate maximum shares allowed based on position limit and price
-        if current_prices[ticker] > 0:
-            max_shares[ticker] = int(position_limits[ticker] / current_prices[ticker])
+        if current_price > 0:
+            max_shares = int(position_limit / current_price)
         else:
-            max_shares[ticker] = 0
+            max_shares = 0
 
-        # Get signals for the ticker
-        ticker_signals = {}
-        for agent, signals in analyst_decisions.items():
-            if agent != AgentKey.RISK and ticker in signals:
-                ticker_signals[agent] = {"signal": signals[ticker]["signal"], "confidence": signals[ticker]["confidence"]}
-        signals_by_ticker[ticker] = ticker_signals
+        ticker_positions = portfolio["positions"][ticker]
 
         logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
         # make prompt
         prompt = PORTFOLIO_PROMPT.format(
-            signals_by_ticker=signals_by_ticker,
-            current_prices=current_prices,
+            ticker_signals=signals_by_ticker[ticker],
+            current_price=current_price,
             max_shares=max_shares,
             portfolio_cash=portfolio["cashflow"],
-            portfolio_positions=portfolio["positions"]
+            ticker_positions=ticker_positions
         )
 
         # Generate the trading decision

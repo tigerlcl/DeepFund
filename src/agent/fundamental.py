@@ -49,13 +49,7 @@ def fundamental_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching financial metrics")
 
     # Get the financial metrics
-    financial_metrics = get_financial_metrics(
-        ticker=ticker,
-        end_date=end_date,
-        period="ttm",
-        limit=10,
-    )
-
+    financial_metrics = get_financial_metrics(ticker=ticker,end_date=end_date)
     if not financial_metrics:
         logger.error(f"Failed to fetch financial metrics for {ticker}")
         return state

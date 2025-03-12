@@ -131,9 +131,8 @@ class AgentWorkflow:
             raise
 
         # log porfolio agent decisions
-        for d in final_fund_state["agent_decisions"]:
-            if d.agent_name == AgentKey.PORTFOLIO:
-                logger.info(f"Decision for {d.ticker}: {d.action} | {d.confidence:.1f}%\nReason: {d.justification}")
+        for d in final_fund_state["final_decisions"]:
+            logger.info(f"Decision for {d.ticker}: {d.action} | {d.confidence:.1f}%\nReason: {d.justification}")
 
 
         end_time = perf_counter()

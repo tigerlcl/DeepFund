@@ -19,9 +19,8 @@ def risk_agent(state: FundState):
     portfolio = state["portfolio"]
     end_date = state["end_date"]
     ticker = state["ticker"]
-    llm_config = state["llm_config"]
 
-    logger.log_agent_status(agent_name, ticker, "Analyzing price data")
+    logger.log_agent_status(agent_name, ticker, "Analyzing risk based on portfolio")
 
     prices_df = get_price_data(ticker=ticker, end_date=end_date)
     if not prices_df:
@@ -29,32 +28,28 @@ def risk_agent(state: FundState):
 
     ticker_risk = risk_analysis(portfolio, prices_df, ticker)
 
-    prompt = RISK_PROMPT.format(
-        ticker=ticker,
-        analysis=ticker_risk,
-    )
-    # Get LLM decision
-    decision = make_decision(
-        prompt=prompt, 
-        llm_config=llm_config, 
-        agent_name=agent_name, 
-        ticker=ticker)
-
     logger.log_agent_status(agent_name, ticker, "Done")
 
-    return {"analyst_decisions": [decision], "risk_data": ticker_risk}
+    return {"risk_data": {ticker: ticker_risk}}
 
 def risk_analysis(portfolio, prices_df, ticker) -> Dict[str, Any]:
     #  Calculate portfolio value
     latest_price = prices_df["close"].iloc[-1]
 
     # Calculate current position value for this ticker
-    estimated_position_value = portfolio["positions"][ticker].shares * latest_price
+    current_position_value = portfolio["positions"][ticker].shares * latest_price
 
     # Calculate total portfolio value using stored prices
     total_portfolio_value = portfolio["cashflow"]+ sum(portfolio["positions"][t].value for t in portfolio["positions"])
 
-    position_factor = estimated_position_value / total_portfolio_value
+    # Base limit is 20% of portfolio for any single position
+    position_limit = total_portfolio_value * thresholds["position_factor_gt"]
+
+    # For existing positions, subtract current position value from limit
+    remaining_position_limit = position_limit - current_position_value
+
+    # Calculate position factor
+    position_factor = current_position_value / total_portfolio_value
     if position_factor < thresholds["position_factor_lt"]:
         position_factor = Signal.BULLISH
     elif position_factor > thresholds["position_factor_gt"]:
@@ -65,9 +60,10 @@ def risk_analysis(portfolio, prices_df, ticker) -> Dict[str, Any]:
     ticker_risk = {
         "risk_signal": position_factor,
         "latest_price": float(latest_price),
-        "estimated_position_value": float(estimated_position_value),
-        "portfolio_value": float(total_portfolio_value),
-        "available_cash": float(portfolio["cashflow"]),
+        "current_position_value": float(current_position_value),
+        "total_portfolio_value": float(total_portfolio_value),
+        "remaining_position_limit": float(remaining_position_limit),
+        "position_limit": float(position_limit),
     }
 
     return ticker_risk

@@ -1,9 +1,13 @@
-# agent helper function
-
 from typing import Any, Dict, List, Optional
 from util.logger import logger
 from util.llm_model import get_model
 from .schema import Decision
+
+
+def merge_dicts(d1, d2):
+    result = d1.copy()
+    result.update(d2)
+    return result
 
 def make_decision(
     prompt: Any,
@@ -45,11 +49,3 @@ def make_decision(
                 logger.error(f"Error in LLM call after {max_retries} attempts: {e}")
                 # Use model's default values when error occurs
                 return Decision(agent_name=agent_name, ticker=ticker)
-            
-def search_decision(decisions: List[Decision], agent_name: str, ticker: str) -> Optional[Decision]:
-    """Find a decision by agent name and ticker."""
-    return next(
-        (d for d in decisions 
-        if d.agent_name == agent_name and d.ticker == ticker),
-        None
-    )

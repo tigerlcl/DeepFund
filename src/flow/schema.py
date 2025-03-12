@@ -2,6 +2,7 @@ from typing import  List, Dict, Any, Annotated
 from typing_extensions import TypedDict
 from pydantic import BaseModel, Field, Literal
 from enum import Enum
+from flow.state import merge_dicts
 import operator
 
 class Signal(str, Enum):
@@ -78,7 +79,7 @@ class FundState(TypedDict):
     ticker: str
     # ticker -> decision of all analyst agents
     analyst_decisions: Annotated[List[Decision], operator.add]
-    # ticker -> risk data
-    risk_data: Dict[str, Any]
+    # ticker -> risk data from risk agent
+    risk_data: Annotated[Dict[str, Any], merge_dicts]
     # portfolio manager output
     final_decisions: Annotated[List[Decision], operator.add]

@@ -17,20 +17,8 @@ The following signals have been generated from our analysis:
 - Financial Health: {analysis[financial_health]}
 - Price Ratios: {analysis[price_ratios]}
 
-
 """ + OUTPUT_FORMAT
 
-RISK_PROMPT = """
-You are a financial analyst evaluating {ticker} based on risk analysis.
-
-The following signals have been generated from our analysis:
-- Risk Signal: {analysis[risk_signal]}
-- Latest Price: {analysis[latest_price]}
-- Estimated Position Value: {analysis[estimated_position_value]}
-- Portfolio Value: {analysis[portfolio_value]}
-- Available Cash: {analysis[available_cash]}
-
-""" + OUTPUT_FORMAT
 
 TECHNICAL_PROMPT = """
 You are a technical analyst evaluating {ticker} using multiple technical analysis strategies.
@@ -66,15 +54,15 @@ PORTFOLIO_PROMPT = """
 You are a portfolio manager making final trading decisions based on multiple tickers. Based on the team's analysis, make your trading decisions for each ticker.
 
 Here are the signals by ticker:
-{signals_by_ticker}
+{ticker_signals}
 
-Current Prices:
-{current_prices}
+Current Price:
+{current_price}
 
 Maximum Shares Allowed For Purchases:
 {max_shares}
 
 Portfolio Cash: {portfolio_cash}
-Current Positions: {portfolio_positions}
+Current Positions: Value: {ticker_positions.value}, Shares: {ticker_positions.shares}
 
 """ + OUTPUT_FORMAT
