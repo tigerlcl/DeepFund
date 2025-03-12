@@ -16,18 +16,8 @@ class Portfolio:
                 data = json.load(f)
                 
                 # Convert positions dict from JSON to Position objects
-                if "positions" in data and isinstance(data["positions"], list):
-                    # If positions is a list in JSON, convert to dict
-                    positions_dict = {}
-                    for position in data["positions"]:
-                        if isinstance(position, dict) and "ticker" in position:
-                            ticker = position.pop("ticker")
-                            positions_dict[ticker] = Position(**position)
-                    data["positions"] = positions_dict
-                elif "positions" in data and isinstance(data["positions"], dict):
-                    # If positions is already a dict, convert values to Position objects
-                    data["positions"] = {k: Position(**v) if isinstance(v, dict) else v 
-                                        for k, v in data["positions"].items()}
+                data["positions"] = {k: Position(**v) if isinstance(v, dict) else v 
+                                    for k, v in data["positions"].items()}
                 
                 # Create and return a Pydantic model instance
                 return PortfolioModel(**data)

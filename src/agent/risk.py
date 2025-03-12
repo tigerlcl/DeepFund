@@ -2,7 +2,7 @@ from agent.registry import AgentKey
 from flow.schema import FundState, Signal
 from flow.prompt import RISK_PROMPT
 from util.logger import logger
-from util.agent_helper import make_decision
+from flow.state import make_decision
 from ingestion.api import get_price_data
 from typing import Dict, Any
 

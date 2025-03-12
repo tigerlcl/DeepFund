@@ -8,8 +8,8 @@ from util.logger import logger
 from agent.registry import AgentKey
 from flow.schema import FundState, Signal
 from flow.prompt import TECHNICAL_PROMPT
+from flow.state import make_decision
 from util.logger import logger
-from util.agent_helper import make_decision
 from ingestion.api import get_prices, prices_to_df
 from typing import Dict, Any
 
