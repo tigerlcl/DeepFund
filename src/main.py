@@ -1,12 +1,10 @@
 import argparse
-from time import perf_counter
-from dotenv import load_dotenv
-
-from agent.registry import AgentKey
 from flow.workflow import AgentWorkflow
-from flow.schema import FundState
 from util.config import ConfigManager
 from util.logger import logger
+from util.portfolio import Portfolio
+
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
@@ -22,48 +20,18 @@ def main():
         help="Name of configuration file"
     )
     args = parser.parse_args()
-    
-    logger.info("Initializing DeepFund")
-    
-    # Load configuration
     cfg = ConfigManager(args.config)
 
-    start_time = perf_counter()
+    logger.info("Load Portfolio")
+    portfolio_driver = Portfolio()
+    portfolio = portfolio_driver.load_local_portfolio()
+
+    logger.info("Init DeepFund and run")
+    workflow = AgentWorkflow(cfg, portfolio)
+    new_portfolio = workflow.run()
     
-    # Create workflow
-    workflow = AgentWorkflow(cfg)
-    agent_app = workflow.build()
-    
-    # Initialize FundState
-    init_state = FundState(
-        portfolio=cfg.init_portfolio,
-        start_date =  cfg.config['trading']['start_date'],
-        end_date =  cfg.config['trading']['end_date'],
-        tickers = cfg.config['trading']['tickers'],
-        llm_config = cfg.config['llm'],
-    )
-    
-    try:
-        logger.info("Invoking agent workflow")
-        final_fund_state = agent_app.invoke(init_state)
-        logger.info("Agent workflow completed successfully")
-
-    except Exception as e:
-        logger.error(f"Error running deep fund: {str(e)}")
-        raise
-
-
-    # log porfolio agent decisions
-    for d in final_fund_state["agent_decisions"]:
-        if d.agent_name == AgentKey.PORTFOLIO:
-            logger.info(f"Decision for {d.ticker}: {d.action} | {d.confidence:.1f}%\nReason: {d.justification}")
-
-
-    # Log execution time
-    execution_time = perf_counter() - start_time
-    logger.info(f"Total execution time: {execution_time:.2f} seconds")
-    
-    logger.info("DeepFund run completed")
+    logger.info("DeepFund run completed, update portfolio")
+    portfolio_driver.save_local_portfolio(new_portfolio)
 
 
 if __name__ == "__main__":

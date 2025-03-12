@@ -1,22 +1,19 @@
 # Deep Fund Configuration
 
-
 # Trading settings
 trading:
   start_date: "2025-01-01"  # Optional, defaults to 3 months before end_date
   end_date: "2025-03-01"    # Optional, defaults to today
   ticker_scope: "test"   # References a scope in tickers.json
-  portfolio_dir: "portfolio" # relative to main.py
 
 # Workflow settings
 workflow:
-  image_path: "../image/workflow.png" # relative to main.py
+  image_path: "image/workflow.png" # relative to main.py
   analysts:
     - fundamental
     - risk
     # - technical
     # - sentiment
-    # - valuation
 
 # LLM model settings
 llm:

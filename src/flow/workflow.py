@@ -1,18 +1,29 @@
 from IPython.display import Image, display
 from langgraph.graph import StateGraph, START, END
-from util.logger import logger
 from typing import List, Optional
 from flow.schema import FundState
 from agent.registry import AgentRegistry, AgentKey
+from util.logger import logger
+from util.config import ConfigManager
+from time import perf_counter
 
 
 class AgentWorkflow:
     """Trading Decision Workflow."""
 
-    def __init__(self, config):
+    def __init__(self, config: ConfigManager, portfolio: dict):
         self.workflow_config = config['workflow']
+        self.trading_config = config['trading']
+        self.llm_config = config['llm']
+
+        # init portfolio
+        self.init_portfolio = portfolio
+
+        # init workflow variables
         self.selected_analysts = self._verify_analysts(self.workflow_config['analysts'])
-        self.tickers = config['trading']['tickers'] # to control the iteration
+        self.tickers = self.trading_config['tickers'] # to control the iteration
+
+        self.agent_workflow = None
 
     def build(self, state: FundState) -> StateGraph:
         """Build the workflow"""
@@ -89,3 +100,39 @@ class AgentWorkflow:
             analysts = AgentRegistry.get_all_analyst_keys()
 
         return analysts
+    
+
+    def run(self):
+        """Run the workflow."""
+
+        start_time = perf_counter()
+
+        # init FundState
+        state = FundState(
+            portfolio=self.init_portfolio,
+            start_date =  self.trading_config['start_date'],
+            end_date =  self.trading_config['end_date'],
+            tickers = self.trading_config['tickers'],
+            llm_config = self.llm_config,
+        )
+
+        try:
+            logger.info("Invoking agent workflow")
+            final_fund_state = self.agent_workflow.invoke(state)
+            logger.info("Agent workflow completed successfully")
+
+        except Exception as e:
+            logger.error(f"Error running deep fund: {str(e)}")
+            raise
+
+        # log porfolio agent decisions
+        for d in final_fund_state["agent_decisions"]:
+            if d.agent_name == AgentKey.PORTFOLIO:
+                logger.info(f"Decision for {d.ticker}: {d.action} | {d.confidence:.1f}%\nReason: {d.justification}")
+
+
+        end_time = perf_counter()
+        logger.info(f"Workflow completed in {end_time - start_time:.2f} seconds")
+
+        return final_fund_state
+

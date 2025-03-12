@@ -3,7 +3,7 @@ from flow.schema import FundState, Signal
 from flow.prompt import FUNDAMENTAL_PROMPT
 from ingestion.api import get_financial_metrics
 from util.logger import logger
-from util.agent import make_decision
+from util.agent_helper import make_decision
 from agent.registry import AgentKey
 
 

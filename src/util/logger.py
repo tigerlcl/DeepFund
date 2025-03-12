@@ -72,4 +72,8 @@ class DeepFundLogger:
         self.info(msg)
         
 # Create a global logger instance
-logger = DeepFundLogger() 
+logger = DeepFundLogger()
+
+
+if __name__ == "__main__":
+    logger.info("Hello, world!")

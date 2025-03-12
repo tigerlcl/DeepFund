@@ -1,19 +1,17 @@
 from typing import Dict, Callable, Union, List
 
-# from .technical import technical_agent
-# from .sentiment import sentiment_agent
-# from .valuation import valuation_agent
+from .technical import technical_agent
+from .sentiment import sentiment_agent
 
 from .fundamental import fundamental_agent
 from .risk import risk_agent
-from .portfolio import portfolio_agent
+from .portfolio_manager import portfolio_agent
 
 # Agent Key Identifiers
 class AgentKey:
     TECHNICAL = "technical"
     FUNDAMENTAL = "fundamental"
     SENTIMENT = "sentiment"
-    VALUATION = "valuation"
     RISK = "risk"
     PORTFOLIO = "portfolio"
 
@@ -29,7 +27,6 @@ class AgentRegistry:
         AgentKey.TECHNICAL, 
         AgentKey.FUNDAMENTAL, 
         AgentKey.SENTIMENT, 
-        AgentKey.VALUATION,
         AgentKey.RISK,
     ]
 
@@ -42,11 +39,6 @@ class AgentRegistry:
     def get_all_analyst_keys(cls) -> List[str]:
         """Get all analyst keys."""
         return cls.ANALYST_KEYS
-    
-    @classmethod
-    def get_all_manager_keys(cls) -> List[str]:
-        """Get all manager keys."""
-        return cls.MANAGER_KEYS
     
     @classmethod
     def check_agent_key(cls, key: str) -> bool:
@@ -91,21 +83,15 @@ class AgentRegistry:
             agent_func=fundamental_agent
             )
 
-        # cls.register_agent(
-        #     key=AgentKey.SENTIMENT,
-        #     display_name="Sentiment Analyst",
-        #     agent_func=sentiment_agent
-        # )
-        
-        # cls.register_agent(
-        #     key=AgentKey.VALUATION,
-        #     display_name="Valuation Analyst",
-        #     agent_func=valuation_agent
-        # )
-        #         
-        # cls.register_agent(
-        #     key=AgentKey.TECHNICAL,
-        #     display_name="Technical Analyst",
-        #     agent_func=technical_agent
-        # )
+        cls.register_agent(
+            key=AgentKey.SENTIMENT,
+            display_name="Sentiment Analyst",
+            agent_func=sentiment_agent
+        )
+                
+        cls.register_agent(
+            key=AgentKey.TECHNICAL,
+            display_name="Technical Analyst",
+            agent_func=technical_agent
+        )
         

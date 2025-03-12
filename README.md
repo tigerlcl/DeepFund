@@ -49,8 +49,10 @@ For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in t
 
 
 ## Running the System
+Enter the `src` directory and run the `main.py` file:
 ```bash
-python src/main.py --config default_config.yaml
+cd src
+python main.py --config default_config.yaml
 # file default_config.yaml is in the config folder
 ```
 
@@ -61,14 +63,14 @@ python src/main.py --config default_config.yaml
 ```
 deepfund/
 ├── src/
+│   ├── main.py                   # Main entry point
 │   ├── agents/                   # Agent build and registry
 │   ├── ingestion/                # Ingest external data
 │   ├── util/                     # Utility functions and helpers
 │   ├── flow/                     # Workflow, prompt and schema
-│   ├── main.py                   # Main entry point
-├── config/                       # Configuration files
-├── logs/                         # Log files
-├── portfolio/                    # Portfolio updates
+│   ├── config/                   # Configuration files
+│   ├── logs/                     # Log files (auto created)
+│   ├── portfolio/                # Portfolio updates
 ├── environment.yml               # For Conda
 ├── README.md                     # Project documentation
 ├── ...

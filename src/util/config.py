@@ -2,6 +2,7 @@ import yaml
 import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from util.logger import logger
 from typing import Dict, List, Any
 
 
@@ -10,19 +11,19 @@ class ConfigManager:
 
     def __init__(self, config_file: str):
         """Initialize the configuration manager."""
-        self.config_path = f"../config/{config_file}"
-        self.ticker_scope_json =  "../config/tickers.json"
-        self.portfolio_path = "../portfolio/init.json"
+        self.config_path = f"config/{config_file}"
+        self.ticker_scope_json =  "config/tickers.json"
 
         self.config = self._load_config()
         self.ticker_scopes = self._load_ticker_scopes()
         self._validate_and_normalize_config()
-        self.init_portfolio = self._load_portfolio()
+
 
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML file."""
         try:
             with open(self.config_path, 'r') as f:
+                logger.info(f"Loading configuration from {self.config_path}")
                 return yaml.safe_load(f)
         except FileNotFoundError:
             raise ValueError(f"Configuration file not found: {self.config_path}")
@@ -55,15 +56,5 @@ class ConfigManager:
             self.config['trading']['tickers'] = self.ticker_scopes.get(ticker_scope)
         else:
             # If scope not found, use test list
+            logger.warning(f"Ticker scope not found: {ticker_scope}, using test scope")
             self.config['trading']['tickers'] = self.ticker_scopes.get('test')
-
-
-    def _load_portfolio(self):
-        """Load portfolio from JSON file."""
-        try:
-            with open(self.portfolio_path, 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            raise ValueError(f"Portfolio file not found: {self.portfolio_path}")
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Error parsing portfolio file: {e}")

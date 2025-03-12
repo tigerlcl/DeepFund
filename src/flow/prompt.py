@@ -83,32 +83,3 @@ You must provide your decision as a structured output with the following fields:
 
 Your response should consider both insider activity and market sentiment in your reasoning.
 """
-
-
-VALUATION_PROMPT = """
-You are a valuation analyst evaluating {ticker} using multiple valuation methodologies.
-
-Valuation Analysis Results:
-1. Owner Earnings Valuation (Buffett Method):
-   - Calculated Value: ${analysis[owner_earnings_value]:,.2f}
-   - Current Market Cap: ${analysis[market_cap]:,.2f}
-   - Gap: {((analysis[owner_earnings_value] - analysis[market_cap]) / analysis[market_cap]):.1%}
-
-2. Discounted Cash Flow (DCF):
-   - Calculated Value: ${analysis[dcf_value]:,.2f}
-   - Current Market Cap: ${analysis[market_cap]:,.2f}
-   - Gap: {((analysis[dcf_value] - analysis[market_cap]) / analysis[market_cap]):.1%}
-
-Key Financial Metrics:
-{analysis[metrics]}
-
-Based on these valuation methods, determine whether to Buy, Sell, or Hold the stock.
-You must provide your decision as a structured output with the following fields:
-- action: One of ["Buy", "Sell", "Hold"]
-- confidence: A float between 0 and 1
-- justification: A brief explanation of your decision
-
-Your response should consider both valuation methods and the current market price in your reasoning.
-A significant undervaluation might suggest a Buy, while overvaluation might suggest a Sell.
-Consider the margin of safety in your decision.
-"""

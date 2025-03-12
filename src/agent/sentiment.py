@@ -2,7 +2,7 @@ from agent.registry import AgentKey
 from flow.schema import FundState, Signal
 from flow.prompt import SENTIMENT_PROMPT
 from util.logger import logger
-from util.agent import make_decision
+from util.agent_helper import make_decision
 from ingestion.api import get_insider_trades, get_company_news
 import pandas as pd
 import numpy as np
