@@ -48,17 +48,33 @@ SENTIMENT_PROMPT = """
 You are a sentiment analyst evaluating {ticker} based on insider trading patterns and market news.
 
 The following signals have been generated from our analysis:
-- Insider Trading: {analysis[insider_sentiment]}
-- News Sentiment: {analysis[news_sentiment]}
-
-Weighted Signal Summary:
-- Bullish Weight: {analysis[bullish_weight]:.2f}
-- Bearish Weight: {analysis[bearish_weight]:.2f}
+- Positive Insider Count: {analysis[positive_insider]}
+- Negative Insider Count: {analysis[negative_insider]}
+- Positive News Count: {analysis[positive_news]}
+- Negative News Count: {analysis[negative_news]}
+- Overall Signal: {analysis[overall_signal]}
 
 Based on this analysis, determine whether to Buy, Sell, or Hold the stock.
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
 - confidence: A float between 0 and 1
 - justification: A brief explanation of your decision
+
+""" + OUTPUT_FORMAT
+
+PORTFOLIO_PROMPT = """
+You are a portfolio manager making final trading decisions based on multiple tickers. Based on the team's analysis, make your trading decisions for each ticker.
+
+Here are the signals by ticker:
+{signals_by_ticker}
+
+Current Prices:
+{current_prices}
+
+Maximum Shares Allowed For Purchases:
+{max_shares}
+
+Portfolio Cash: {portfolio_cash}
+Current Positions: {portfolio_positions}
 
 """ + OUTPUT_FORMAT

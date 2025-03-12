@@ -39,6 +39,7 @@ class AgentWorkflow:
 
         # create functional nodes
         workflow.add_node("ticker_iterator", self.ticker_iterator)
+        workflow.add_node("analyst_router", self.analyst_router)
 
         # Add edges to connect nodes (Logically critical)
         workflow.add_edge(START, "ticker_iterator")
@@ -48,7 +49,7 @@ class AgentWorkflow:
             "ticker_iterator",
             self.should_continue,
             {
-                "yes": "analyst_selector", 
+                "yes": "analyst_router", 
                 "no": AgentKey.PORTFOLIO
             } 
         )
@@ -59,10 +60,11 @@ class AgentWorkflow:
             agent_cfg = AgentRegistry.get_agent_by_key(analyst)
             workflow.add_node(analyst, agent_cfg["agent_func"])
 
-            # link analyst to portfolio manager
-            workflow.add_edge(analyst, AgentKey.PORTFOLIO)
+            # route to analyst
+            workflow.add_edge("analyst_router", analyst)
+            # loop analyst back to ticket iterator
+            workflow.add_edge(analyst, "ticker_iterator")
         
-
         # Route to portfolio manager
         workflow.add_edge(AgentKey.PORTFOLIO, END)
 
@@ -84,6 +86,9 @@ class AgentWorkflow:
         current_ticker = self.tickers.pop(0)
         return {"ticker": current_ticker}
         
+    def analyst_router(self, state: FundState):
+        """Route the analyst to use."""
+        return state
         
     def should_continue(self) -> bool:
         return len(self.tickers) > 0    

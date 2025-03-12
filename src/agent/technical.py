@@ -76,7 +76,8 @@ def technical_agent(state: FundState):
     )
 
     logger.log_agent_status(agent_name, ticker, "Done")
-    return {"agent_decisions": decision}
+
+    return {"analyst_decisions": [decision]}
 
 
 def get_trend_signal(prices_df, params: dict) -> Signal:
@@ -113,7 +114,6 @@ def get_mean_reversion_signal(prices_df, params: dict) -> Signal:
         upper_band = sma + (std_dev * 2)
         lower_band = sma - (std_dev * 2)
         return upper_band, lower_band
-
 
     # Calculate Bollinger Bands with configured window
     bb_upper, bb_lower = _calculate_bollinger_bands(prices_df, params["bollinger_window"])

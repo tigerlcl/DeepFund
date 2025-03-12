@@ -85,7 +85,7 @@ def fundamental_agent(state: FundState):
         ticker=ticker)
     
     logger.log_agent_status(agent_name, ticker, "Done")
-    return {"agent_decisions": decision}
+    return {"analyst_decisions": [decision]}
 
 
 def analyze_profitability(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:

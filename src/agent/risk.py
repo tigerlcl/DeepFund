@@ -41,7 +41,8 @@ def risk_agent(state: FundState):
         ticker=ticker)
 
     logger.log_agent_status(agent_name, ticker, "Done")
-    return {"agent_decisions": decision}
+
+    return {"analyst_decisions": [decision], "risk_data": ticker_risk}
 
 def risk_analysis(portfolio, prices_df, ticker) -> Dict[str, Any]:
     #  Calculate portfolio value

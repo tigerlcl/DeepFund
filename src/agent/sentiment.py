@@ -8,39 +8,16 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 
-##### Sentiment Agent #####
-def _analyze_sentiment(insider_trades, company_news) -> Dict[str, Any]:
-    """Analyze sentiment from insider trades and news."""
-    # Get the signals from the insider trades
-    transaction_shares = pd.Series([t.transaction_shares for t in insider_trades]).dropna()
-    insider_signals = np.where(transaction_shares < 0, Signal.BEARISH, Signal.BULLISH).tolist()
 
-    # Get the sentiment from the company news
-    sentiment = pd.Series([n.sentiment for n in company_news]).dropna()
-    news_signals = np.where(sentiment == "negative", Signal.BEARISH, 
-                          np.where(sentiment == "positive", Signal.BULLISH, Signal.NEUTRAL)).tolist()
-    
-    # Combine signals from both sources with weights
-    insider_weight = 0.3
-    news_weight = 0.7
-    
-    # Calculate weighted signal counts
-    bullish_signals = (
-        insider_signals.count(Signal.BULLISH) * insider_weight +
-        news_signals.count(Signal.BULLISH) * news_weight
-    )
-    bearish_signals = (
-        insider_signals.count(Signal.BEARISH) * insider_weight +
-        news_signals.count(Signal.BEARISH) * news_weight
-    )
+# thresholds
+thresholds = {
+    "insider_limit": 100,
+    "news_limit": 100,
+    "insider_weight": 0.3,
+    "news_weight": 0.7,
+}
 
-    return {
-        "insider_sentiment": insider_signals,
-        "news_sentiment": news_signals,
-        "bullish_weight": float(bullish_signals),
-        "bearish_weight": float(bearish_signals)
-    }
-
+# TODO: Enhance sentiment analysis
 def sentiment_agent(state: FundState):
     """Analyzes market sentiment and generates trading signals."""
     agent_name = AgentKey.SENTIMENT
@@ -54,7 +31,7 @@ def sentiment_agent(state: FundState):
     insider_trades = get_insider_trades(
         ticker=ticker,
         end_date=end_date,
-        limit=1000,
+        limit=thresholds["insider_limit"],
     )
 
     if not insider_trades:
@@ -63,13 +40,17 @@ def sentiment_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching company news")
     
     # Get the company news
-    company_news = get_company_news(ticker, end_date, limit=100)
+    company_news = get_company_news(
+        ticker=ticker,
+        end_date=end_date,
+        limit=thresholds["news_limit"]
+    )
     
     if not company_news:
         return state
 
     # Analyze sentiment
-    sentiment_analysis = _analyze_sentiment(insider_trades, company_news)
+    sentiment_analysis = analyze_sentiment(insider_trades, company_news, thresholds)
     
     # Make prompt
     prompt = SENTIMENT_PROMPT.format(
@@ -86,4 +67,52 @@ def sentiment_agent(state: FundState):
     )
 
     logger.log_agent_status(agent_name, ticker, "Done")
-    return {"agent_decisions": decision}
+    
+    return {"analyst_decisions": [decision]}
+
+
+def analyze_sentiment(insider_trades, company_news, params) -> Dict[str, Any]:
+    """Analyze sentiment from insider trades and news."""
+    # Get the signals from the insider trades
+    transaction_shares = pd.Series([t.transaction_shares for t in insider_trades]).dropna()
+    insider_signals = np.where(transaction_shares < 0, Signal.BEARISH, Signal.BULLISH).tolist()
+
+    # Get the sentiment from the company news
+    sentiment = pd.Series([n.sentiment for n in company_news]).dropna()
+    news_signals = np.where(sentiment == "negative", Signal.BEARISH, 
+                          np.where(sentiment == "positive", Signal.BULLISH, Signal.NEUTRAL)).tolist()
+    
+    pos_news_signals = news_signals.count(Signal.BULLISH)
+    neg_news_signals = news_signals.count(Signal.BEARISH)
+
+    pos_insider_signals = insider_signals.count(Signal.BULLISH)
+    neg_insider_signals = insider_signals.count(Signal.BEARISH)
+
+    # Combine signals from both sources with weights
+    insider_weight = params["insider_weight"]
+    news_weight = params["news_weight"]
+    
+    # Calculate weighted signal counts
+    bullish_signals = (
+        pos_insider_signals * insider_weight +
+        pos_news_signals * news_weight
+    )
+    bearish_signals = (
+        neg_insider_signals * insider_weight +
+        neg_news_signals * news_weight
+    )
+
+    if bullish_signals > bearish_signals:
+        overall_signal = Signal.BULLISH
+    elif bearish_signals > bullish_signals:
+        overall_signal = Signal.BEARISH
+    else:
+        overall_signal = Signal.NEUTRAL
+
+    return {
+        "positive_insider": pos_insider_signals,
+        "negative_insider": neg_insider_signals,
+        "positive_news": pos_news_signals,
+        "negative_news": neg_news_signals,
+        "overall_signal": overall_signal
+    }

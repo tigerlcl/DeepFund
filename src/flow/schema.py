@@ -77,4 +77,8 @@ class FundState(TypedDict):
     # from workflow
     ticker: str
     # ticker -> decision of all analyst agents
-    agent_decisions: Annotated[Decision, operator.add]
+    analyst_decisions: Annotated[List[Decision], operator.add]
+    # ticker -> risk data
+    risk_data: Dict[str, Any]
+    # portfolio manager output
+    final_decisions: Annotated[List[Decision], operator.add]
