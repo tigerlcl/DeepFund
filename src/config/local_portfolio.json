@@ -1,0 +1,13 @@
+{
+    "cashflow": 100000.0,
+    "positions": {
+        "MSFT": {
+            "value": 10000.0,
+            "shares": 50
+        },
+        "AAPL": {
+            "value": 15000.0,
+            "shares": 60
+        }
+    }
+}

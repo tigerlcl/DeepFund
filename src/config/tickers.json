@@ -1,0 +1,34 @@
+{
+  "test": [
+    "AAPL",
+    "MSFT",
+    "GOOGL"
+  ],
+  "us-stocks": [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "META",
+    "NVDA",
+    "TSLA"
+  ],
+  "crypto": [
+    "BTC",
+    "ETH",
+    "DOGE"
+  ],
+  "A-shares": [
+    "600519.SH",
+    "600036.SH",
+    "600031.SH",
+    "600030.SH",
+    "600028.SH"
+  ],
+  "HK-shares": [
+    "700.HK",
+    "3690.HK",
+    "9988.HK",
+    "5.HK"
+  ]
+} 

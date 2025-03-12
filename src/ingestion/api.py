@@ -2,8 +2,9 @@ import os
 import pandas as pd
 import requests
 
-from data.cache import get_cache
-from data.models import (
+from util.logger import logger
+from cache import get_cache
+from api_model import (
     CompanyNews,
     CompanyNewsResponse,
     FinancialMetrics,
@@ -20,7 +21,7 @@ from data.models import (
 _cache = get_cache()
 
 
-def get_prices(ticker: str, start_date: str, end_date: str) -> list[Price]:
+def _get_prices(ticker: str, start_date: str, end_date: str) -> list[Price]:
     """Fetch price data from cache or API."""
     # Check cache first
     if cached_data := _cache.get_prices(ticker):
@@ -87,41 +88,6 @@ def get_financial_metrics(
     # Cache the results as dicts
     _cache.set_financial_metrics(ticker, [m.model_dump() for m in financial_metrics])
     return financial_metrics
-
-
-def search_line_items(
-    ticker: str,
-    line_items: list[str],
-    end_date: str,
-    period: str = "ttm",
-    limit: int = 10,
-) -> list[LineItem]:
-    """Fetch line items from API."""
-    # If not in cache or insufficient data, fetch from API
-    headers = {}
-    if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
-        headers["X-API-KEY"] = api_key
-
-    url = "https://api.financialdatasets.ai/financials/search/line-items"
-
-    body = {
-        "tickers": [ticker],
-        "line_items": line_items,
-        "end_date": end_date,
-        "period": period,
-        "limit": limit,
-    }
-    response = requests.post(url, headers=headers, json=body)
-    if response.status_code != 200:
-        raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
-    data = response.json()
-    response_model = LineItemResponse(**data)
-    search_results = response_model.search_results
-    if not search_results:
-        return []
-
-    # Cache the results
-    return search_results[:limit]
 
 
 def get_insider_trades(
@@ -249,22 +215,7 @@ def get_company_news(
     _cache.set_company_news(ticker, [news.model_dump() for news in all_news])
     return all_news
 
-
-
-def get_market_cap(
-    ticker: str,
-    end_date: str,
-) -> float | None:
-    """Fetch market cap from the API."""
-    financial_metrics = get_financial_metrics(ticker, end_date)
-    market_cap = financial_metrics[0].market_cap
-    if not market_cap:
-        return None
-
-    return market_cap
-
-
-def prices_to_df(prices: list[Price]) -> pd.DataFrame:
+def _prices_to_df(prices: list[Price]) -> pd.DataFrame:
     """Convert prices to a DataFrame."""
     df = pd.DataFrame([p.model_dump() for p in prices])
     df["Date"] = pd.to_datetime(df["time"])
@@ -278,5 +229,10 @@ def prices_to_df(prices: list[Price]) -> pd.DataFrame:
 
 # Update the get_price_data function to use the new functions
 def get_price_data(ticker: str, start_date: str, end_date: str) -> pd.DataFrame:
-    prices = get_prices(ticker, start_date, end_date)
-    return prices_to_df(prices)
+    try:
+        prices = _get_prices(ticker, start_date, end_date)
+        return _prices_to_df(prices)
+    except Exception as e:
+        logger.error(f"Failed to fetch price data for {ticker}: {e}")
+        return None
+
