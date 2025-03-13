@@ -17,7 +17,7 @@ dependencies:
     - langchain-core
     - langchain-openai
     - langchain-anthropic
-    - langchain-groq
+    - langchain-deepseek
     - langchain-ollama
     - questionary
     - rich

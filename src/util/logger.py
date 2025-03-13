@@ -73,7 +73,3 @@ class DeepFundLogger:
         
 # Create a global logger instance
 logger = DeepFundLogger()
-
-
-if __name__ == "__main__":
-    logger.info("Hello, world!")

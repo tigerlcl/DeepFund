@@ -3,16 +3,14 @@ import pandas as pd
 import requests
 
 from util.logger import logger
-from cache import get_cache
-from api_model import (
+from ingestion.cache import get_cache
+from ingestion.api_model import (
     CompanyNews,
     CompanyNewsResponse,
     FinancialMetrics,
     FinancialMetricsResponse,
     Price,
     PriceResponse,
-    LineItem,
-    LineItemResponse,
     InsiderTrade,
     InsiderTradeResponse,
 )

@@ -1,13 +1,8 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 from util.logger import logger
 from util.llm_model import get_model
 from .schema import Decision
 
-
-def merge_dicts(d1, d2):
-    result = d1.copy()
-    result.update(d2)
-    return result
 
 def make_decision(
     prompt: Any,

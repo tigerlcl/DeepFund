@@ -1,9 +1,14 @@
-from typing import  List, Dict, Any, Annotated
+from typing import  List, Dict, Any, Literal, Annotated
 from typing_extensions import TypedDict
-from pydantic import BaseModel, Field, Literal
+from pydantic import BaseModel, Field
 from enum import Enum
-from flow.state import merge_dicts
 import operator
+
+
+def merge_dicts(d1, d2):
+    result = d1.copy()
+    result.update(d2)
+    return result
 
 class Signal(str, Enum):
     """Signal type"""

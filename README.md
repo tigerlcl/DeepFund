@@ -70,7 +70,6 @@ deepfund/
 │   ├── flow/                     # Workflow, prompt and schema
 │   ├── config/                   # Configuration files
 │   ├── logs/                     # Log files (auto created)
-│   ├── portfolio/                # Portfolio updates
 ├── environment.yml               # For Conda
 ├── README.md                     # Project documentation
 ├── ...

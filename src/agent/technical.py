@@ -4,7 +4,7 @@ import pandas as pd
 from ingestion.api import get_price_data
 from flow.schema import FundState, Signal
 from util.logger import logger
-from agent.registry import AgentKey
+from agent import AgentKey
 from flow.prompt import TECHNICAL_PROMPT
 from util.llm_model import make_decision
 

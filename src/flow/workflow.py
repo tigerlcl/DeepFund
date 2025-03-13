@@ -2,7 +2,7 @@ from IPython.display import Image, display
 from langgraph.graph import StateGraph, START, END
 from typing import List, Optional
 from flow.schema import FundState
-from agent.registry import AgentRegistry, AgentKey
+from agent import AgentRegistry, AgentKey
 from util.logger import logger
 from util.config import ConfigManager
 from time import perf_counter
@@ -23,7 +23,6 @@ class AgentWorkflow:
         self.selected_analysts = self._verify_analysts(self.workflow_config['analysts'])
         self.tickers = self.trading_config['tickers'] # to control the iteration
 
-        self.agent_workflow = None
 
     def build(self, state: FundState) -> StateGraph:
         """Build the workflow"""
@@ -121,9 +120,12 @@ class AgentWorkflow:
             llm_config = self.llm_config,
         )
 
+        # build the workflow
+        workflow = self.build(state)
+
         try:
             logger.info("Invoking agent workflow")
-            final_fund_state = self.agent_workflow.invoke(state)
+            final_fund_state = workflow.invoke(state)
             logger.info("Agent workflow completed successfully")
 
         except Exception as e:

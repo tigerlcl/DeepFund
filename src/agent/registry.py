@@ -1,11 +1,11 @@
 from typing import Dict, Callable, Union, List
 
-from .technical import technical_agent
-from .sentiment import sentiment_agent
+from agent.technical import technical_agent
+from agent.sentiment import sentiment_agent
 
-from .fundamental import fundamental_agent
-from .risk import risk_agent
-from .portfolio_manager import portfolio_agent
+from agent.fundamental import fundamental_agent
+from agent.risk import risk_agent
+from agent.portfolio_manager import portfolio_agent
 
 # Agent Key Identifiers
 class AgentKey:
