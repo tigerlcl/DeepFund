@@ -1,7 +1,6 @@
 import yaml
 import json
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from datetime import datetime, timedelta
 from util.logger import logger
 from typing import Dict, List, Any
 
@@ -47,7 +46,7 @@ class ConfigManager:
         if not self.config['trading']['start_date']:
             end_date_obj = datetime.strptime(self.config['trading']['end_date'], "%Y-%m-%d")
             self.config['trading']['start_date'] = (
-                end_date_obj - relativedelta(months=3)
+                end_date_obj - timedelta(days=90)  # Approximate 3 months as 90 days
             ).strftime("%Y-%m-%d")
         
         # Load tickers from the specified scope

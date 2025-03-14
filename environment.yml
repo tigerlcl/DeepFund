@@ -5,22 +5,16 @@ channels:
 dependencies:
   - python=3.11
   - pip
+  - PyYAML
   - pandas
   - numpy
-  - matplotlib
-  - colorama
   - python-dotenv
   - requests
-  - tabulate
   - pip:
     - langgraph
-    - langchain-core
+    - typing-extensions 
     - langchain-openai
     - langchain-anthropic
     - langchain-deepseek
     - langchain-ollama
-    - questionary
-    - rich
-    - python-dateutil
     - IPython
-    - typing-extensions 
