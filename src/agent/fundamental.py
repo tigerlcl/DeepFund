@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from flow.schema import FundState, Signal
+from flow.schema import FundState, Signal, AnalystSignal
 from flow.prompt import FUNDAMENTAL_PROMPT
 from ingestion.api import get_financial_metrics
 from util.logger import logger
@@ -71,15 +71,22 @@ def fundamental_agent(state: FundState):
         analysis=signal_results,
     )
     
-    # Get LLM decision
-    decision = make_decision(
+    # Get LLM signal
+    signal = make_decision(
         prompt=prompt, 
         llm_config=llm_config, 
         agent_name=agent_name, 
         ticker=ticker)
+
+    analyst_signal = AnalystSignal(
+        agent_name=agent_name,
+        ticker=ticker,
+        signal=signal.signal,
+        justification=signal.justification
+    )
     
     logger.log_agent_status(agent_name, ticker, "Done")
-    return {"analyst_decisions": [decision]}
+    return {"analyst_signals": [analyst_signal]}
 
 
 def analyze_profitability(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:

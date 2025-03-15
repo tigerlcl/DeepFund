@@ -7,6 +7,13 @@ You must provide your decision as a structured output with the following fields:
 Your response should be well-reasoned and consider all aspects of the analysis.
 """
 
+ANALYST_OUTPUT_FORMAT = """
+You must provide your analysis as a structured output with the following fields:
+- signal: One of ["Bullish", "Bearish", "Neutral"]
+- justification: A brief explanation of your analysis
+
+Your response should be well-reasoned and consider all aspects of the analysis.
+"""
 
 FUNDAMENTAL_PROMPT = """
 You are a financial analyst evaluating {ticker} based on fundamental analysis.
@@ -17,8 +24,7 @@ The following signals have been generated from our analysis:
 - Financial Health: {analysis[financial_health]}
 - Price Ratios: {analysis[price_ratios]}
 
-""" + OUTPUT_FORMAT
-
+""" + ANALYST_OUTPUT_FORMAT
 
 TECHNICAL_PROMPT = """
 You are a technical analyst evaluating {ticker} using multiple technical analysis strategies.
@@ -30,7 +36,7 @@ The following signals have been generated from our analysis:
 - Momentum: {analysis[momentum]}
 - Volatility: {analysis[volatility]}
 
-""" + OUTPUT_FORMAT
+""" + ANALYST_OUTPUT_FORMAT
 
 SENTIMENT_PROMPT = """
 You are a sentiment analyst evaluating {ticker} based on insider trading patterns and market news.
@@ -42,18 +48,12 @@ The following signals have been generated from our analysis:
 - Negative News Count: {analysis[negative_news]}
 - Overall Signal: {analysis[overall_signal]}
 
-Based on this analysis, determine whether to Buy, Sell, or Hold the stock.
-You must provide your decision as a structured output with the following fields:
-- action: One of ["Buy", "Sell", "Hold"]
-- confidence: A float between 0 and 1
-- justification: A brief explanation of your decision
-
-""" + OUTPUT_FORMAT
+""" + ANALYST_OUTPUT_FORMAT
 
 PORTFOLIO_PROMPT = """
 You are a portfolio manager making final trading decisions based on multiple tickers. Based on the team's analysis, make your trading decisions for each ticker.
 
-Here are the signals by ticker:
+Here are the analyst signals:
 {ticker_signals}
 
 Current Price:
@@ -66,3 +66,19 @@ Portfolio Cash: {portfolio_cash}
 Current Positions: Value: {ticker_positions.value}, Shares: {ticker_positions.shares}
 
 """ + OUTPUT_FORMAT
+
+ROUTING_PROMPT = """
+You are a routing agent that decides which analysis to perform based on the ticker, portfolio status and decision feedback.
+
+Here is the ticker and portfolio status:
+{ticker}
+{portfolio_status}
+
+Here is the decision feedback:
+{decision_feedback} 
+
+You must provide your decision as a structured output with the following fields:
+- analysis: One of ["fundamental", "technical", "sentiment", "portfolio"]
+- justification: A brief explanation of your decision
+
+"""

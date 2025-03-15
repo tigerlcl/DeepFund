@@ -2,7 +2,7 @@ import math
 import pandas as pd
 
 from ingestion.api import get_price_data
-from flow.schema import FundState, Signal
+from flow.schema import FundState, Signal, AnalystSignal
 from util.logger import logger
 from agent import AgentKey
 from flow.prompt import TECHNICAL_PROMPT
@@ -67,17 +67,24 @@ def technical_agent(state: FundState):
         analysis=signal_results
     )
 
-    # Get LLM decision
-    decision = make_decision(
+    # Get LLM signal
+    signal = make_decision(
         prompt=prompt,
         llm_config=llm_config,
         agent_name=agent_name,
         ticker=ticker
     )
 
+    analyst_signal = AnalystSignal(
+        agent_name=agent_name,
+        ticker=ticker,
+        signal=signal.signal,
+        justification=signal.justification
+    )
+
     logger.log_agent_status(agent_name, ticker, "Done")
 
-    return {"analyst_decisions": [decision]}
+    return {"analyst_signals": [analyst_signal]}
 
 
 def get_trend_signal(prices_df, params: dict) -> Signal:

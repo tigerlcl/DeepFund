@@ -1,20 +1,28 @@
-from typing import  List, Dict, Any, Literal, Annotated
-from typing_extensions import TypedDict
+from typing import  List, Dict, Any
+from typing_extensions import TypedDict, Literal, Annotated
 from pydantic import BaseModel, Field
 from enum import Enum
 import operator
 
-
-def merge_dicts(d1, d2):
-    result = d1.copy()
-    result.update(d2)
-    return result
 
 class Signal(str, Enum):
     """Signal type"""
     BULLISH = "bullish"
     BEARISH = "bearish"
     NEUTRAL = "neutral"
+
+class AnalystSignal(BaseModel):
+    """Signal from analyst"""
+    agent_name: str
+    ticker: str
+    signal: Literal[Signal.BULLISH, Signal.BEARISH, Signal.NEUTRAL] = Field(
+        description="Choose from Bullish, Bearish, or Neutral",
+        default=Signal.NEUTRAL
+    )
+    justification: str = Field(
+        description="Brief explanation for the signal",
+        default="No justification provided due to error"
+    )
 
 class Action(str, Enum):
     """Action type"""
@@ -23,8 +31,7 @@ class Action(str, Enum):
     HOLD = "hold"
 
 class Decision(BaseModel):
-    """Decision Structured Output from agent"""
-    agent_name: str
+    """Decision made by portfolio manager"""
     ticker: str
     action: Literal[Action.BUY, Action.SELL, Action.HOLD] = Field( 
         description="Choose from Buy, Sell, or Hold",
@@ -82,9 +89,7 @@ class FundState(TypedDict):
 
     # from workflow
     ticker: str
-    # ticker -> decision of all analyst agents
-    analyst_decisions: Annotated[List[Decision], operator.add]
-    # ticker -> risk data from risk agent
-    risk_data: Annotated[Dict[str, Any], merge_dicts]
+    # ticker -> signal of all analysts
+    analyst_signals: Annotated[List[AnalystSignal], operator.add]
     # portfolio manager output
-    final_decisions: Annotated[List[Decision], operator.add]
+    decisions: Annotated[List[Decision], operator.add]

@@ -1,5 +1,5 @@
 from agent.registry import AgentKey
-from flow.schema import FundState, Signal
+from flow.schema import FundState, Signal, AnalystSignal
 from flow.prompt import SENTIMENT_PROMPT
 from util.logger import logger
 from flow.state import make_decision
@@ -58,17 +58,24 @@ def sentiment_agent(state: FundState):
         analysis=sentiment_analysis
     )
 
-    # Get LLM decision
-    decision = make_decision(
+    # Get LLM signal
+    signal = make_decision(
         prompt=prompt,
         llm_config=llm_config,
         agent_name=agent_name,
         ticker=ticker
     )
 
+    analyst_signal = AnalystSignal(
+        agent_name=agent_name,
+        ticker=ticker,
+        signal=signal.signal,
+        justification=signal.justification
+    )
+
     logger.log_agent_status(agent_name, ticker, "Done")
     
-    return {"analyst_decisions": [decision]}
+    return {"analyst_signals": [analyst_signal]}
 
 
 def analyze_sentiment(insider_trades, company_news, params) -> Dict[str, Any]:
