@@ -33,8 +33,8 @@ class AgentWorkflow:
         workflow = StateGraph(state)
         
         # create node for portfolio manager
-        agent_cfg = AgentRegistry.get_agent_by_key(AgentKey.PORTFOLIO)
-        workflow.add_node(AgentKey.PORTFOLIO, agent_cfg["agent_func"])
+        portfolio_agent = AgentRegistry.get_agent_func_by_key(AgentKey.PORTFOLIO)
+        workflow.add_node(AgentKey.PORTFOLIO, portfolio_agent)
 
         # create functional nodes
         workflow.add_node("ticker_iterator", self.ticker_iterator)
@@ -56,8 +56,8 @@ class AgentWorkflow:
         # Route to selected analysts
         for analyst in self.selected_analysts:
             # create node for each analyst
-            agent_cfg = AgentRegistry.get_agent_by_key(analyst)
-            workflow.add_node(analyst, agent_cfg["agent_func"])
+            agent_func = AgentRegistry.get_agent_func_by_key(analyst)
+            workflow.add_node(analyst, agent_func)
 
             # route to analyst
             workflow.add_edge("analyst_router", analyst)

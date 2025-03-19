@@ -3,7 +3,7 @@ from flow.schema import FundState, Signal, AnalystSignal
 from flow.prompt import FUNDAMENTAL_PROMPT
 from ingestion.api import get_financial_metrics
 from util.logger import logger
-from flow.state import make_decision
+from flow.state import generate_signal
 from agent.registry import AgentKey
 
 
@@ -72,7 +72,7 @@ def fundamental_agent(state: FundState):
     )
     
     # Get LLM signal
-    signal = make_decision(
+    signal = generate_signal(
         prompt=prompt, 
         llm_config=llm_config, 
         agent_name=agent_name, 

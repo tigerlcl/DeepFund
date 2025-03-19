@@ -1,12 +1,3 @@
-OUTPUT_FORMAT = """
-You must provide your decision as a structured output with the following fields:
-- action: One of ["Buy", "Sell", "Hold"]
-- confidence: A float between 0 and 1
-- justification: A brief explanation of your decision
-
-Your response should be well-reasoned and consider all aspects of the analysis.
-"""
-
 ANALYST_OUTPUT_FORMAT = """
 You must provide your analysis as a structured output with the following fields:
 - signal: One of ["Bullish", "Bearish", "Neutral"]
@@ -50,6 +41,15 @@ The following signals have been generated from our analysis:
 
 """ + ANALYST_OUTPUT_FORMAT
 
+DECISION_OUTPUT_FORMAT = """
+You must provide your decision as a structured output with the following fields:
+- action: One of ["Buy", "Sell", "Hold"]
+- confidence: A float between 0 and 1
+- justification: A brief explanation of your decision
+
+Your response should be well-reasoned and consider all aspects of the analysis.
+"""
+
 PORTFOLIO_PROMPT = """
 You are a portfolio manager making final trading decisions based on multiple tickers. Based on the team's analysis, make your trading decisions for each ticker.
 
@@ -65,7 +65,7 @@ Maximum Shares Allowed For Purchases:
 Portfolio Cash: {portfolio_cash}
 Current Positions: Value: {ticker_positions.value}, Shares: {ticker_positions.shares}
 
-""" + OUTPUT_FORMAT
+""" + DECISION_OUTPUT_FORMAT
 
 ROUTING_PROMPT = """
 You are a routing agent that decides which analysis to perform based on the ticker, portfolio status and decision feedback.

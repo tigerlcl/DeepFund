@@ -4,7 +4,7 @@ from flow.workflow import FundState
 from util.logger import logger
 from flow.state import make_decision
 from flow.prompt import PORTFOLIO_PROMPT
-from flow.schema import Signal, AnalystSignal, Decision
+from flow.schema import Signal, Decision
 from ingestion.api import get_price_data
 from typing import Dict, Any
 
@@ -19,62 +19,51 @@ def portfolio_agent(state: FundState):
     """Makes final trading decisions and generates orders"""
     agent_name = AgentKey.PORTFOLIO
     portfolio = state["portfolio"]
-    tickers = state["tickers"]
+    ticker = state["ticker"]
     analyst_signals = state["analyst_signals"]
     end_date = state["end_date"]
     llm_config = state["llm_config"]
 
-    logger.log_agent_status(agent_name, None, "Analyzing signals")
-
     # Aggregate signals by ticker
-    signals_by_ticker = {}
-    for signal in analyst_signals:
-        signals_by_ticker[signal.ticker] = {
-            "agent_name": signal.agent_name,
-            "signal": signal.signal,
-            "justification": signal.justification
-        }
+    logger.log_agent_status(agent_name, ticker, "Aggregating analyst signals")
 
-    decisions = []
-    for ticker in tickers:
-        logger.log_agent_status(agent_name, ticker, "Processing analyst signals")
+    logger.log_agent_status(agent_name, ticker, "Analyzing ticker risk")
 
-        # Get price data and analyze risk
-        prices_df = get_price_data(ticker=ticker, end_date=end_date)
-        if not prices_df:
-            continue
-            
-        risk_data = analyze_ticker_risk(portfolio, prices_df, ticker)
-        position_limit = risk_data["position_limit"]
-        current_price = risk_data["latest_price"]
+    # Get price data and analyze risk
+    prices_df = get_price_data(ticker=ticker, end_date=end_date)
+    if not prices_df:
+        return {"decision": Decision(ticker=ticker)}
+        
+    risk_data = analyze_ticker_risk(portfolio, prices_df, ticker)
+    position_limit = risk_data["position_limit"]
+    current_price = risk_data["latest_price"]
 
-        # Calculate maximum shares allowed based on position limit and price
-        max_shares = int(position_limit / current_price) if current_price > 0 else 0
-        ticker_positions = portfolio["positions"][ticker]
+    # Calculate maximum shares allowed based on position limit and price
+    max_shares = int(position_limit / current_price) if current_price > 0 else 0
+    ticker_positions = portfolio["positions"][ticker]
 
-        logger.log_agent_status(agent_name, ticker, "Making trading decisions")
+    logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
-        # make prompt
-        prompt = PORTFOLIO_PROMPT.format(
-            ticker_signals=signals_by_ticker[ticker],
-            current_price=current_price,
-            max_shares=max_shares,
-            portfolio_cash=portfolio["cashflow"],
-            ticker_positions=ticker_positions
-        )
+    # make prompt
+    prompt = PORTFOLIO_PROMPT.format(
+        ticker_signals=analyst_signals,
+        current_price=current_price,
+        max_shares=max_shares,
+        portfolio_cash=portfolio["cashflow"],
+        ticker_positions=ticker_positions
+    )
 
-        # Generate the trading decision
-        ticker_decision = make_decision(
-            prompt=prompt,
-            llm_config=llm_config,
-            agent_name=agent_name,
-            ticker=ticker
-        )
-        decisions.append(ticker_decision)
+    # Generate the trading decision
+    ticker_decision = make_decision(
+        prompt=prompt,
+        llm_config=llm_config,
+        agent_name=agent_name,
+        ticker=ticker
+    )
 
-    logger.log_agent_status(agent_name, None, "Done")
+    logger.log_agent_status(agent_name, ticker, "Decision completed")
 
-    return {"decisions": decisions}
+    return {"decision": ticker_decision}
 
 
 def analyze_ticker_risk(portfolio, prices_df, ticker) -> Dict[str, Any]:

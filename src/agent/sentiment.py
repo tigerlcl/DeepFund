@@ -2,7 +2,7 @@ from agent.registry import AgentKey
 from flow.schema import FundState, Signal, AnalystSignal
 from flow.prompt import SENTIMENT_PROMPT
 from util.logger import logger
-from flow.state import make_decision
+from flow.state import generate_signal
 from ingestion.api import get_insider_trades, get_company_news
 import pandas as pd
 import numpy as np
@@ -59,7 +59,7 @@ def sentiment_agent(state: FundState):
     )
 
     # Get LLM signal
-    signal = make_decision(
+    signal = generate_signal(
         prompt=prompt,
         llm_config=llm_config,
         agent_name=agent_name,

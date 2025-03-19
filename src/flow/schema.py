@@ -45,7 +45,7 @@ class Decision(BaseModel):
     )
     justification: str = Field(
         description="Brief explanation for the decision",
-        default="No decision made due to error"
+        default="Just hold due to error"
     )
 
 class Position(BaseModel):
@@ -92,4 +92,4 @@ class FundState(TypedDict):
     # ticker -> signal of all analysts
     analyst_signals: Annotated[List[AnalystSignal], operator.add]
     # portfolio manager output
-    decisions: Annotated[List[Decision], operator.add]
+    decision: Decision
