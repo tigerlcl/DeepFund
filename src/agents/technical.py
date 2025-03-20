@@ -4,7 +4,7 @@ import pandas as pd
 from apis.api import get_price_data
 from graph.schema import FundState, Signal, AnalystSignal
 from util.logger import logger
-from agents import AgentKey
+from graph.constants import AgentKey
 from graph.prompt import TECHNICAL_PROMPT
 from graph.state import agent_call
 

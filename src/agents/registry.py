@@ -1,26 +1,17 @@
 from typing import Dict, Callable, List
 
+from graph.constants import AgentKey
 from agents.technical import technical_agent
 from agents.sentiment import sentiment_agent
 from agents.fundamental import fundamental_agent
 from agents.portfolio_manager import portfolio_agent
-from agents.planner import planner_agent
-
-# Agent Key Identifiers
-class AgentKey:
-    TECHNICAL = "technical"
-    FUNDAMENTAL = "fundamental"
-    SENTIMENT = "sentiment"
-    PORTFOLIO = "portfolio"
-    PLANNER = "planner"
-
 
 class AgentRegistry:
     """Registry for all agents."""
     
-    # Define analyst configuration - signal source of truth
-    agent_func_mapping = Dict[str, Callable]
-    agent_doc_mapping = Dict[str, str]
+    # Initialize as actual dictionaries, not just type annotations
+    agent_func_mapping: Dict[str, Callable] = {}
+    agent_doc_mapping: Dict[str, str] = {}
 
     # Analyst KEYs
     ANALYST_KEYS = [
@@ -65,12 +56,6 @@ class AgentRegistry:
             key=AgentKey.PORTFOLIO,
             agent_func=portfolio_agent,
             agent_doc="Portfolio manager making final trading decisions based on the signals from the analysts."
-        )
-
-        cls.register_agent(
-            key=AgentKey.PLANNER,
-            agent_func=planner_agent,
-            agent_doc="Planner agent that decides which analysts to use based on self-knowledge."
         )
 
         cls.register_agent(

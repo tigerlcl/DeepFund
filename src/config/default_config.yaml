@@ -11,7 +11,7 @@ workflow:
   image_path: "image/workflow.png" # relative to main.py
   analysts:
     - fundamental
-    - risk
+    # - risk
     # - technical
     # - sentiment
 

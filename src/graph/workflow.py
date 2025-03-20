@@ -1,10 +1,10 @@
+from typing import List, Dict, Any
 from IPython.display import Image, display
 from langgraph.graph import StateGraph, START, END
-from typing import List, Optional
 from graph.schema import FundState
-from agents import AgentRegistry, AgentKey
+from graph.constants import AgentKey
+from agents.registry import AgentRegistry
 from util.logger import logger
-from util.config import ConfigManager
 from time import perf_counter
 
 
@@ -13,7 +13,7 @@ class AgentWorkflow:
 
     def __init__(
             self, 
-            config: ConfigManager, 
+            config: Dict[str, Any], 
             portfolio: dict, 
             tickers: list
             ):

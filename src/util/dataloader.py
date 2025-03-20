@@ -6,10 +6,9 @@ class DataLoader:
     """
     DataLoader class for portfolio and ticker data processing.
     """
-    def __init__(self, ticker_scope: str):
+    def __init__(self):
         self.local_path = "config/local_portfolio.json"
         self.ticker_pool_path =  "config/tickers.json"
-        self.ticker_scope = ticker_scope
 
         # Load ticker pool
         try:

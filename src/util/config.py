@@ -3,17 +3,14 @@ from datetime import datetime, timedelta
 from util.logger import logger
 from typing import Dict, Any
 
-
-class ConfigManager:
+class ConfigParser:
     """Manages configuration loading and validation."""
 
-    def __init__(self, config_file: str):
+    def __init__(self, args):
         """Initialize the configuration manager."""
-        self.config_path = f"config/{config_file}"
-
+        self.config_path = f"config/{args.config}"
         self.config = self._load_config()
         self._validate_and_normalize_config()
-
 
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML file."""
@@ -25,7 +22,6 @@ class ConfigManager:
             raise ValueError(f"Configuration file not found: {self.config_path}")
         except yaml.YAMLError as e:
             raise ValueError(f"Error parsing configuration file: {e}")
-            
 
     def _validate_and_normalize_config(self) -> None:
         """Validate and normalize configuration values."""
@@ -39,3 +35,6 @@ class ConfigManager:
                 end_date_obj - timedelta(days=90)  # Approximate 3 months as 90 days
             ).strftime("%Y-%m-%d")
     
+    def get_config(self) -> Dict[str, Any]:
+        """Get the configuration."""
+        return self.config

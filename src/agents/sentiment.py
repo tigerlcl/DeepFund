@@ -1,6 +1,6 @@
-from agents.registry import AgentKey
 from graph.schema import FundState, Signal, AnalystSignal
 from graph.prompt import SENTIMENT_PROMPT
+from graph.constants import AgentKey
 from util.logger import logger
 from graph.state import agent_call
 from apis.api import get_insider_trades, get_company_news
