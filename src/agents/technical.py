@@ -1,12 +1,12 @@
 import math
 import pandas as pd
 
-from ingestion.api import get_price_data
-from flow.schema import FundState, Signal, AnalystSignal
+from apis.api import get_price_data
+from graph.schema import FundState, Signal, AnalystSignal
 from util.logger import logger
-from agent import AgentKey
-from flow.prompt import TECHNICAL_PROMPT
-from util.llm_model import make_decision
+from agents import AgentKey
+from graph.prompt import TECHNICAL_PROMPT
+from graph.state import agent_call
 
 # Technical Thresholds
 thresholds = {
@@ -38,7 +38,7 @@ thresholds = {
 
 
 def technical_agent(state: FundState):
-    """Analyzes technical indicators and generates trading signals."""
+    """Technical analysis specialist that excels at short to medium-term price movement predictions."""
     agent_name = AgentKey.TECHNICAL
     start_date = state["start_date"]
     end_date = state["end_date"]
@@ -68,23 +68,15 @@ def technical_agent(state: FundState):
     )
 
     # Get LLM signal
-    signal = make_decision(
+    signal = agent_call(
         prompt=prompt,
         llm_config=llm_config,
-        agent_name=agent_name,
-        ticker=ticker
-    )
-
-    analyst_signal = AnalystSignal(
-        agent_name=agent_name,
-        ticker=ticker,
-        signal=signal.signal,
-        justification=signal.justification
+        pydantic_model=AnalystSignal
     )
 
     logger.log_agent_status(agent_name, ticker, "Done")
 
-    return {"analyst_signals": [analyst_signal]}
+    return {"analyst_signals": [signal]}
 
 
 def get_trend_signal(prices_df, params: dict) -> Signal:

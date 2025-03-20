@@ -13,8 +13,6 @@ class Signal(str, Enum):
 
 class AnalystSignal(BaseModel):
     """Signal from analyst"""
-    agent_name: str
-    ticker: str
     signal: Literal[Signal.BULLISH, Signal.BEARISH, Signal.NEUTRAL] = Field(
         description="Choose from Bullish, Bearish, or Neutral",
         default=Signal.NEUTRAL
@@ -32,10 +30,13 @@ class Action(str, Enum):
 
 class Decision(BaseModel):
     """Decision made by portfolio manager"""
-    ticker: str
     action: Literal[Action.BUY, Action.SELL, Action.HOLD] = Field( 
         description="Choose from Buy, Sell, or Hold",
         default=Action.HOLD
+    )
+    shares: int = Field(
+        description="Number of shares to buy, sell, or hold",
+        default=0
     )
     confidence: float = Field(
         description="Confidence score between 0 and 1",
@@ -71,6 +72,9 @@ class FundState(TypedDict):
     """Fund state when running the workflow."""
 
     # from environment
+    ticker: str = Field(
+        description="Ticker in-the-flow."
+    )
     portfolio: Portfolio = Field(
         description="Portfolio for the fund."
     )
@@ -80,15 +84,11 @@ class FundState(TypedDict):
     end_date: str = Field(
         description="End date for the information window."
     )
-    tickers: List[str] = Field(
-        description="List of tickers to analyze"
-    )
     llm_config: Dict[str, Any] = Field(
         description="LLM configuration."
     )
 
-    # from workflow
-    ticker: str
+    # updated by workflow
     # ticker -> signal of all analysts
     analyst_signals: Annotated[List[AnalystSignal], operator.add]
     # portfolio manager output

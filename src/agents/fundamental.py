@@ -1,10 +1,10 @@
 from typing import Dict, Any
-from flow.schema import FundState, Signal, AnalystSignal
-from flow.prompt import FUNDAMENTAL_PROMPT
-from ingestion.api import get_financial_metrics
+from graph.schema import FundState, Signal, AnalystSignal
+from graph.prompt import FUNDAMENTAL_PROMPT
+from apis.api import get_financial_metrics
 from util.logger import logger
-from flow.state import generate_signal
-from agent.registry import AgentKey
+from graph.state import agent_call
+from agents.registry import AgentKey
 
 
 # Fundamental Thresholds
@@ -33,14 +33,7 @@ thresholds = {
 
 
 def fundamental_agent(state: FundState):
-    """
-    Analyzes fundamental data and generates trading signals using an LLM.
-    
-    Dependencies:
-        - get_financial_metrics
-        - Fundamental Thresholds
-        - FUNDAMENTAL_PROMPT
-    """
+    """Fundamental analysis specialist focusing on company financial health and valuation."""
     agent_name = AgentKey.FUNDAMENTAL
     end_date = state["end_date"]
     ticker = state["ticker"]
@@ -67,26 +60,17 @@ def fundamental_agent(state: FundState):
     
     # Make prompt
     prompt = FUNDAMENTAL_PROMPT.format(
-        ticker=ticker,
         analysis=signal_results,
     )
     
     # Get LLM signal
-    signal = generate_signal(
+    signal = agent_call(
         prompt=prompt, 
         llm_config=llm_config, 
-        agent_name=agent_name, 
-        ticker=ticker)
-
-    analyst_signal = AnalystSignal(
-        agent_name=agent_name,
-        ticker=ticker,
-        signal=signal.signal,
-        justification=signal.justification
-    )
+        pydantic_model=AnalystSignal)
     
     logger.log_agent_status(agent_name, ticker, "Done")
-    return {"analyst_signals": [analyst_signal]}
+    return {"analyst_signals": [signal]}
 
 
 def analyze_profitability(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:

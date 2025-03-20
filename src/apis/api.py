@@ -3,8 +3,8 @@ import pandas as pd
 import requests
 
 from util.logger import logger
-from ingestion.cache import get_cache
-from ingestion.api_model import (
+from apis.cache import get_cache
+from apis.api_model import (
     CompanyNews,
     CompanyNewsResponse,
     FinancialMetrics,

@@ -1,11 +1,11 @@
 import json
-from agent.registry import AgentKey 
-from flow.workflow import FundState
+from agents.registry import AgentKey 
+from graph.workflow import FundState
 from util.logger import logger
-from flow.state import make_decision
-from flow.prompt import PORTFOLIO_PROMPT
-from flow.schema import Signal, Decision
-from ingestion.api import get_price_data
+from graph.state import agent_call
+from graph.prompt import PORTFOLIO_PROMPT
+from graph.schema import Signal, Decision
+from apis.api import get_price_data
 from typing import Dict, Any
 
 # Risk Thresholds
@@ -54,11 +54,10 @@ def portfolio_agent(state: FundState):
     )
 
     # Generate the trading decision
-    ticker_decision = make_decision(
+    ticker_decision = agent_call(
         prompt=prompt,
         llm_config=llm_config,
-        agent_name=agent_name,
-        ticker=ticker
+        pydantic_model=Decision
     )
 
     logger.log_agent_status(agent_name, ticker, "Decision completed")

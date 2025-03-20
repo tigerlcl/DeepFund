@@ -1,4 +1,4 @@
-from agent.registry import AgentRegistry
+from agents.registry import AgentRegistry
 
 # run the registry
 AgentRegistry.run_registry()
