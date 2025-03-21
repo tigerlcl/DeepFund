@@ -1,12 +1,11 @@
-from graph.schema import FundState, Signal, AnalystSignal
-from graph.prompt import SENTIMENT_PROMPT
-from graph.constants import AgentKey
-from util.logger import logger
-from graph.state import agent_call
-from apis.api import get_insider_trades, get_company_news
 import pandas as pd
 import numpy as np
-from typing import Dict, Any
+from graph.schema import FundState, AnalystSignal
+from graph.constants import Signal, AgentKey
+from graph.prompt import SENTIMENT_PROMPT
+from graph.state import agent_call
+from apis.api import get_insider_trades, get_company_news
+from util.logger import logger
 
 
 # thresholds
@@ -65,12 +64,12 @@ def sentiment_agent(state: FundState):
         pydantic_model=AnalystSignal
     )
 
-    logger.log_agent_status(agent_name, ticker, "Done")
+    logger.log_signal(agent_name, ticker, signal)
     
     return {"analyst_signals": [signal]}
 
 
-def analyze_sentiment(insider_trades, company_news, params) -> Dict[str, Any]:
+def analyze_sentiment(insider_trades, company_news, params):
     """Analyze sentiment from insider trades and news."""
     # Get the signals from the insider trades
     transaction_shares = pd.Series([t.transaction_shares for t in insider_trades]).dropna()

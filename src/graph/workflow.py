@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 from langgraph.graph import StateGraph, START, END
-from graph.schema import FundState
+from graph.schema import FundState, Action
 from graph.constants import AgentKey
 from agents.registry import AgentRegistry
 from util.logger import logger
@@ -93,19 +93,34 @@ class AgentWorkflow:
             workflow = self.build()
             try:
                 logger.info("Invoking agent workflow")
-                final_fund_state = workflow.invoke(state)
+                final_state = workflow.invoke(state)
                 logger.info("Agent workflow completed successfully")
 
             except Exception as e:
                 logger.error(f"Error running deep fund: {str(e)}")
                 raise
 
-            # log porfolio agent decisions
-            for d in final_fund_state["final_decisions"]:
-                logger.info(f"Decision for {d.ticker}: {d.action} | {d.confidence:.1f}%\nReason: {d.justification}")
+            # update portfolio
+            action = final_state["decision"].action
+            shares = final_state["decision"].shares
+            trading_price = final_state["trading_price"]
+            portfolio = self._update_portfolio(portfolio, ticker, action, shares, trading_price)
+            
 
         end_time = perf_counter()
         logger.info(f"Workflow completed in {end_time - start_time:.2f} seconds")
 
-        return final_fund_state
+        return portfolio
 
+
+    def _update_portfolio(self, portfolio, ticker: str, action: Action, shares: int, trading_price: float):
+        """Update the portfolio."""
+        if action == Action.BUY:
+            portfolio.positions[ticker].shares += shares
+            portfolio.positions[ticker].value = trading_price * shares
+            portfolio.cashflow -= trading_price * shares
+        elif action == Action.SELL:
+            portfolio.positions[ticker].shares -= shares
+            portfolio.positions[ticker].value = trading_price * shares
+            portfolio.cashflow += trading_price * shares
+        return portfolio

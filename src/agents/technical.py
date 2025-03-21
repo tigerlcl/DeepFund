@@ -1,12 +1,11 @@
 import math
 import pandas as pd
-
-from apis.api import get_price_data
-from graph.schema import FundState, Signal, AnalystSignal
-from util.logger import logger
-from graph.constants import AgentKey
+from graph.schema import FundState, AnalystSignal
+from graph.constants import Signal, AgentKey
 from graph.prompt import TECHNICAL_PROMPT
 from graph.state import agent_call
+from apis.api import get_price_data
+from util.logger import logger
 
 # Technical Thresholds
 thresholds = {
@@ -75,12 +74,12 @@ def technical_agent(state: FundState):
         pydantic_model=AnalystSignal
     )
 
-    logger.log_agent_status(agent_name, ticker, "Done")
+    logger.log_signal(agent_name, ticker, signal)
 
     return {"analyst_signals": [signal]}
 
 
-def get_trend_signal(prices_df, params: dict) -> Signal:
+def get_trend_signal(prices_df, params):
     """Advanced trend following strategy using multiple timeframes and indicators"""
 
     def _calculate_ema(prices_df, window):
@@ -105,7 +104,7 @@ def get_trend_signal(prices_df, params: dict) -> Signal:
     return signal
 
 
-def get_mean_reversion_signal(prices_df, params: dict) -> Signal:
+def get_mean_reversion_signal(prices_df, params):
     """Mean reversion strategy using statistical measures and Bollinger Bands"""
     
     def _calculate_bollinger_bands(prices_df: pd.DataFrame, window: int) -> tuple[pd.Series, pd.Series]:
@@ -137,7 +136,7 @@ def get_mean_reversion_signal(prices_df, params: dict) -> Signal:
     return signal
 
 
-def get_rsi_signal(prices_df: pd.DataFrame, params: dict) -> Signal:
+def get_rsi_signal(prices_df, params):
     """RSI signal that indicate overbought/oversold conditions"""
 
     def _calculate_rsi(prices_df: pd.DataFrame, period: int) -> pd.Series:
@@ -161,7 +160,7 @@ def get_rsi_signal(prices_df: pd.DataFrame, params: dict) -> Signal:
     return signal
 
 
-def get_momentum_signal(prices_df, params: dict) -> Signal:
+def get_momentum_signal(prices_df, params):
     """Multi-factor momentum strategy"""
 
     # Price momentum with fixed months
@@ -188,7 +187,7 @@ def get_momentum_signal(prices_df, params: dict) -> Signal:
     return signal
 
 
-def get_volatility_signal(prices_df, params: dict) -> Signal:
+def get_volatility_signal(prices_df, params):
     """Volatility-based trading strategy"""
     # Calculate various volatility metrics
     returns = prices_df["close"].pct_change()

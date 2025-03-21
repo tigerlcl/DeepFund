@@ -1,9 +1,8 @@
-from typing import Dict, Any
-from graph.schema import FundState, Signal, AnalystSignal
+from graph.schema import FundState, AnalystSignal
+from graph.constants import Signal, AgentKey
 from graph.prompt import FUNDAMENTAL_PROMPT
 from graph.state import agent_call
 from apis.api import get_financial_metrics
-from graph.constants import AgentKey
 from util.logger import logger
 
 
@@ -69,11 +68,12 @@ def fundamental_agent(state: FundState):
         llm_config=llm_config, 
         pydantic_model=AnalystSignal)
     
-    logger.log_agent_status(agent_name, ticker, "Done")
+    logger.log_signal(agent_name, ticker, signal)
+    
     return {"analyst_signals": [signal]}
 
 
-def analyze_profitability(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+def analyze_profitability(metrics, params):
     """Analyze company profitability metrics."""
     score = sum(
         metric > threshold for metric, threshold in [
@@ -85,7 +85,7 @@ def analyze_profitability(metrics: Dict[str, Any], params: Dict[str, float]) -> 
     return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
 
-def analyze_growth(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+def analyze_growth(metrics, params):
     """Analyze company growth metrics."""
     score = sum(
         metric > threshold for metric, threshold in [
@@ -97,7 +97,7 @@ def analyze_growth(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
     return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
 
-def analyze_financial_health(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+def analyze_financial_health(metrics, params):
     """Analyze company financial health metrics."""
     score = 0
     if metrics.current_ratio and metrics.current_ratio > params["current_ratio"]:
@@ -110,7 +110,7 @@ def analyze_financial_health(metrics: Dict[str, Any], params: Dict[str, float]) 
     return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
 
 
-def analyze_price_ratios(metrics: Dict[str, Any], params: Dict[str, float]) -> Signal:
+def analyze_price_ratios(metrics, params):
     """Analyze company price ratio metrics."""
     score = sum(
         metric < threshold for metric, threshold in [

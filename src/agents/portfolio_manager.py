@@ -58,9 +58,9 @@ def portfolio_agent(state: FundState):
         pydantic_model=Decision
     )
 
-    logger.log_agent_status(agent_name, ticker, "Decision completed")
+    logger.log_decision(ticker, ticker_decision)
 
-    return {"decision": ticker_decision}
+    return {"decision": ticker_decision, "trading_price": current_price}
 
 
 def analyze_ticker_risk(portfolio,latest_price, ticker) -> Dict[str, Any]:
