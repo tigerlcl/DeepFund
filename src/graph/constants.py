@@ -1,6 +1,9 @@
 class AgentKey:
+    # analyst keys
     TECHNICAL = "technical"
     FUNDAMENTAL = "fundamental"
     SENTIMENT = "sentiment"
-    PORTFOLIO = "portfolio"
-    PLANNER = "planner" 
+
+    # other keys
+    PORTFOLIO = "portfolio manager"
+    PLANNER = "analyst planner" 

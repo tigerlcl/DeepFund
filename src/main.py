@@ -1,4 +1,3 @@
-import os
 import argparse
 from graph.workflow import AgentWorkflow
 from util.config import ConfigParser
@@ -8,9 +7,6 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
-
-# set working directory to the directory of the main.py file
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def main():
     """Main entry point for the DeepFund multi-agent system."""

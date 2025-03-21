@@ -8,7 +8,7 @@ class DataLoader:
     """
     def __init__(self):
         self.local_path = "config/local_portfolio.json"
-        self.ticker_pool_path =  "config/tickers.json"
+        self.ticker_pool_path = "config/tickers.json"
 
         # Load ticker pool
         try:

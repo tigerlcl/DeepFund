@@ -6,18 +6,16 @@ trading:
   end_date: "2025-03-01"    # Optional, defaults to today
   ticker_scope: "test"   # References a scope in tickers.json
 
-# Workflow settings
-workflow:
-  image_path: "image/workflow.png" # relative to main.py
-  analysts:
-    - fundamental
-    # - risk
-    # - technical
-    # - sentiment
+# Analysts to run, refer to graph.constants.py
+workflow_analysts:
+  - fundamental
+  # - risk
+  # - technical
+  # - sentiment
 
 # LLM model settings
 llm:
   provider: "Ollama"  # OpenAI, Groq, Anthropic, Deepseek, Ollama
-  model: "deepseek-r1:latest"
+  model: "llama3.1:8b"
   temperature: 0.5
 

@@ -49,7 +49,8 @@ def technical_agent(state: FundState):
 
     # Get the price data
     prices_df = get_price_data(ticker=ticker, start_date=start_date, end_date=end_date)
-    if not prices_df:
+    if prices_df is None:
+        logger.error(f"Failed to fetch price data for {ticker}")
         return state
     
     # Analyze technical indicators

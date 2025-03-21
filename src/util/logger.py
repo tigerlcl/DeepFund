@@ -11,7 +11,7 @@ class DeepFundLogger:
         Args:
             log_dict: Dictionary containing log configuration.
         """
-        self.log_dir = 'logs'
+        self.log_dir = os.path.join(os.getcwd(), 'logs')
         self.log_level = 'INFO'
         
         # Create log directory if it doesn't exist
