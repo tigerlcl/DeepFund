@@ -5,7 +5,7 @@ from graph.state import agent_call
 from graph.prompt import PORTFOLIO_PROMPT
 from graph.schema import Signal, Decision, Position
 from apis.api import get_price_data
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 # Risk Thresholds
 thresholds = {
@@ -44,7 +44,7 @@ def portfolio_agent(state: FundState):
 
     # make prompt
     prompt = PORTFOLIO_PROMPT.format(
-        ticker_signals=analyst_signals,
+        ticker_signals=signal_to_prompt(analyst_signals),
         current_price=current_price,
         max_shares=max_shares,
         portfolio_cash=portfolio.cashflow,
@@ -65,7 +65,10 @@ def portfolio_agent(state: FundState):
 
 def analyze_ticker_risk(portfolio,latest_price, ticker) -> Dict[str, Any]:
     """Analyzes risk factors for a given ticker based on portfolio composition"""
-    current_position_value = portfolio.positions[ticker].shares * latest_price
+    # Get current position value (0 if no position exists)
+    current_position_value = 0
+    if ticker in portfolio.positions:
+        current_position_value = portfolio.positions[ticker].shares * latest_price
     total_portfolio_value = portfolio.cashflow + sum(portfolio.positions[t].value for t in portfolio.positions)
     
     position_limit = total_portfolio_value * thresholds["position_factor_gt"]
@@ -87,3 +90,7 @@ def analyze_ticker_risk(portfolio,latest_price, ticker) -> Dict[str, Any]:
         "remaining_position_limit": float(remaining_position_limit),
         "position_limit": float(position_limit),
     }
+
+def signal_to_prompt(signals: List[Signal]) -> str:
+    """Converts a list of signals to a string for the portfolio manager prompt"""
+    return "\n".join([f"{s.signal}: {s.justification}" for s in signals])

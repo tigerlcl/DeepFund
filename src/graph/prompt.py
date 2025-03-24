@@ -45,8 +45,7 @@ The following signals have been generated from our analysis:
 DECISION_OUTPUT_FORMAT = """
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
-- shares: Number of shares to buy, sell, or hold
-- confidence: A float between 0 and 1
+- shares: Number of shares to buy or sell, set 0 for hold
 - justification: A brief explanation of your decision
 
 Your response should be well-reasoned and consider all aspects of the analysis.
@@ -79,6 +78,6 @@ Here are the available analysts:
 {analysts}
 
 You must provide your decision as a structured output with the following fields:
-- analyst: selected one or many of the analysts
+- analysts: selected one or at most 5 analysts
 - justification: brief explanation of your selection
 """

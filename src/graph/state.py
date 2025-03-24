@@ -22,13 +22,9 @@ def agent_call(prompt, llm_config, pydantic_model, max_retries: int = 3):
     for attempt in range(max_retries):
         try:
             # Log the attempt
-            logger.info(f"Calling LLM (attempt {attempt + 1}/{max_retries})")
             result = llm.invoke(prompt)
-
-            return pydantic_model(**result)
-        
+            return result
         except Exception as e:
-            logger.error(f"Error - retry {attempt + 1}/{max_retries}")
             if attempt == max_retries - 1:
                 logger.error(f"Error in LLM call after {max_retries} attempts: {e}")
                 # Use model's default values when error occurs

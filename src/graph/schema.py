@@ -23,14 +23,8 @@ class Decision(BaseModel):
         default=str(Action.HOLD)
     )
     shares: int = Field(
-        description="Number of shares to buy, sell, or hold",
+        description="Number of shares to buy or sell, set 0 for hold",
         default=0
-    )
-    confidence: float = Field(
-        description="Confidence score between 0 and 1",
-        ge=0.0,
-        le=1.0,
-        default=0.0
     )
     justification: str = Field(
         description="Brief explanation for the decision",

@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 
 class PlannerOutput(BaseModel):
     """Pydantic model for planner agent output."""
-    analyst: List[str] = Field(
+    analysts: List[str] = Field(
         description="List of selected analysts",
         default=AgentRegistry.get_all_analyst_keys()
     )

@@ -19,7 +19,7 @@ class AgentWorkflow:
 
     def build(self) -> StateGraph:
         """Build the workflow"""
-        logger.info("Building workflow")
+        # logger.info("Building workflow")
 
         # Create the workflow
         graph = StateGraph(FundState)
@@ -42,10 +42,7 @@ class AgentWorkflow:
         graph.add_edge(AgentKey.PORTFOLIO, END) # Route to portfolio manager
 
         # compile the workflow
-        workflow = graph.compile()
-
-        logger.info("Workflow compiled successfully")
-        
+        workflow = graph.compile()        
         return workflow 
         
     def analyst_router(self, state: FundState):
@@ -91,11 +88,9 @@ class AgentWorkflow:
 
             # build the workflow
             workflow = self.build()
+            logger.info(f"{ticker} workflow compiled successfully")
             try:
-                logger.info("Invoking agent workflow")
                 final_state = workflow.invoke(state)
-                logger.info("Agent workflow completed successfully")
-
             except Exception as e:
                 logger.error(f"Error running deep fund: {str(e)}")
                 raise

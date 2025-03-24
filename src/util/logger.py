@@ -69,12 +69,12 @@ class DeepFundLogger:
 
     def log_decision(self, ticker: str, d: Decision):
         """Log the decision of a ticker."""
-        msg = f"Decision for {ticker}: {d.action} | {d.confidence:.1f}%\nReason: {d.justification}"
+        msg = f"Decision for {ticker}: {d.action} | Reason: {d.justification}"
         self.info(msg)
 
     def log_signal(self, agent_name: str, ticker: str, s: AnalystSignal):
         """Log the signal of a ticker."""
-        msg = f"Agent: {agent_name} | Ticker: {ticker} | Signal: {s.signal}\nJustification: {s.justification}"
+        msg = f"Agent: {agent_name} | Ticker: {ticker} | Signal: {s.signal} | Justification: {s.justification}"
         self.info(msg)
         
 # Create a global logger instance
