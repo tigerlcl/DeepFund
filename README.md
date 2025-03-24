@@ -26,7 +26,7 @@ Pre-requisite: Install Conda (if not already installed): Go to [anaconda.com/dow
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/IatomicreactorI/deepfund.git
+git clone https://github.com/tigerlcl/deepfund.git
 cd deepfund
 ```
 

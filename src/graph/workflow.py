@@ -3,6 +3,7 @@ from langgraph.graph import StateGraph, START, END
 from graph.schema import FundState, Action
 from graph.constants import AgentKey
 from agents.registry import AgentRegistry
+from agents.planner import planner_agent
 from util.logger import logger
 from time import perf_counter
 
@@ -11,11 +12,16 @@ class AgentWorkflow:
     """Trading Decision Workflow."""
 
     def __init__(self, config: Dict[str, Any], portfolio: dict, tickers: list):
-        self.workflow_analysts = config['workflow_analysts']
         self.trading_config = config['trading']
         self.llm_config = config['llm']
         self.tickers = tickers
         self.init_portfolio = portfolio
+        
+        if config.get('workflow_analysts'):
+            self.workflow_analysts = config['workflow_analysts']
+        else:
+            self.workflow_analysts = None
+            self.planner_mode = True
 
     def build(self) -> StateGraph:
         """Build the workflow"""
@@ -66,9 +72,9 @@ class AgentWorkflow:
         # Otherwise, use planner agent
         else:
             logger.warning("No analysts provided, using planner agent to select.")
-            planner_agent = AgentRegistry.get_agent_func_by_key(AgentKey.PLANNER)
-            analysts = planner_agent(ticker)
+            analysts = planner_agent(ticker, self.llm_config)
             self.workflow_analysts = analysts
+            logger.info(f"Planner agent selected {len(analysts)} analysts: {analysts}")
     
     def run(self):
         """Run the workflow."""
@@ -99,8 +105,11 @@ class AgentWorkflow:
             action = final_state["decision"].action
             shares = final_state["decision"].shares
             trading_price = final_state["trading_price"]
-            portfolio = self._update_portfolio(portfolio, ticker, action, shares, trading_price)
-            
+            portfolio = self.update_portfolio(portfolio, ticker, action, shares, trading_price)
+
+            # clean analysts
+            if self.planner_mode:
+                self.workflow_analysts = None
 
         end_time = perf_counter()
         logger.info(f"Workflow completed in {end_time - start_time:.2f} seconds")
@@ -108,7 +117,7 @@ class AgentWorkflow:
         return portfolio
 
 
-    def _update_portfolio(self, portfolio, ticker: str, action: Action, shares: int, trading_price: float):
+    def update_portfolio(self, portfolio, ticker: str, action: Action, shares: int, trading_price: float):
         """Update the portfolio."""
         if action == Action.BUY:
             portfolio.positions[ticker].shares += shares

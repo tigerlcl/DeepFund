@@ -7,13 +7,6 @@ from graph.schema import Signal, Decision, Position
 from apis.api import get_price_data
 from typing import Dict, Any, List
 
-# Risk Thresholds
-thresholds = {
-    "position_factor_lt": 0.15,
-    "position_factor_gt": 0.25, 
-}
-
-
 def portfolio_agent(state: FundState):
     """Makes final trading decisions and generates orders"""
     agent_name = AgentKey.PORTFOLIO
@@ -65,6 +58,13 @@ def portfolio_agent(state: FundState):
 
 def analyze_ticker_risk(portfolio,latest_price, ticker) -> Dict[str, Any]:
     """Analyzes risk factors for a given ticker based on portfolio composition"""
+
+    # Risk Thresholds
+    thresholds = {
+        "position_factor_lt": 0.15,
+        "position_factor_gt": 0.25, 
+    }
+
     # Get current position value (0 if no position exists)
     current_position_value = 0
     if ticker in portfolio.positions:

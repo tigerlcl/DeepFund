@@ -6,6 +6,7 @@ from util.logger import logger
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 
+
 class PlannerOutput(BaseModel):
     """Pydantic model for planner agent output."""
     analysts: List[str] = Field(
@@ -32,11 +33,9 @@ def planner_agent(ticker: str, llm_config: Dict[str, Any]) -> List[str]:
     )
 
     result = agent_call(
-        agent_name=AgentKey.PLANNER,
-        ticker=ticker,
         prompt=prompt,
         llm_config=llm_config,
         pydantic_model=PlannerOutput
     )
 
-    return result.analyst
+    return result.analysts
