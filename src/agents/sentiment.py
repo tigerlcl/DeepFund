@@ -1,12 +1,11 @@
-from agent.registry import AgentKey
-from flow.schema import FundState, Signal
-from flow.prompt import SENTIMENT_PROMPT
-from util.logger import logger
-from flow.state import make_decision
-from ingestion.api import get_insider_trades, get_company_news
 import pandas as pd
 import numpy as np
-from typing import Dict, Any
+from graph.schema import FundState, AnalystSignal
+from graph.constants import Signal, AgentKey
+from graph.prompt import SENTIMENT_PROMPT
+from graph.state import agent_call
+from apis.api import get_insider_trades, get_company_news
+from util.logger import logger
 
 
 # thresholds
@@ -19,7 +18,7 @@ thresholds = {
 
 # TODO: Enhance sentiment analysis
 def sentiment_agent(state: FundState):
-    """Analyzes market sentiment and generates trading signals."""
+    """Market sentiment specialist analyzing insider activity and news sentiment."""
     agent_name = AgentKey.SENTIMENT
     end_date = state["end_date"]
     ticker = state["ticker"]
@@ -58,20 +57,19 @@ def sentiment_agent(state: FundState):
         analysis=sentiment_analysis
     )
 
-    # Get LLM decision
-    decision = make_decision(
+    # Get LLM signal
+    signal = agent_call(
         prompt=prompt,
         llm_config=llm_config,
-        agent_name=agent_name,
-        ticker=ticker
+        pydantic_model=AnalystSignal
     )
 
-    logger.log_agent_status(agent_name, ticker, "Done")
+    logger.log_signal(agent_name, ticker, signal)
     
-    return {"analyst_decisions": [decision]}
+    return {"analyst_signals": [signal]}
 
 
-def analyze_sentiment(insider_trades, company_news, params) -> Dict[str, Any]:
+def analyze_sentiment(insider_trades, company_news, params):
     """Analyze sentiment from insider trades and news."""
     # Get the signals from the insider trades
     transaction_shares = pd.Series([t.transaction_shares for t in insider_trades]).dropna()

@@ -1,9 +1,8 @@
 import argparse
-from flow.workflow import AgentWorkflow
-from util.config import ConfigManager
+from graph.workflow import AgentWorkflow
+from util.config import ConfigParser
+from util.dataloader import DataLoader
 from util.logger import logger
-from util.portfolio import Portfolio
-
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -20,18 +19,19 @@ def main():
         help="Name of configuration file"
     )
     args = parser.parse_args()
-    cfg = ConfigManager(args.config)
+    cfg = ConfigParser(args).get_config()
 
-    logger.info("Load Portfolio")
-    portfolio_driver = Portfolio()
-    portfolio = portfolio_driver.load_local_portfolio()
+    # load portfolio and tickers
+    dataloader = DataLoader()
+    portfolio = dataloader.load_local_portfolio()
+    tickers = dataloader.get_tickers(cfg['trading']['ticker_scope'])
 
     logger.info("Init DeepFund and run")
-    workflow = AgentWorkflow(cfg, portfolio)
-    new_portfolio = workflow.run()
+    app = AgentWorkflow(cfg, portfolio, tickers)
+    new_portfolio = app.run()
     
     logger.info("DeepFund run completed, update portfolio")
-    portfolio_driver.save_local_portfolio(new_portfolio)
+    dataloader.save_local_portfolio(new_portfolio)
 
 
 if __name__ == "__main__":

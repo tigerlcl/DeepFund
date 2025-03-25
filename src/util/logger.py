@@ -1,18 +1,19 @@
 import os
 import logging
 from datetime import datetime
+from graph.schema import Decision, AnalystSignal
 
 class DeepFundLogger:
     """Logger for the Deep Fund application."""
 
-    def __init__(self):
+    def __init__(self, log_level: str = 'INFO'):
         """Initialize the logger.
         
         Args:
             log_dict: Dictionary containing log configuration.
         """
-        self.log_dir = 'logs'
-        self.log_level = 'INFO'
+        self.log_dir = os.path.join(os.getcwd(), 'logs')
+        self.log_level = log_level
         
         # Create log directory if it doesn't exist
         os.makedirs(self.log_dir, exist_ok=True)
@@ -41,7 +42,6 @@ class DeepFundLogger:
         self.logger.addHandler(file_handler)
         self.logger.addHandler(console_handler)
 
-
     def debug(self, message: str):
         """Log a debug message."""
         self.logger.debug(message)
@@ -58,10 +58,6 @@ class DeepFundLogger:
         """Log an error message."""
         self.logger.error(message)
 
-    def critical(self, message: str):
-        """Log a critical message."""
-        self.logger.critical(message)
-
     def log_agent_status(self, agent_name: str, ticker: str, status: str):
         """Log the status of an agent."""
         if ticker:
@@ -70,10 +66,16 @@ class DeepFundLogger:
             msg = f"Agent: {agent_name} | Status: {status}"
 
         self.info(msg)
+
+    def log_decision(self, ticker: str, d: Decision):
+        """Log the decision of a ticker."""
+        msg = f"Decision for {ticker}: {d.action} | Reason: {d.justification}"
+        self.info(msg)
+
+    def log_signal(self, agent_name: str, ticker: str, s: AnalystSignal):
+        """Log the signal of a ticker."""
+        msg = f"Agent: {agent_name} | Ticker: {ticker} | Signal: {s.signal} | Justification: {s.justification}"
+        self.info(msg)
         
 # Create a global logger instance
 logger = DeepFundLogger()
-
-
-if __name__ == "__main__":
-    logger.info("Hello, world!")

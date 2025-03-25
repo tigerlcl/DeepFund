@@ -26,7 +26,7 @@ Pre-requisite: Install Conda (if not already installed): Go to [anaconda.com/dow
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/IatomicreactorI/deepfund.git
+git clone https://github.com/tigerlcl/deepfund.git
 cd deepfund
 ```
 
@@ -70,7 +70,6 @@ deepfund/
 │   ├── flow/                     # Workflow, prompt and schema
 │   ├── config/                   # Configuration files
 │   ├── logs/                     # Log files (auto created)
-│   ├── portfolio/                # Portfolio updates
 ├── environment.yml               # For Conda
 ├── README.md                     # Project documentation
 ├── ...

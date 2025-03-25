@@ -1,15 +1,13 @@
-OUTPUT_FORMAT = """
-You must provide your decision as a structured output with the following fields:
-- action: One of ["Buy", "Sell", "Hold"]
-- confidence: A float between 0 and 1
-- justification: A brief explanation of your decision
+ANALYST_OUTPUT_FORMAT = """
+You must provide your analysis as a structured output with the following fields:
+- signal: One of ["Bullish", "Bearish", "Neutral"]
+- justification: A brief explanation of your analysis
 
 Your response should be well-reasoned and consider all aspects of the analysis.
 """
 
-
 FUNDAMENTAL_PROMPT = """
-You are a financial analyst evaluating {ticker} based on fundamental analysis.
+You are a financial analyst evaluating ticker based on fundamental analysis.
 
 The following signals have been generated from our analysis:
 - Profitability: {analysis[profitability]}
@@ -17,11 +15,10 @@ The following signals have been generated from our analysis:
 - Financial Health: {analysis[financial_health]}
 - Price Ratios: {analysis[price_ratios]}
 
-""" + OUTPUT_FORMAT
-
+""" + ANALYST_OUTPUT_FORMAT
 
 TECHNICAL_PROMPT = """
-You are a technical analyst evaluating {ticker} using multiple technical analysis strategies.
+You are a technical analyst evaluating ticker using multiple technical analysis strategies.
 
 The following signals have been generated from our analysis:
 - Trend Following: {analysis[trend]}
@@ -30,10 +27,10 @@ The following signals have been generated from our analysis:
 - Momentum: {analysis[momentum]}
 - Volatility: {analysis[volatility]}
 
-""" + OUTPUT_FORMAT
+""" + ANALYST_OUTPUT_FORMAT
 
 SENTIMENT_PROMPT = """
-You are a sentiment analyst evaluating {ticker} based on insider trading patterns and market news.
+You are a sentiment analyst evaluating ticker based on insider trading patterns and market news.
 
 The following signals have been generated from our analysis:
 - Positive Insider Count: {analysis[positive_insider]}
@@ -42,18 +39,22 @@ The following signals have been generated from our analysis:
 - Negative News Count: {analysis[negative_news]}
 - Overall Signal: {analysis[overall_signal]}
 
-Based on this analysis, determine whether to Buy, Sell, or Hold the stock.
+""" + ANALYST_OUTPUT_FORMAT
+
+
+DECISION_OUTPUT_FORMAT = """
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
-- confidence: A float between 0 and 1
+- shares: Number of shares to buy or sell, set 0 for hold
 - justification: A brief explanation of your decision
 
-""" + OUTPUT_FORMAT
+Your response should be well-reasoned and consider all aspects of the analysis.
+"""
 
 PORTFOLIO_PROMPT = """
-You are a portfolio manager making final trading decisions based on multiple tickers. Based on the team's analysis, make your trading decisions for each ticker.
+You are a portfolio manager making final trading decisions based on the signals from the analysts.
 
-Here are the signals by ticker:
+Here are the analyst signals:
 {ticker_signals}
 
 Current Price:
@@ -65,4 +66,18 @@ Maximum Shares Allowed For Purchases:
 Portfolio Cash: {portfolio_cash}
 Current Positions: Value: {ticker_positions.value}, Shares: {ticker_positions.shares}
 
-""" + OUTPUT_FORMAT
+""" + DECISION_OUTPUT_FORMAT
+
+PLANNER_PROMPT = """
+You are a planner agent that decides which analysts to perform based on the your knowledge of the ticker and features of analysts.
+
+Here is the ticker:
+{ticker}
+
+Here are the available analysts:
+{analysts}
+
+You must provide your decision as a structured output with the following fields:
+- analysts: selected one or at most 5 analysts
+- justification: brief explanation of your selection
+"""

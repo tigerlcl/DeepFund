@@ -1,12 +1,22 @@
-# Portfolio Loading and Saving
-
 import json
 from util.logger import logger
-from flow.schema import Portfolio as PortfolioModel, Position
+from graph.schema import Portfolio as PortfolioModel, Position
 
-class Portfolio:
+class DataLoader:
+    """
+    DataLoader class for portfolio and ticker data processing.
+    """
     def __init__(self):
         self.local_path = "config/local_portfolio.json"
+        self.ticker_pool_path = "config/tickers.json"
+
+        # Load ticker pool
+        try:
+            with open(self.ticker_pool_path, 'r') as f:
+                self.ticker_pool = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            raise ValueError(f"Error loading ticker pool: {e}")
+
 
     def load_local_portfolio(self) -> PortfolioModel:
         """Load portfolio from JSON file and convert to Pydantic model."""
@@ -46,3 +56,14 @@ class Portfolio:
     def save_api_portfolio(self, portfolio: PortfolioModel):
         """Save portfolio to API."""
         pass
+
+    def get_tickers(self, ticker_scope: str = 'test'):
+        """Load tickers from the specified scope. Default to test scope."""
+
+        if ticker_scope not in self.ticker_pool:
+            logger.warning(f"Ticker scope not found, using default")
+
+        tickers = self.ticker_pool.get(ticker_scope)
+
+        return tickers
+
