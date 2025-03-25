@@ -43,9 +43,10 @@ class AgentWorkflow:
             agent_func = AgentRegistry.get_agent_func_by_key(analyst)
             graph.add_node(analyst, agent_func)
             graph.add_edge("analyst_router", analyst) # route to analyst
-            graph.add_edge(analyst, AgentKey.PORTFOLIO) # route to portfolio manager
+            graph.add_edge(analyst, AgentKey.PORTFOLIO)
         
-        graph.add_edge(AgentKey.PORTFOLIO, END) # Route to portfolio manager
+        # Route portfolio manager to end
+        graph.add_edge(AgentKey.PORTFOLIO, END)
 
         # compile the workflow
         workflow = graph.compile()        
@@ -55,7 +56,7 @@ class AgentWorkflow:
         """Routing node."""
         return state
 
-    def _load_analysts(self, ticker: str):
+    def load_analysts(self, ticker: str):
         """
         Load the analysts. It can:
         - verify and remove invalid analysts.
@@ -83,7 +84,7 @@ class AgentWorkflow:
         # will be updated by the output of workflow
         portfolio = self.init_portfolio 
         for ticker in self.tickers:
-            self._load_analysts(ticker)
+            self.load_analysts(ticker)
             state = FundState(
                 ticker = ticker,
                 portfolio = portfolio,
