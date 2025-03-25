@@ -1,8 +1,9 @@
 from graph.schema import FundState, AnalystSignal
 from graph.constants import Signal, AgentKey
 from graph.prompt import FUNDAMENTAL_PROMPT
-from graph.state import agent_call
-from apis.api import get_financial_metrics
+from apis.router import get_financial_metrics
+from llm.inference import agent_call
+
 from util.logger import logger
 
 
@@ -23,16 +24,11 @@ thresholds = {
         "debt_to_equity": 0.5,
         "fcf_to_eps_ratio": 0.8
     },
-    "price_ratios": {
-        "pe_ratio": 25,
-        "pb_ratio": 3,
-        "ps_ratio": 5
-    }
 }
 
 
 def fundamental_agent(state: FundState):
-    """Fundamental analysis specialist focusing on company financial health and valuation."""
+    """Fundamental analysis specialist focusing on company profitability, growth, financial health and price ratios."""
     agent_name = AgentKey.FUNDAMENTAL
     end_date = state["end_date"]
     ticker = state["ticker"]
@@ -41,20 +37,16 @@ def fundamental_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching financial metrics")
 
     # Get the financial metrics
-    financial_metrics = get_financial_metrics(ticker=ticker,end_date=end_date)
-    if not financial_metrics:
+    metrics = get_financial_metrics(ticker=ticker)
+    if not metrics:
         logger.error(f"Failed to fetch financial metrics for {ticker}")
         return state
-
-    # Pull the most recent metrics and thresholds
-    metrics = financial_metrics[0]
     
     # Run analysis
     signal_results = {
         "profitability": analyze_profitability(metrics, thresholds["profitability"]),
         "growth": analyze_growth(metrics, thresholds["growth"]),
         "financial_health": analyze_financial_health(metrics, thresholds["financial_health"]),
-        "price_ratios": analyze_price_ratios(metrics, thresholds["price_ratios"])
     }
     
     # Make prompt
@@ -108,17 +100,4 @@ def analyze_financial_health(metrics, params):
         metrics.free_cash_flow_per_share > metrics.earnings_per_share * params["fcf_to_eps_ratio"]):
         score += 1
     return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
-
-
-def analyze_price_ratios(metrics, params):
-    """Analyze company price ratio metrics."""
-    score = sum(
-        metric < threshold for metric, threshold in [
-            (metrics.price_to_earnings_ratio, params["pe_ratio"]),
-            (metrics.price_to_book_ratio, params["pb_ratio"]),
-            (metrics.price_to_sales_ratio, params["ps_ratio"])
-        ] if metric is not None
-    )
-    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
-
 
