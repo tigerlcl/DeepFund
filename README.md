@@ -7,18 +7,9 @@ This project serves as an ideal solution to the below key question:
 We evaluate the trading capability of LLM across various financial market given a standard environment. We present the performance in a nearly live view of trading arena. The LLM shall ingest external information and make trading decisions. 
 
 
-## Disclaimer
-
-This project is for **educational and research purposes only, it does not actually trade.** 
 
 
-## Overview
-This environment covers 5 key services, which are Data Ingestion, Trading Simulator, Analytics, Live Arena and Storage.
-
-DONE: Data Ingestion | Analytics | Trading Simulator
-
-TODO: Live Arena | Storage
-
+> Disclaimer: This project is for educational and research purposes only, it does not actually trade.
 
 
 ## Setup
@@ -41,11 +32,15 @@ conda env create -f environment.yml
 cp .env.example .env
 ```
 
-**Important**: You must set API keys for the services to work.  If you want to use LLMs from all providers, you will need to set all API keys.
 
-Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is `free` and does not require an API key.
+## API Keys
 
-For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
+### Financial Datasets
+Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is `free` and does not require an API key. For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
+
+
+### LLM Providers
+AUTH_KEYS for LLM providers are stored in the .env file.
 
 
 ## Running the System
@@ -65,9 +60,11 @@ deepfund/
 ├── src/
 │   ├── main.py                   # Main entry point
 │   ├── agents/                   # Agent build and registry
-│   ├── ingestion/                # Ingest external data
+│   ├── apis/                     # APIs for external financial data
+│   ├── llm/                     # LLM providers
+│   ├── storage/                  # Storage (memory) for portfolio, worflow, etc
 │   ├── util/                     # Utility functions and helpers
-│   ├── flow/                     # Workflow, prompt and schema
+│   ├── graph/                    # Workflow, prompt and schema
 │   ├── config/                   # Configuration files
 │   ├── logs/                     # Log files (auto created)
 ├── environment.yml               # For Conda

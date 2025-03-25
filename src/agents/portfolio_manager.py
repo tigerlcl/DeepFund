@@ -1,11 +1,11 @@
-from graph.constants import AgentKey
-from graph.workflow import FundState
-from util.logger import logger
-from graph.state import agent_call
-from graph.prompt import PORTFOLIO_PROMPT
-from graph.schema import Signal, Decision, Position
-from apis.api import get_price_data
 from typing import Dict, Any, List
+
+from graph.constants import AgentKey, Signal
+from graph.prompt import PORTFOLIO_PROMPT
+from graph.schema import Decision, Position, FundState
+from llm.inference import agent_call
+from apis.router import get_price_data
+from util.logger import logger
 
 def portfolio_agent(state: FundState):
     """Makes final trading decisions and generates orders"""

@@ -1,10 +1,12 @@
 from typing import Dict, Callable, List
 
 from graph.constants import AgentKey
-from agents.technical import technical_agent
-from agents.sentiment import sentiment_agent
-from agents.fundamental import fundamental_agent
-from agents.portfolio_manager import portfolio_agent
+from agents.analysts import (
+    technical_agent, 
+    sentiment_agent, 
+    fundamental_agent
+)
+from .portfolio_manager import portfolio_agent
 
 class AgentRegistry:
     """Registry for all agents."""
