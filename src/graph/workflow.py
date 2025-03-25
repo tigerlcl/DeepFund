@@ -1,7 +1,8 @@
-from typing import List, Dict, Any
+from typing import  Dict, Any
 from langgraph.graph import StateGraph, START, END
-from graph.schema import FundState, Action
-from graph.constants import AgentKey
+
+from .schema import FundState, Action
+from .constants import AgentKey
 from agents.registry import AgentRegistry
 from agents.planner import planner_agent
 from util.logger import logger
@@ -17,8 +18,10 @@ class AgentWorkflow:
         self.tickers = tickers
         self.init_portfolio = portfolio
         
+        # Workflow analysts
         if config.get('workflow_analysts'):
             self.workflow_analysts = config['workflow_analysts']
+            self.planner_mode = False
         else:
             self.workflow_analysts = None
             self.planner_mode = True

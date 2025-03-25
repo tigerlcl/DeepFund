@@ -7,10 +7,10 @@ trading:
   ticker_scope: "test"   # References a scope in tickers.json
 
 # Analysts to run, refer to graph.constants.py
-# workflow_analysts:
-#   - fundamental
-#   - technical
-#   - sentiment
+workflow_analysts:
+  - fundamental
+  - technical
+  - sentiment
 
 # LLM model settings
 llm:
