@@ -1,9 +1,8 @@
 from graph.schema import FundState, AnalystSignal
 from graph.constants import Signal, AgentKey
 from graph.prompt import FUNDAMENTAL_PROMPT
-from apis.router import get_financial_metrics
 from llm.inference import agent_call
-
+from apis.hub import get_financial_metrics
 from util.logger import logger
 
 

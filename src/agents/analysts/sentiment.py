@@ -5,7 +5,7 @@ from graph.constants import Signal, AgentKey
 from graph.prompt import SENTIMENT_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
-from apis.router import get_insider_trades, get_company_news
+from apis.hub import get_insider_trades, get_company_news
 from util.logger import logger
 
 

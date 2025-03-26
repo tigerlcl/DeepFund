@@ -5,7 +5,7 @@ from graph.schema import FundState, AnalystSignal
 from graph.constants import Signal, AgentKey
 from graph.prompt import TECHNICAL_PROMPT
 from llm.inference import agent_call
-from apis.router import get_price_data
+from apis.hub import get_price_data
 from util.logger import logger
 
 # Technical Thresholds

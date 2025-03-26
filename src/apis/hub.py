@@ -4,10 +4,8 @@ Helper functions to route API data to the corresponding agent.
 
 from typing import Any
 
-import apis.datamodel as mod
-
 # Financial Datasets API exports
-from apis.financialdataset import FinancialDatasetAPI, FinancialMetrics
+from apis.financialdataset import FinancialDatasetAPI
 
 # YFinance API exports (to be implemented)
 # from apis.yfinance import (
@@ -49,7 +47,7 @@ from apis.financialdataset import FinancialDatasetAPI, FinancialMetrics
 #     else:
 #         raise ValueError(f"Unsupported data source: {source}")
 
-def get_financial_metrics(ticker: str, source: str = "financialdataset") -> FinancialMetrics:
+def get_financial_metrics(ticker: str, source: str = "financialdataset") -> Any:
     """
     Get financial metrics from the specified data source.
     

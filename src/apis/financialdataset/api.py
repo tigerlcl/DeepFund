@@ -1,32 +1,7 @@
 import os
 import requests
-from typing import Optional
-from pydantic import BaseModel
 
-
-class FinancialMetrics(BaseModel):
-    """
-    Financial metrics model.
-    Feed into the fundamental analysis agent.
-    """
-    ticker: str
-
-    # Profitability metrics
-    return_on_equity: Optional[float] = None
-    net_margin: Optional[float] = None
-    operating_margin: Optional[float] = None
-
-    # Growth metrics
-    revenue_growth: Optional[float] = None
-    earnings_growth: Optional[float] = None
-    book_value_growth: Optional[float] = None
-
-    # Financial health metrics
-    current_ratio: Optional[float] = None
-    debt_to_equity: Optional[float] = None
-    earnings_per_share: Optional[float] = None
-    free_cash_flow_per_share: Optional[float] = None
-
+from apis.data_model import FinancialMetrics, InsiderTrade, MediaNews
 
 class FinancialDatasetAPI:      
     """Financial Datasets API client implementation."""
@@ -74,16 +49,17 @@ class FinancialDatasetAPI:
 
 
     def get_financial_metrics(self) -> FinancialMetrics:
-
-        # url = f"https://api.financialdatasets.ai/financial-metrics/?ticker={ticker}&report_period_lte={end_date}&limit={limit}&period={period}"
+        """
+        Get a real-time snapshot of key financial metrics and ratios for a ticker, including valuation, profitability, efficiency, liquidity, leverage, growth, and per share metrics.
+        """
         response = requests.get(
-            url=f"{self.base_url}/financial-metrics/snapshot", #  real-time snapshot
+            url=f"{self.base_url}/financial-metrics/snapshot", 
             headers={"X-API-KEY": self.api_key}, 
             params={"ticker": self.ticker}
             )
         if response.status_code != 200:
-            raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
-
+            response.raise_for_status()
+        
         # parse response into FinancialMetric object
         snapshot = response.json().get("snapshot")
         metrics = FinancialMetrics(**snapshot)
@@ -91,70 +67,70 @@ class FinancialDatasetAPI:
         return metrics
 
 
-# def get_insider_trades(
-#     ticker: str,
-#     end_date: str,
-#     start_date: str | None = None,
-#     limit: int = 1000,
-# ) -> list[InsiderTrade]:
-#     """Fetch insider trades from API."""
-#     headers = {}
-#     if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
-#         headers["X-API-KEY"] = api_key
+def get_insider_trades(
+    ticker: str,
+    end_date: str,
+    start_date: str | None = None,
+    limit: int = 1000,
+) -> list[InsiderTrade]:
+    """Get insider trades like buys and sells for a ticker by a company insider."""
+    headers = {}
+    if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
+        headers["X-API-KEY"] = api_key
 
-#     all_trades = []
-#     current_end_date = end_date
+    all_trades = []
+    current_end_date = end_date
     
-#     while True:
-#         url = f"https://api.financialdatasets.ai/insider-trades/?ticker={ticker}&filing_date_lte={current_end_date}"
-#         if start_date:
-#             url += f"&filing_date_gte={start_date}"
-#         url += f"&limit={limit}"
+    while True:
+        url = f"https://api.financialdatasets.ai/insider-trades/?ticker={ticker}&filing_date_lte={current_end_date}"
+        if start_date:
+            url += f"&filing_date_gte={start_date}"
+        url += f"&limit={limit}"
         
-#         response = requests.get(url, headers=headers)
-#         if response.status_code != 200:
-#             raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
         
-#         raw_data = response.json()
-#         trades = [
-#             InsiderTrade(
-#                 ticker=t["ticker"],
-#                 insider_name=t.get("name"),
-#                 title=t.get("title"),
-#                 is_director=t.get("is_board_director"),
-#                 transaction_date=t.get("transaction_date", "").split('T')[0],
-#                 filing_date=t["filing_date"].split('T')[0],
-#                 transaction_type="Buy" if (t.get("transaction_shares", 0) or 0) > 0 else "Sell",
-#                 shares=abs(t.get("transaction_shares", 0) or 0),
-#                 price_per_share=t.get("transaction_price_per_share"),
-#                 total_value=t.get("transaction_value"),
-#                 shares_owned_after=t.get("shares_owned_after_transaction"),
-#                 source="financialdataset"
-#             )
-#             for t in raw_data["insider_trades"]
-#         ]
+        raw_data = response.json()
+        trades = [
+            InsiderTrade(
+                ticker=t["ticker"],
+                insider_name=t.get("name"),
+                title=t.get("title"),
+                is_director=t.get("is_board_director"),
+                transaction_date=t.get("transaction_date", "").split('T')[0],
+                filing_date=t["filing_date"].split('T')[0],
+                transaction_type="Buy" if (t.get("transaction_shares", 0) or 0) > 0 else "Sell",
+                shares=abs(t.get("transaction_shares", 0) or 0),
+                price_per_share=t.get("transaction_price_per_share"),
+                total_value=t.get("transaction_value"),
+                shares_owned_after=t.get("shares_owned_after_transaction"),
+                source="financialdataset"
+            )
+            for t in raw_data["insider_trades"]
+        ]
         
-#         if not trades:
-#             break
+        if not trades:
+            break
             
-#         all_trades.extend(trades)
+        all_trades.extend(trades)
         
-#         # Only continue pagination if we have a start_date and got a full page
-#         if not start_date or len(trades) < limit:
-#             break
+        # Only continue pagination if we have a start_date and got a full page
+        if not start_date or len(trades) < limit:
+            break
             
-#         # Update end_date to the oldest filing date from current batch for next iteration
-#         current_end_date = min(t.filing_date for t in trades)
+        # Update end_date to the oldest filing date from current batch for next iteration
+        current_end_date = min(t.filing_date for t in trades)
         
-#         # If we've reached or passed the start_date, we can stop
-#         if current_end_date <= start_date:
-#             break
+        # If we've reached or passed the start_date, we can stop
+        if current_end_date <= start_date:
+            break
 
-#     return InsiderTradesResponse(
-#         ticker=ticker,
-#         trades=all_trades,
-#         source="financialdataset"
-#     ).trades
+    return InsiderTradesResponse(
+        ticker=ticker,
+        trades=all_trades,
+        source="financialdataset"
+    ).trades
 
 
 # def get_company_news(

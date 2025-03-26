@@ -4,7 +4,7 @@ from graph.constants import AgentKey, Signal
 from graph.prompt import PORTFOLIO_PROMPT
 from graph.schema import Decision, Position, FundState
 from llm.inference import agent_call
-from apis.router import get_price_data
+from apis.hub import get_price_data
 from util.logger import logger
 
 def portfolio_agent(state: FundState):
