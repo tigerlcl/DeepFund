@@ -1,16 +1,15 @@
 """Unified data models across multiple APIs."""
 
-from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-class TickerPrice(BaseModel):
-    """Unified price data model."""
+class OHLCVCandle(BaseModel):
+    """Unified OHLCV candle data model."""
     open: float
-    close: float
     high: float
     low: float
+    close: float
     volume: int
-    
+    date: str
 
 class MediaNews(BaseModel):
     """Unified news item model."""

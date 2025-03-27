@@ -2,7 +2,7 @@ from graph.constants import AgentKey
 from graph.prompt import INSIDER_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
-from apis import FinancialDatasetAPI
+from apis import AlphaVantageAPI
 from util.logger import logger
 
 # Insider trading thresholds
@@ -19,19 +19,16 @@ def insider_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching insider trades")
     
     # Get the insider trades
-    fd_api = FinancialDatasetAPI()
-    insider_trades = fd_api.get_insider_trades(
+    av_api = AlphaVantageAPI()
+    insider_trades = av_api.get_insider_trades(
         ticker=ticker,
         limit=thresholds["num_trades"],
     )
     if not insider_trades:
         return state
-    
-    # Filter out trades with no shares
-    insider_trades = filter(lambda t: t.transaction_shares is not None, insider_trades)
 
     insider_trades_str = "\n".join([
-        f"""Transaction Date: {trade.transaction_date} | Shares: {trade.transaction_shares} | Shares Before: {trade.shares_owned_before_transaction} | Shares After: {trade.shares_owned_after_transaction} | Security Title: {trade.security_title}\n"""
+        f"""Transaction Date: {trade.transaction_date} | Executive: {trade.executive} | Title: {trade.executive_title} | Security Type: {trade.security_type} | Acquisition(A)/Disposal(D): {trade.acquisition_or_disposal} | Shares: {trade.shares} | Share Price: {trade.share_price}\n"""
         for trade in insider_trades
     ])
 

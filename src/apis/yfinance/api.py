@@ -32,3 +32,9 @@ class YFinanceAPI:
             ))
 
         return news_list
+
+    def get_last_close_price(self, ticker: str) -> float:
+        """Get the last close price for a ticker."""
+        ticker_info = yf.Ticker(ticker).fast_info
+        last_price = round(ticker_info["last_price"], 2)        
+        return last_price

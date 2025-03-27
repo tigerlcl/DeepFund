@@ -4,12 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 class FinancialMetrics(BaseModel):
-    """
-    Financial metrics model. 
-    
-    Supported Agents:
-    Fundamental Analyst
-    """
+    """Financial metrics model."""
     ticker: str
     # Profitability metrics
     return_on_equity: Optional[float] = None
@@ -26,11 +21,7 @@ class FinancialMetrics(BaseModel):
     free_cash_flow_per_share: Optional[float] = None
 
 class InsiderTrade(BaseModel):
-    """Insider trade model. 
-    
-    Supported Agents:
-    Insider Analyst
-    """
+    """Insider trade model. """
     ticker: str
     transaction_date: Optional[str] = None
     transaction_shares: Optional[float] = None
