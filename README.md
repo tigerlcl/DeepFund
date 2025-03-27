@@ -7,8 +7,6 @@ This project serves as an ideal solution to the below key question:
 We evaluate the trading capability of LLM across various financial market given a standard environment. We present the performance in a nearly live view of trading arena. The LLM shall ingest external information and make trading decisions. 
 
 
-
-
 > Disclaimer: This project is for educational and research purposes only, it does not actually trade.
 
 
@@ -32,17 +30,6 @@ conda env create -f environment.yml
 cp .env.example .env
 ```
 
-
-## API Keys
-
-### Financial Datasets
-Financial data for AAPL, GOOGL, MSFT, NVDA, and TSLA is `free` and does not require an API key. For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
-
-
-### LLM Providers
-AUTH_KEYS for LLM providers are stored in the .env file.
-
-
 ## Running the System
 Enter the `src` directory and run the `main.py` file:
 ```bash
@@ -50,8 +37,6 @@ cd src
 python main.py --config default_config.yaml
 # file default_config.yaml is in the config folder
 ```
-
-<!-- **Example Output:** -->
 
 
 ## Project Structure 
@@ -73,10 +58,11 @@ deepfund/
 
 
 ## Acknowledgements
+The project get inspiration from the following projects:
 - [AI Hedge Fund](https://github.com/virattt/ai-hedge-fund)
 - [Financial Datasets](https://financialdatasets.ai/)
 - [LangGraph Tutorial](https://langchain-ai.github.io/langgraph/tutorials/workflows)
-
+- [OpenManus](https://github.com/mannaandpoem/OpenManus)
 
 
 
