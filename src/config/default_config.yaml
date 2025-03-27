@@ -10,9 +10,10 @@ trading:
 workflow_analysts:
   - fundamental
   - technical
-  - sentiment
+  - insider
+  - news
 
-# LLM model settings
+# LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
   provider: "Ollama"  # OpenAI, Groq, Anthropic, Deepseek, Ollama
   model: "llama3.1:8b"

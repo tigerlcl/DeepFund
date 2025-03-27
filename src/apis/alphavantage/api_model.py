@@ -8,5 +8,5 @@ class InsiderTrade(BaseModel):
     executive_title: str
     security_type: str
     acquisition_or_disposal: str
-    shares: float
-    share_price: float
+    shares: str
+    share_price: str

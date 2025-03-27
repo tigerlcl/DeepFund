@@ -35,7 +35,7 @@ def planner_agent(ticker: str, llm_config: Dict[str, Any]) -> List[str]:
 
     result = agent_call(
         prompt=prompt,
-        llm_config=llm_config,
+        config=llm_config,
         pydantic_model=PlannerOutput
     )
 

@@ -1,10 +1,11 @@
 """Test script"""
 
-from apis import YFinanceAPI
+from apis import AlphaVantageAPI, YFinanceAPI
 
 if __name__ == "__main__":
 
     ticker = "MSFT"
-    yf_api = YFinanceAPI()
-    result = yf_api.get_news(ticker=ticker)
+
+    av_api = AlphaVantageAPI()
+    result = av_api.get_insider_trades(ticker=ticker, limit=10)
     print(result)

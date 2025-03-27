@@ -23,7 +23,6 @@ The following signals have been generated from our analysis:
 - Trend Following: {analysis[trend]}
 - Mean Reversion: {analysis[mean_reversion]}
 - RSI: {analysis[rsi]}
-- Momentum: {analysis[momentum]}
 - Volatility: {analysis[volatility]}
 
 """ + ANALYST_OUTPUT_FORMAT

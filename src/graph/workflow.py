@@ -91,8 +91,6 @@ class AgentWorkflow:
             state = FundState(
                 ticker = ticker,
                 portfolio = portfolio,
-                start_date = self.trading_config['start_date'],
-                end_date = self.trading_config['end_date'],
                 llm_config = self.llm_config
             ) # init FundState
 

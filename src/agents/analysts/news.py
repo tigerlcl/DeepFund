@@ -35,7 +35,7 @@ def news_agent(state: FundState):
     # Get LLM signal
     signal = agent_call(
         prompt=prompt,
-        llm_config=llm_config,
+        config=llm_config,
         pydantic_model=AnalystSignal
     )
 

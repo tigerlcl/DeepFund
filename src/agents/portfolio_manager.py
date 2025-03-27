@@ -44,7 +44,7 @@ def portfolio_agent(state: FundState):
     # Generate the trading decision
     ticker_decision = agent_call(
         prompt=prompt,
-        llm_config=llm_config,
+        config=llm_config,
         pydantic_model=Decision
     )
 
