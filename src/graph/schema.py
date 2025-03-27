@@ -52,8 +52,6 @@ class FundState(TypedDict):
     # from environment
     ticker: str = Field(description="Ticker in-the-flow.")
     portfolio: Portfolio = Field(description="Portfolio for the fund.")
-    start_date: str = Field(description="Start date for the information window.")
-    end_date: str = Field(description="End date for the information window.")
     llm_config: Dict[str, Any] = Field(description="LLM configuration.")
 
     # updated by workflow

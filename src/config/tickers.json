@@ -1,8 +1,7 @@
 {
   "test": [
-    "AAPL",
     "MSFT",
-    "GOOGL"
+    "NVDA"
   ],
   "us-stocks": [
     "AAPL",
@@ -24,11 +23,5 @@
     "600031.SH",
     "600030.SH",
     "600028.SH"
-  ],
-  "HK-shares": [
-    "700.HK",
-    "3690.HK",
-    "9988.HK",
-    "5.HK"
   ]
 } 

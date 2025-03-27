@@ -1,10 +1,11 @@
 import math
 import pandas as pd
+
 from graph.schema import FundState, AnalystSignal
 from graph.constants import Signal, AgentKey
 from graph.prompt import TECHNICAL_PROMPT
-from graph.state import agent_call
-from apis.api import get_price_data
+from llm.inference import agent_call
+from apis import AlphaVantageAPI
 from util.logger import logger
 
 # Technical Thresholds
@@ -25,10 +26,6 @@ thresholds = {
         "bullish": 30,
         "bearish": 70,
     },
-    "momentum": {
-        "bullish": 0.05,
-        "bearish": -0.05,
-    },
     "volatility": {
         "bullish": 0.8,
         "bearish": 1.2,
@@ -39,25 +36,23 @@ thresholds = {
 def technical_agent(state: FundState):
     """Technical analysis specialist that excels at short to medium-term price movement predictions."""
     agent_name = AgentKey.TECHNICAL
-    start_date = state["start_date"]
-    end_date = state["end_date"]
     ticker = state["ticker"]
     llm_config = state["llm_config"]
 
     logger.log_agent_status(agent_name, ticker, "Analyzing price data")
 
     # Get the price data
-    prices_df = get_price_data(ticker=ticker, start_date=start_date, end_date=end_date)
+    av_api = AlphaVantageAPI()
+    prices_df = av_api.get_daily_candles_df(ticker=ticker)
     if prices_df is None:
         logger.error(f"Failed to fetch price data for {ticker}")
         return state
-    
+
     # Analyze technical indicators
     signal_results = {
         "trend": get_trend_signal(prices_df, thresholds["trend"]),
         "mean_reversion": get_mean_reversion_signal(prices_df, thresholds["mean_reversion"]),
         "rsi": get_rsi_signal(prices_df, thresholds["rsi"]),
-        "momentum": get_momentum_signal(prices_df, thresholds["momentum"]),
         "volatility":  get_volatility_signal(prices_df, thresholds["volatility"]),
     }
 
@@ -70,7 +65,7 @@ def technical_agent(state: FundState):
     # Get LLM signal
     signal = agent_call(
         prompt=prompt,
-        llm_config=llm_config,
+        config=llm_config,
         pydantic_model=AnalystSignal
     )
 
@@ -154,33 +149,6 @@ def get_rsi_signal(prices_df, params):
         signal = Signal.BEARISH
     elif rsi.iloc[-1] < params["bullish"]:
         signal = Signal.BULLISH
-    else:
-        signal = Signal.NEUTRAL
-
-    return signal
-
-
-def get_momentum_signal(prices_df, params):
-    """Multi-factor momentum strategy"""
-
-    # Price momentum with fixed months
-    returns = prices_df["close"].pct_change()
-    mom_1m = returns.rolling(21).sum()
-    mom_3m = returns.rolling(63).sum()
-    mom_6m = returns.rolling(126).sum()
-
-    # Calculate momentum score
-    momentum_score = (0.4 * mom_1m + 0.3 * mom_3m + 0.3 * mom_6m).iloc[-1]
-
-    # Volume momentum and confirmation
-    volume_ma = prices_df["volume"].rolling(21).mean()
-    volume_momentum = prices_df["volume"] / volume_ma
-    volume_confirmation = volume_momentum.iloc[-1] > 1.0
-
-    if momentum_score > params["bullish"] and volume_confirmation:
-        signal = Signal.BULLISH
-    elif momentum_score < params["bearish"] and volume_confirmation:
-        signal = Signal.BEARISH
     else:
         signal = Signal.NEUTRAL
 

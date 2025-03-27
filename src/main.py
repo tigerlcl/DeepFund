@@ -1,9 +1,10 @@
 import argparse
+from dotenv import load_dotenv
+
 from graph.workflow import AgentWorkflow
 from util.config import ConfigParser
-from util.dataloader import DataLoader
 from util.logger import logger
-from dotenv import load_dotenv
+from util.data_loader import DataLoader
 
 # Load environment variables from .env file
 load_dotenv()
@@ -24,7 +25,7 @@ def main():
     # load portfolio and tickers
     dataloader = DataLoader()
     portfolio = dataloader.load_local_portfolio()
-    tickers = dataloader.get_tickers(cfg['trading']['ticker_scope'])
+    tickers = dataloader.get_tickers(cfg['ticker_scope'])
 
     logger.info("Init DeepFund and run")
     app = AgentWorkflow(cfg, portfolio, tickers)

@@ -1,10 +1,13 @@
 from typing import Dict, Callable, List
 
 from graph.constants import AgentKey
-from agents.technical import technical_agent
-from agents.sentiment import sentiment_agent
-from agents.fundamental import fundamental_agent
-from agents.portfolio_manager import portfolio_agent
+from agents.analysts import (
+    technical_agent, 
+    insider_agent,
+    news_agent,
+    fundamental_agent
+)
+from .portfolio_manager import portfolio_agent
 
 class AgentRegistry:
     """Registry for all agents."""
@@ -16,8 +19,9 @@ class AgentRegistry:
     # Analyst KEYs
     ANALYST_KEYS = [
         AgentKey.TECHNICAL, 
-        AgentKey.FUNDAMENTAL, 
-        AgentKey.SENTIMENT, 
+        AgentKey.FUNDAMENTAL,
+        AgentKey.INSIDER,
+        AgentKey.NEWS,
     ]
 
     @classmethod
@@ -62,12 +66,18 @@ class AgentRegistry:
             key=AgentKey.FUNDAMENTAL,
             agent_func=fundamental_agent,
             agent_doc="Fundamental analysis specialist focusing on company financial health and valuation."
-            )
+        )
 
         cls.register_agent(
-            key=AgentKey.SENTIMENT,
-            agent_func=sentiment_agent,
-            agent_doc="Market sentiment specialist analyzing insider activity and news sentiment."
+            key=AgentKey.INSIDER,
+            agent_func=insider_agent,
+            agent_doc="Insider trading specialist analyzing insider activity patterns."
+        )
+
+        cls.register_agent(
+            key=AgentKey.NEWS,
+            agent_func=news_agent,
+            agent_doc="News sentiment specialist analyzing market news and media coverage."
         )
                 
         cls.register_agent(

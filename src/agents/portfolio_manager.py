@@ -1,11 +1,10 @@
-from graph.constants import AgentKey
-from graph.workflow import FundState
-from util.logger import logger
-from graph.state import agent_call
-from graph.prompt import PORTFOLIO_PROMPT
-from graph.schema import Signal, Decision, Position
-from apis.api import get_price_data
 from typing import Dict, Any, List
+from graph.constants import AgentKey, Signal
+from graph.prompt import PORTFOLIO_PROMPT
+from graph.schema import Decision, Position, FundState
+from llm.inference import agent_call
+from apis import YFinanceAPI
+from util.logger import logger
 
 def portfolio_agent(state: FundState):
     """Makes final trading decisions and generates orders"""
@@ -13,19 +12,17 @@ def portfolio_agent(state: FundState):
     portfolio = state["portfolio"]
     ticker = state["ticker"]
     analyst_signals = state["analyst_signals"]
-    start_date = state["start_date"]
-    end_date = state["end_date"]
     llm_config = state["llm_config"]
 
     # Aggregate signals by ticker
     logger.log_agent_status(agent_name, ticker, "Analyzing ticker risk")
 
     # Get price data and analyze risk
-    prices_df = get_price_data(ticker=ticker, start_date=start_date, end_date=end_date)
-    if prices_df is None:
+    yf_api = YFinanceAPI()
+    current_price = yf_api.get_last_close_price(ticker=ticker)
+    if current_price is None:
         return {"decision": Decision(ticker=ticker)}
     
-    current_price = prices_df["close"].iloc[-1]
     risk_data = analyze_ticker_risk(portfolio, current_price, ticker)
     position_limit = risk_data["position_limit"]
 
@@ -47,7 +44,7 @@ def portfolio_agent(state: FundState):
     # Generate the trading decision
     ticker_decision = agent_call(
         prompt=prompt,
-        llm_config=llm_config,
+        config=llm_config,
         pydantic_model=Decision
     )
 

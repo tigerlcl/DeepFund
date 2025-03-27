@@ -1,10 +1,11 @@
+from typing import List, Dict, Any
+from pydantic import BaseModel, Field
+
 from agents.registry import AgentRegistry
 from graph.constants import AgentKey
 from graph.prompt import PLANNER_PROMPT
-from graph.state import agent_call
+from llm.inference import agent_call
 from util.logger import logger
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any
 
 
 class PlannerOutput(BaseModel):
@@ -34,7 +35,7 @@ def planner_agent(ticker: str, llm_config: Dict[str, Any]) -> List[str]:
 
     result = agent_call(
         prompt=prompt,
-        llm_config=llm_config,
+        config=llm_config,
         pydantic_model=PlannerOutput
     )
 

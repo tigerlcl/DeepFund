@@ -13,7 +13,6 @@ The following signals have been generated from our analysis:
 - Profitability: {analysis[profitability]}
 - Growth: {analysis[growth]}
 - Financial Health: {analysis[financial_health]}
-- Price Ratios: {analysis[price_ratios]}
 
 """ + ANALYST_OUTPUT_FORMAT
 
@@ -24,23 +23,25 @@ The following signals have been generated from our analysis:
 - Trend Following: {analysis[trend]}
 - Mean Reversion: {analysis[mean_reversion]}
 - RSI: {analysis[rsi]}
-- Momentum: {analysis[momentum]}
 - Volatility: {analysis[volatility]}
 
 """ + ANALYST_OUTPUT_FORMAT
 
-SENTIMENT_PROMPT = """
-You are a sentiment analyst evaluating ticker based on insider trading patterns and market news.
+INSIDER_PROMPT = """
+You are an insider trading analyst evaluating ticker based on company insider trades, the stock buys and sales of public company insiders like CEOs, CFOs, and Directors.
 
-The following signals have been generated from our analysis:
-- Positive Insider Count: {analysis[positive_insider]}
-- Negative Insider Count: {analysis[negative_insider]}
-- Positive News Count: {analysis[positive_news]}
-- Negative News Count: {analysis[negative_news]}
-- Overall Signal: {analysis[overall_signal]}
+Here are recent {num_trades} insider trades:
+{trades}
 
 """ + ANALYST_OUTPUT_FORMAT
 
+NEWS_PROMPT = """
+You are a news sentiment analyst evaluating ticker based on recent news. Title, publisher, and publish time are provided.
+
+Here are recent news:
+{news}
+
+""" + ANALYST_OUTPUT_FORMAT
 
 DECISION_OUTPUT_FORMAT = """
 You must provide your decision as a structured output with the following fields:

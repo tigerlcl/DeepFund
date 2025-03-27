@@ -6,13 +6,12 @@ ticker_scope: "test"   # References a scope in tickers.json
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
-  - technical
-  - insider
+  # - technical
+  # - insider
   - news
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
-  provider: "Ollama"  # OpenAI, Groq, Anthropic, Deepseek, Ollama
-  model: "llama3.1:8b"
-  temperature: 0.5
+  provider: "DeepSeek" 
+  model: "deepseek-chat" # DeepSeek-V3
 

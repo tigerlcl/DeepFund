@@ -1,7 +1,8 @@
-from typing import List, Dict, Any
+from typing import  Dict, Any
 from langgraph.graph import StateGraph, START, END
-from graph.schema import FundState, Action
-from graph.constants import AgentKey
+
+from .schema import FundState, Action
+from .constants import AgentKey
 from agents.registry import AgentRegistry
 from agents.planner import planner_agent
 from util.logger import logger
@@ -12,13 +13,14 @@ class AgentWorkflow:
     """Trading Decision Workflow."""
 
     def __init__(self, config: Dict[str, Any], portfolio: dict, tickers: list):
-        self.trading_config = config['trading']
         self.llm_config = config['llm']
         self.tickers = tickers
         self.init_portfolio = portfolio
         
+        # Workflow analysts
         if config.get('workflow_analysts'):
             self.workflow_analysts = config['workflow_analysts']
+            self.planner_mode = False
         else:
             self.workflow_analysts = None
             self.planner_mode = True
@@ -88,8 +90,6 @@ class AgentWorkflow:
             state = FundState(
                 ticker = ticker,
                 portfolio = portfolio,
-                start_date = self.trading_config['start_date'],
-                end_date = self.trading_config['end_date'],
                 llm_config = self.llm_config
             ) # init FundState
 
