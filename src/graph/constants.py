@@ -4,7 +4,8 @@ class AgentKey:
     # analyst keys
     TECHNICAL = "technical"
     FUNDAMENTAL = "fundamental"
-    SENTIMENT = "sentiment"
+    INSIDER = "insider"
+    NEWS = "news"
 
     # workflow keys
     PORTFOLIO = "portfolio manager"

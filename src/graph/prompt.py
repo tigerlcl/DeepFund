@@ -13,7 +13,6 @@ The following signals have been generated from our analysis:
 - Profitability: {analysis[profitability]}
 - Growth: {analysis[growth]}
 - Financial Health: {analysis[financial_health]}
-- Price Ratios: {analysis[price_ratios]}
 
 """ + ANALYST_OUTPUT_FORMAT
 
@@ -29,18 +28,23 @@ The following signals have been generated from our analysis:
 
 """ + ANALYST_OUTPUT_FORMAT
 
-SENTIMENT_PROMPT = """
-You are a sentiment analyst evaluating ticker based on insider trading patterns and market news.
+INSIDER_PROMPT = """
+You are an insider trading analyst evaluating ticker based on company insider trades, the stock buys and sales of public company insiders like CEOs, CFOs, and Directors.
+
+Here are recent {num_trades} insider trades:
+{trades}
+
+""" + ANALYST_OUTPUT_FORMAT
+
+NEWS_PROMPT = """
+You are a news sentiment analyst evaluating ticker based on market news and media coverage.
 
 The following signals have been generated from our analysis:
-- Positive Insider Count: {analysis[positive_insider]}
-- Negative Insider Count: {analysis[negative_insider]}
 - Positive News Count: {analysis[positive_news]}
 - Negative News Count: {analysis[negative_news]}
 - Overall Signal: {analysis[overall_signal]}
 
 """ + ANALYST_OUTPUT_FORMAT
-
 
 DECISION_OUTPUT_FORMAT = """
 You must provide your decision as a structured output with the following fields:

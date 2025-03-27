@@ -1,61 +1,20 @@
 import os
 import requests
-
-from apis.data_model import FinancialMetrics, InsiderTrade, MediaNews
+from .api_model import FinancialMetrics, InsiderTrade
 
 class FinancialDatasetAPI:      
     """Financial Datasets API client implementation."""
 
-    def __init__(self, ticker: str):
+    def __init__(self):
         self.api_key = os.environ.get("FINANCIAL_DATASETS_API_KEY")
         self.base_url = "https://api.financialdatasets.ai"
-        self.ticker = ticker
-        # self.start_date = kwargs.get("start_date")
-        # self.end_date = kwargs.get("end_date")
-        # self.period = kwargs.get("period")
-        # self.limit = kwargs.get("limit")
 
-    # def _get_prices(self, ticker: str, start_date: str, end_date: str) -> list[PriceData]:
-    #     """Fetch price data from API."""
-    # headers = {}
-    # if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
-    #     headers["X-API-KEY"] = api_key
-
-    # url = f"https://api.financialdatasets.ai/prices/?ticker={ticker}&interval=day&interval_multiplier=1&start_date={start_date}&end_date={end_date}"
-    # response = requests.get(url, headers=headers)
-    # if response.status_code != 200:
-    #     raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
-
-    # # Convert raw response to unified model
-    # raw_data = response.json()
-    # prices = [
-    #     PriceData(
-    #         open=p["open"],
-    #         close=p["close"],
-    #         high=p["high"],
-    #         low=p["low"],
-    #         volume=p["volume"],
-    #         timestamp=datetime.fromisoformat(p["time"].replace('Z', '+00:00')),
-    #         source="financialdataset"
-    #     )
-    #     for p in raw_data["prices"]
-    # ]
-    
-    # return PriceResponse(
-    #     ticker=ticker,
-    #     prices=prices,
-    #     source="financialdataset"
-    # ).prices
-
-
-    def get_financial_metrics(self) -> FinancialMetrics:
-        """
-        Get a real-time snapshot of key financial metrics and ratios for a ticker, including valuation, profitability, efficiency, liquidity, leverage, growth, and per share metrics.
-        """
+    def get_financial_metrics(self, ticker: str) -> FinancialMetrics:
+        """Get a real-time snapshot of key financial metrics and ratios for a ticker."""
         response = requests.get(
             url=f"{self.base_url}/financial-metrics/snapshot", 
             headers={"X-API-KEY": self.api_key}, 
-            params={"ticker": self.ticker}
+            params={"ticker": ticker}
             )
         if response.status_code != 200:
             response.raise_for_status()
@@ -67,71 +26,39 @@ class FinancialDatasetAPI:
         return metrics
 
 
-def get_insider_trades(
-    ticker: str,
-    end_date: str,
-    start_date: str | None = None,
-    limit: int = 1000,
-) -> list[InsiderTrade]:
-    """Get insider trades like buys and sells for a ticker by a company insider."""
-    headers = {}
-    if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
-        headers["X-API-KEY"] = api_key
+    def get_insider_trades(self, ticker: str, limit: int) -> list[InsiderTrade]:
+        """
+        Get insider trades like buys and sells for a ticker by a company insider.
+        Trades are sorted by transaction date from the most recent date.
 
-    all_trades = []
-    current_end_date = end_date
-    
-    while True:
-        url = f"https://api.financialdatasets.ai/insider-trades/?ticker={ticker}&filing_date_lte={current_end_date}"
-        if start_date:
-            url += f"&filing_date_gte={start_date}"
-        url += f"&limit={limit}"
-        
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
-        
-        raw_data = response.json()
-        trades = [
-            InsiderTrade(
-                ticker=t["ticker"],
-                insider_name=t.get("name"),
-                title=t.get("title"),
-                is_director=t.get("is_board_director"),
-                transaction_date=t.get("transaction_date", "").split('T')[0],
-                filing_date=t["filing_date"].split('T')[0],
-                transaction_type="Buy" if (t.get("transaction_shares", 0) or 0) > 0 else "Sell",
-                shares=abs(t.get("transaction_shares", 0) or 0),
-                price_per_share=t.get("transaction_price_per_share"),
-                total_value=t.get("transaction_value"),
-                shares_owned_after=t.get("shares_owned_after_transaction"),
-                source="financialdataset"
+        Args:
+            ticker (str): The ticker symbol of the company to get insider trades for.
+            limit (int): The maximum number of insider trades to return.
+
+        Returns:
+            list[InsiderTrade]: A list of InsiderTrade objects.
+        """
+        response = requests.get(
+            url=f"{self.base_url}/insider-trades", 
+            headers={"X-API-KEY": self.api_key}, 
+            params={"ticker": ticker, "limit": limit}
             )
-            for t in raw_data["insider_trades"]
-        ]
-        
-        if not trades:
-            break
-            
-        all_trades.extend(trades)
-        
-        # Only continue pagination if we have a start_date and got a full page
-        if not start_date or len(trades) < limit:
-            break
-            
-        # Update end_date to the oldest filing date from current batch for next iteration
-        current_end_date = min(t.filing_date for t in trades)
-        
-        # If we've reached or passed the start_date, we can stop
-        if current_end_date <= start_date:
-            break
+        if response.status_code != 200:
+            response.raise_for_status()
 
-    return InsiderTradesResponse(
-        ticker=ticker,
-        trades=all_trades,
-        source="financialdataset"
-    ).trades
+        insider_trades = response.json().get('insider_trades')
+        trades = [InsiderTrade(**trade) for trade in insider_trades]
 
+        return trades
+
+
+    # def get_company_news(self, end_date: str, start_date: str | None = None, limit: int,) -> list[MediaNews]:
+    #     """Fetch company news from API."""
+    #     response = requests.get(
+    #         url=f"{self.base_url}/news", 
+    #         headers={"X-API-KEY": self.api_key}, 
+    #         params={"ticker": self.ticker, "end_date": end_date, "start_date": start_date, "limit": limit}
+    #         )
 
 # def get_company_news(
 #     ticker: str,

@@ -1,1 +1,1 @@
-from .api import FinancialDatasetAPI, FinancialMetrics
+from .api import FinancialDatasetAPI
