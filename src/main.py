@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from graph.workflow import AgentWorkflow
 from util.config import ConfigParser
 from util.logger import logger
-from storage.data_loader import DataLoader
+from util.data_loader import DataLoader
 
 # Load environment variables from .env file
 load_dotenv()

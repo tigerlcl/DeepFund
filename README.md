@@ -61,8 +61,7 @@ deepfund/
 │   ├── main.py                   # Main entry point
 │   ├── agents/                   # Agent build and registry
 │   ├── apis/                     # APIs for external financial data
-│   ├── llm/                     # LLM providers
-│   ├── storage/                  # Storage (memory) for portfolio, worflow, etc
+│   ├── llm/                      # LLM providers
 │   ├── util/                     # Utility functions and helpers
 │   ├── graph/                    # Workflow, prompt and schema
 │   ├── config/                   # Configuration files
