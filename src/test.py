@@ -1,8 +1,10 @@
 """Test script"""
 
-from apis.hub import get_financial_metrics
-
+from apis import YFinanceAPI
 
 if __name__ == "__main__":
-    metrics = get_financial_metrics(ticker="AAPL")
-    print(metrics)
+
+    ticker = "MSFT"
+    yf_api = YFinanceAPI()
+    result = yf_api.get_news(ticker=ticker)
+    print(result)

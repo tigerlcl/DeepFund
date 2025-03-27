@@ -37,12 +37,10 @@ Here are recent {num_trades} insider trades:
 """ + ANALYST_OUTPUT_FORMAT
 
 NEWS_PROMPT = """
-You are a news sentiment analyst evaluating ticker based on market news and media coverage.
+You are a news sentiment analyst evaluating ticker based on recent news. Title, publisher, and publish time are provided.
 
-The following signals have been generated from our analysis:
-- Positive News Count: {analysis[positive_news]}
-- Negative News Count: {analysis[negative_news]}
-- Overall Signal: {analysis[overall_signal]}
+Here are recent news:
+{news}
 
 """ + ANALYST_OUTPUT_FORMAT
 

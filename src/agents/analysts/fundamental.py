@@ -2,7 +2,7 @@ from graph.schema import FundState, AnalystSignal
 from graph.constants import Signal, AgentKey
 from graph.prompt import FUNDAMENTAL_PROMPT
 from llm.inference import agent_call
-from apis.hub import APIHub, Source
+from apis import FinancialDatasetAPI
 from util.logger import logger
 
 
@@ -36,7 +36,7 @@ def fundamental_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching financial metrics")
 
     # Get the financial metrics
-    fd_api = APIHub.get_api(Source.FINANCIAL_DATASET)
+    fd_api = FinancialDatasetAPI()
     metrics = fd_api.get_financial_metrics(ticker=ticker)
     if not metrics:
         logger.error(f"Failed to fetch financial metrics for {ticker}")

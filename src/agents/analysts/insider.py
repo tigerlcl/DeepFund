@@ -1,8 +1,8 @@
-from graph.constants import Signal, AgentKey
+from graph.constants import AgentKey
 from graph.prompt import INSIDER_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
-from apis.hub import APIHub, Source
+from apis import FinancialDatasetAPI
 from util.logger import logger
 
 # Insider trading thresholds
@@ -19,12 +19,11 @@ def insider_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching insider trades")
     
     # Get the insider trades
-    fd_api = APIHub.get_api(Source.FINANCIAL_DATASET)
+    fd_api = FinancialDatasetAPI()
     insider_trades = fd_api.get_insider_trades(
         ticker=ticker,
         limit=thresholds["num_trades"],
     )
-
     if not insider_trades:
         return state
     
@@ -37,10 +36,7 @@ def insider_agent(state: FundState):
     ])
 
     # Analyze insider trading signal via LLM
-    prompt = INSIDER_PROMPT.format(
-        num_trades=thresholds["num_trades"],
-        trades=insider_trades_str,
-    )
+    prompt = INSIDER_PROMPT.format(num_trades=thresholds["num_trades"],trades=insider_trades_str)
 
     signal = agent_call(
         prompt=prompt,

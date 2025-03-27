@@ -14,10 +14,7 @@ class TickerPrice(BaseModel):
 
 class MediaNews(BaseModel):
     """Unified news item model."""
-    ticker: str
     title: str
-    content: Optional[str] = None
-    author: Optional[str] = None
-    source_name: str = Field(..., description="Name of the news source")
-    url: str
-    sentiment: Optional[str] = Field(None, description="Positive, Negative, or Neutral")
+    publish_time: str
+    publisher: str
+    link: str
