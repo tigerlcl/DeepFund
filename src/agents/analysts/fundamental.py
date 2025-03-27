@@ -29,7 +29,6 @@ thresholds = {
 def fundamental_agent(state: FundState):
     """Fundamental analysis specialist focusing on company profitability, growth, financial health and price ratios."""
     agent_name = AgentKey.FUNDAMENTAL
-    end_date = state["end_date"]
     ticker = state["ticker"]
     llm_config = state["llm_config"]
 

@@ -1,4 +1,4 @@
-from graph.constants import Signal, AgentKey
+from graph.constants import AgentKey
 from graph.prompt import NEWS_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
