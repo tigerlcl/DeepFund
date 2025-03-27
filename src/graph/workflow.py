@@ -13,7 +13,6 @@ class AgentWorkflow:
     """Trading Decision Workflow."""
 
     def __init__(self, config: Dict[str, Any], portfolio: dict, tickers: list):
-        self.trading_config = config['trading']
         self.llm_config = config['llm']
         self.tickers = tickers
         self.init_portfolio = portfolio

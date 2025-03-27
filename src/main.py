@@ -25,7 +25,7 @@ def main():
     # load portfolio and tickers
     dataloader = DataLoader()
     portfolio = dataloader.load_local_portfolio()
-    tickers = dataloader.get_tickers(cfg['trading']['ticker_scope'])
+    tickers = dataloader.get_tickers(cfg['ticker_scope'])
 
     logger.info("Init DeepFund and run")
     app = AgentWorkflow(cfg, portfolio, tickers)
