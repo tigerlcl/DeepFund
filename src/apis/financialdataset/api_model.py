@@ -10,6 +10,10 @@ class FinancialMetrics(BaseModel):
     return_on_equity: Optional[float] = None
     net_margin: Optional[float] = None
     operating_margin: Optional[float] = None
+    # Cash flow metrics
+    cash_ratio: Optional[float] = None
+    free_cash_flow_yield: Optional[float] = None
+    free_cash_flow_growth: Optional[float] = None
     # Growth metrics
     revenue_growth: Optional[float] = None
     earnings_growth: Optional[float] = None

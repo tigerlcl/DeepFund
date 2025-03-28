@@ -132,9 +132,12 @@ class AgentWorkflow:
         if action == Action.BUY:
             portfolio.positions[ticker].shares += shares
             portfolio.positions[ticker].value = round(price * shares, 2)
-            portfolio.cashflow -= round(price * shares, 2)
+            portfolio.cashflow -= price * shares
         elif action == Action.SELL:
             portfolio.positions[ticker].shares -= shares
             portfolio.positions[ticker].value = round(price * shares, 2)
-            portfolio.cashflow += round(price * shares, 2)
+            portfolio.cashflow += price * shares
+
+        # round cashflow
+        portfolio.cashflow = round(portfolio.cashflow, 2)
         return portfolio

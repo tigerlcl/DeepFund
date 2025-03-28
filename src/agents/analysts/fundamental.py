@@ -18,6 +18,11 @@ thresholds = {
         "earnings_growth": 0.10,
         "book_value_growth": 0.10
     },
+    "cash_flow": {
+        "cash_ratio": 0.6,
+        "free_cash_flow_yield": 0.035, # compare to 10-year treasury yield
+        "free_cash_flow_growth": 0.025 # compare to inflation rate
+    },
     "financial_health": {
         "current_ratio": 1.5,
         "debt_to_equity": 0.5,
@@ -27,7 +32,7 @@ thresholds = {
 
 
 def fundamental_agent(state: FundState):
-    """Fundamental analysis specialist focusing on company profitability, growth, financial health and price ratios."""
+    """Fundamental analysis specialist focusing on company profitability, growth, cashflow and financial health."""
     agent_name = AgentKey.FUNDAMENTAL
     ticker = state["ticker"]
     llm_config = state["llm_config"]
@@ -46,6 +51,7 @@ def fundamental_agent(state: FundState):
         "profitability": analyze_profitability(metrics, thresholds["profitability"]),
         "growth": analyze_growth(metrics, thresholds["growth"]),
         "financial_health": analyze_financial_health(metrics, thresholds["financial_health"]),
+        "cashflow": analyze_cashflow(metrics, thresholds["cash_flow"])
     }
     
     # Make prompt
@@ -74,6 +80,19 @@ def analyze_profitability(metrics, params):
         ] if metric is not None
     )
     return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
+
+
+def analyze_cashflow(metrics, params):
+    """Analyze company cashflow metrics."""
+    score = sum(
+        metric > threshold for metric, threshold in [
+            (metrics.free_cash_flow_yield, params["free_cash_flow_yield"]),
+            (metrics.free_cash_flow_growth, params["free_cash_flow_growth"]),
+            (metrics.cash_ratio, params["cash_ratio"])
+        ] if metric is not None
+    )
+    return Signal.BULLISH if score >= 2 else Signal.BEARISH if score == 0 else Signal.NEUTRAL
+
 
 
 def analyze_growth(metrics, params):
