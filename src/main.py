@@ -32,8 +32,8 @@ def main():
     new_portfolio = app.run()
     logger.log_portfolio("Final Portfolio", new_portfolio)
     
-    # logger.info("DeepFund run completed, update portfolio")
-    # dataloader.save_local_portfolio(new_portfolio)
+    logger.info("DeepFund run completed, update portfolio")
+    dataloader.save_local_portfolio(new_portfolio)
 
 
 if __name__ == "__main__":

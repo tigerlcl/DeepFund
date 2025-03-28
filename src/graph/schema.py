@@ -1,5 +1,5 @@
 import operator
-from typing import  List, Dict, Any, Optional
+from typing import  List, Dict, Any, Optional, Literal
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
 from graph.constants import Signal, Action
@@ -7,9 +7,9 @@ from graph.constants import Signal, Action
 
 class AnalystSignal(BaseModel):
     """Signal from analyst"""
-    signal: str = Field(
-        description="Choose from Bullish, Bearish, or Neutral",
-        default=str(Signal.NEUTRAL)
+    signal: Signal = Field(
+        description=f"Choose from {Signal.BULLISH}, {Signal.BEARISH}, or {Signal.NEUTRAL}",
+        default=Signal.NEUTRAL
     )
     justification: str = Field(
         description="Brief explanation for the signal",
@@ -18,9 +18,9 @@ class AnalystSignal(BaseModel):
 
 class Decision(BaseModel):
     """Decision made by portfolio manager"""
-    action: str = Field( 
-        description="Choose from Buy, Sell, or Hold",
-        default=str(Action.HOLD)
+    action: Action = Field( 
+        description=f"Choose from {Action.BUY}, {Action.SELL}, or {Action.HOLD}",
+        default=Action.HOLD
     )
     shares: int = Field(
         description="Number of shares to buy or sell, set 0 for hold",

@@ -1,15 +1,16 @@
 # Deep Fund Configuration
 # Trading settings
 tickers:
-  - MSFT
+  # - MSFT
   - NVDA
+  # - TSLA
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
   # - technical
   # - insider
-  # - news
+  - news
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:

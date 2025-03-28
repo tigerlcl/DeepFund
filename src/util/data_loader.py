@@ -1,6 +1,6 @@
 import json
 from util.logger import logger
-from graph.schema import Portfolio as PortfolioModel, Position
+from graph.schema import Portfolio, Position
 
 class DataLoader:
     """
@@ -18,7 +18,7 @@ class DataLoader:
             raise ValueError(f"Error loading ticker pool: {e}")
 
 
-    def load_local_portfolio(self) -> PortfolioModel:
+    def load_local_portfolio(self) -> Portfolio:
         """Load portfolio from JSON file and convert to Pydantic model."""
         try:
             with open(self.local_path, 'r') as f:
@@ -30,14 +30,14 @@ class DataLoader:
                                     for k, v in data["positions"].items()}
                 
                 # Create and return a Pydantic model instance
-                return PortfolioModel(**data)
+                return Portfolio(**data)
         except FileNotFoundError:
             raise ValueError(f"Portfolio file not found: {self.local_path}")
         except json.JSONDecodeError as e:
             raise ValueError(f"Error parsing portfolio file: {e}")
         
 
-    def save_local_portfolio(self, portfolio: PortfolioModel):
+    def save_local_portfolio(self, portfolio: Portfolio):
         """Save Pydantic portfolio model to JSON file."""
         try:
             # Convert Pydantic model to dict
@@ -53,7 +53,7 @@ class DataLoader:
         """Load portfolio from API."""
         pass
     
-    def save_api_portfolio(self, portfolio: PortfolioModel):
+    def save_api_portfolio(self, portfolio: Portfolio):
         """Save portfolio to API."""
         pass
 

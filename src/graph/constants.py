@@ -13,18 +13,18 @@ class AgentKey:
 
 class Signal(str, Enum):
     """Signal type"""
-    BULLISH = "bullish"
-    BEARISH = "bearish"
-    NEUTRAL = "neutral"
+    BULLISH = "Bullish"
+    BEARISH = "Bearish"
+    NEUTRAL = "Neutral"
 
     def __str__(self) -> str:
         return self.value
 
 class Action(str, Enum):
     """Action type"""
-    BUY = "buy"
-    SELL = "sell"
-    HOLD = "hold"
+    BUY = "Buy"
+    SELL = "Sell"
+    HOLD = "Hold"
 
     def __str__(self) -> str:
         return self.value 
