@@ -9,6 +9,10 @@ We evaluate the trading capability of LLM across various financial market given 
 
 > Disclaimer: This project is for educational and research purposes only, it does not actually trade.
 
+## Market Coverage
+- US Stock (Magnificent Seven)
+- More ...
+
 
 ## Setup
 Pre-requisite: Install Conda (if not already installed): Go to [anaconda.com/download](https://www.anaconda.com/download/).
@@ -57,10 +61,20 @@ deepfund/
 ```
 
 
+# Data Source Dependency
+- Financial Dataset API
+  - Fundamental Analyst
+- Alpha Vantage API
+  - Insider Trades Analyst
+  - Techinical Analyst
+- YFinance API
+  - News Analysts
+  - Portfolio Manager
+
+
 ## Acknowledgements
 The project get inspiration from the following projects:
 - [AI Hedge Fund](https://github.com/virattt/ai-hedge-fund)
-- [Financial Datasets](https://financialdatasets.ai/)
 - [LangGraph Tutorial](https://langchain-ai.github.io/langgraph/tutorials/workflows)
 - [OpenManus](https://github.com/mannaandpoem/OpenManus)
 
