@@ -37,7 +37,7 @@ def insider_agent(state: FundState):
 
     signal = agent_call(
         prompt=prompt,
-        config=llm_config,
+        llm_config=llm_config,
         pydantic_model=AnalystSignal
     )
 

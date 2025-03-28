@@ -1,8 +1,8 @@
 import operator
-from typing import  List, Dict, Any
+from typing import  List, Dict, Any, Optional
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
-from .constants import Signal, Action
+from graph.constants import Signal, Action
 
 
 class AnalystSignal(BaseModel):
@@ -25,6 +25,10 @@ class Decision(BaseModel):
     shares: int = Field(
         description="Number of shares to buy or sell, set 0 for hold",
         default=0
+    )
+    price: Optional[float] = Field(
+        description="Trading price for the ticker.",
+        default=None
     )
     justification: str = Field(
         description="Brief explanation for the decision",
@@ -53,11 +57,10 @@ class FundState(TypedDict):
     ticker: str = Field(description="Ticker in-the-flow.")
     portfolio: Portfolio = Field(description="Portfolio for the fund.")
     llm_config: Dict[str, Any] = Field(description="LLM configuration.")
-
+    
     # updated by workflow
     # ticker -> signal of all analysts
     analyst_signals: Annotated[List[AnalystSignal], operator.add]
     # portfolio manager output
     decision: Decision
-    # trading price
-    trading_price: float = Field(description="Trading price for the ticker.")
+    

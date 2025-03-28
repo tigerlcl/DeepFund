@@ -1,13 +1,13 @@
 {
-    "cashflow": 750000.0,
+    "cashflow": 75000.0,
     "positions": {
         "MSFT": {
-            "value": 10000.0,
-            "shares": 50
+            "value": 7800.0,
+            "shares": 20
         },
         "AAPL": {
-            "value": 15000.0,
-            "shares": 60
+            "value": 22300.0,
+            "shares": 100
         }
     }
 }

@@ -47,6 +47,7 @@ DECISION_OUTPUT_FORMAT = """
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
 - shares: Number of shares to buy or sell, set 0 for hold
+- price: current price to buy or sell, set None for hold
 - justification: A brief explanation of your decision
 
 Your response should be well-reasoned and consider all aspects of the analysis.
@@ -55,17 +56,15 @@ Your response should be well-reasoned and consider all aspects of the analysis.
 PORTFOLIO_PROMPT = """
 You are a portfolio manager making final trading decisions based on the signals from the analysts.
 
+If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
+If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
+
 Here are the analyst signals:
 {ticker_signals}
 
-Current Price:
-{current_price}
-
-Maximum Shares Allowed For Purchases:
-{max_shares}
-
-Portfolio Cash: {portfolio_cash}
-Current Positions: Value: {ticker_positions.value}, Shares: {ticker_positions.shares}
+Current Price: {current_price}
+Holding Shares at current: {current_shares}
+Remaining Shares Allowed For Purchases: {remaining_shares}
 
 """ + DECISION_OUTPUT_FORMAT
 
@@ -81,4 +80,5 @@ Here are the available analysts:
 You must provide your decision as a structured output with the following fields:
 - analysts: selected one or at most 5 analysts
 - justification: brief explanation of your selection
+
 """

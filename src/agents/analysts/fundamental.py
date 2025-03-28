@@ -56,7 +56,7 @@ def fundamental_agent(state: FundState):
     # Get LLM signal
     signal = agent_call(
         prompt=prompt, 
-        config=llm_config, 
+        llm_config=llm_config, 
         pydantic_model=AnalystSignal)
     
     logger.log_signal(agent_name, ticker, signal)

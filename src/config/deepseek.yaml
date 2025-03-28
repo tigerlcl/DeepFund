@@ -1,14 +1,15 @@
 # Deep Fund Configuration
-
 # Trading settings
-ticker_scope: "test"   # References a scope in tickers.json
+tickers:
+  - MSFT
+  - NVDA
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
   # - technical
   # - insider
-  - news
+  # - news
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:

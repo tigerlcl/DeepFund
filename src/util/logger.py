@@ -1,7 +1,7 @@
 import os
 import logging
 from datetime import datetime
-from graph.schema import Decision, AnalystSignal
+from graph.schema import Decision, AnalystSignal, Portfolio
 
 class DeepFundLogger:
     """Logger for the Deep Fund application."""
@@ -69,13 +69,17 @@ class DeepFundLogger:
 
     def log_decision(self, ticker: str, d: Decision):
         """Log the decision of a ticker."""
-        msg = f"Decision for {ticker}: {d.action} | Shares: {d.shares} | Reason: {d.justification}"
+        msg = f"Decision for {ticker}: {d.action} | Shares: {d.shares} | Price: {d.price} | Reason: {d.justification}"
         self.info(msg)
 
     def log_signal(self, agent_name: str, ticker: str, s: AnalystSignal):
         """Log the signal of a ticker."""
         msg = f"Agent: {agent_name} | Ticker: {ticker} | Signal: {s.signal} | Justification: {s.justification}"
         self.info(msg)
+
+    def log_portfolio(self, msg: str, portfolio: Portfolio):
+        """Log the portfolio."""
+        self.info(f"{msg}: {portfolio}")
         
 # Create a global logger instance
 logger = DeepFundLogger()
