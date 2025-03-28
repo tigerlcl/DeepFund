@@ -1,5 +1,7 @@
 # DeepFund
 
+[![arXiv](https://img.shields.io/badge/arXiv-2503.18313-<COLOR>.svg)](https://arxiv.org/abs/2503.18313)
+
 This project serves as an ideal solution to the below key question:
 
 **Will LLM Be Professional At Fund Investment? A Live Arena perspective**
