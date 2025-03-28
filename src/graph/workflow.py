@@ -1,7 +1,7 @@
 from typing import  Dict, Any
 from langgraph.graph import StateGraph, START, END
 
-from graph.schema import FundState, Decision, Action
+from graph.schema import FundState, Decision, Action, Position
 from graph.constants import AgentKey
 from agents.registry import AgentRegistry
 from agents.planner import planner_agent
@@ -107,7 +107,7 @@ class AgentWorkflow:
 
             # update portfolio
             portfolio = self.update_portfolio_ticker(portfolio, ticker, final_state["decision"])
-            logger.log_portfolio(f"{ticker} Portfolio", portfolio)
+            logger.log_portfolio(f"{ticker} position update", portfolio)
 
             # clean analysts
             if self.planner_mode:
@@ -126,12 +126,15 @@ class AgentWorkflow:
         shares = decision.shares
         price = decision.price
 
+        if ticker not in portfolio.positions:
+            portfolio.positions[ticker] = Position(shares=0, value=0)
+
         if action == Action.BUY:
             portfolio.positions[ticker].shares += shares
-            portfolio.positions[ticker].value = price * shares
-            portfolio.cashflow -= price * shares
+            portfolio.positions[ticker].value = round(price * shares, 2)
+            portfolio.cashflow -= round(price * shares, 2)
         elif action == Action.SELL:
             portfolio.positions[ticker].shares -= shares
-            portfolio.positions[ticker].value = price * shares
-            portfolio.cashflow += price * shares
+            portfolio.positions[ticker].value = round(price * shares, 2)
+            portfolio.cashflow += round(price * shares, 2)
         return portfolio
