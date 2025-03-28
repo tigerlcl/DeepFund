@@ -25,7 +25,7 @@ git clone https://github.com/tigerlcl/deepfund.git
 cd deepfund
 ```
 
-2. Create an virtual env from the conda env configuration file:
+2. Create a virtual env from the env configuration file:
 ```bash
 conda env create -f environment.yml
 ```
@@ -37,13 +37,45 @@ cp .env.example .env
 ```
 
 ## Running the System
-Enter the `src` directory and run the `main.py` file:
+Enter the `src` directory and run the `main.py` file with configuration:
 ```bash
 cd src
-python main.py --config default_config.yaml
-# file default_config.yaml is in the config folder
+python main.py --config xxx.yaml
+```
+> configs are saved in `src/config`
+
+Config file sample:
+```yaml
+# Trading settings
+tickers:
+  - MSFT
+  - NVDA
+
+# Analysts to run, refer to graph.constants.py
+workflow_analysts:
+  - fundamental
+  - technical
+  - insider
+  - news
+
+# LLM model settings, refer to llm/inference.py: LLMConfig
+llm:
+  provider: "DeepSeek" 
+  model: "deepseek-chat" # DeepSeek-V3
 ```
 
+Running output (NVDA on Date 2025-03-28, Fundamental + News Analyst, DeepSeek-V3)
+```log
+INFO - NVDA workflow compiled successfully
+INFO - Agent: fundamental | Ticker: NVDA | Status: Fetching financial metrics
+INFO - Agent: news | Ticker: NVDA | Status: Fetching company news
+INFO - Agent: fundamental | Ticker: NVDA | Signal: Bullish | Justification: The analysis indicates strong bullish signals across all key metrics: Profitability, Growth, and Financial Health. This comprehensive strength suggests a robust financial position and potential for future outperformance.
+INFO - Agent: news | Ticker: NVDA | Signal: Bullish | Justification: The majority of the recent news articles about Nvidia (NVDA) are overwhelmingly positive, highlighting strong fundamentals, growth potential, and bullish endorsements from analysts and institutions. Titles such as 'Nvidia Stock Is Down Over 20% From Its All-Time High. Here's Why It Could Soar by the End of 2025' and 'Bank of America: NVDA Will Ultimately Head Higher, Driven by Very Strong Fundamentals' suggest optimism about the stock's future performance. Additionally, mentions of Nvidia's role in AI and partnerships (e.g., Cisco deal) further bolster the bullish sentiment. While there is one neutral piece about a shortage of Nvidia chips in China, it does not outweigh the positive sentiment from the other articles.
+INFO - Agent: portfolio manager | Ticker: NVDA | Status: Making trading decisions
+INFO - Decision for NVDA: Buy | Shares: 2 | Price: 110.3 | Reason: Despite the overwhelmingly bullish signals from the analysts, the remaining shares allowed for purchases are limited to 2.0. Given the strong fundamentals, growth potential, and positive sentiment, it is prudent to fully utilize the remaining allocation to capitalize on the bullish trend.
+INFO - NVDA position update: cashflow=74819.08 positions={'NVDA': Position(value=220.6, shares=226), ...}
+```
+> Running fact: time 36 sec, LLM cost: 0.01 CNY
 
 ## Project Structure 
 ```
@@ -68,7 +100,7 @@ deepfund/
   - Fundamental Analyst
 - Alpha Vantage API
   - Insider Trades Analyst
-  - Techinical Analyst
+  - Technical Analyst
 - YFinance API
   - News Analysts
   - Portfolio Manager
@@ -79,7 +111,6 @@ The project get inspiration from the following projects:
 - [AI Hedge Fund](https://github.com/virattt/ai-hedge-fund)
 - [LangGraph Tutorial](https://langchain-ai.github.io/langgraph/tutorials/workflows)
 - [OpenManus](https://github.com/mannaandpoem/OpenManus)
-
 
 
 ## Roadmap
