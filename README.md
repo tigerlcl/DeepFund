@@ -1,5 +1,7 @@
 # DeepFund
 
+[![arXiv](https://img.shields.io/badge/arXiv-2503.18313-<COLOR>.svg)](https://arxiv.org/abs/2503.18313)
+
 This project serves as an ideal solution to the below key question:
 
 **Will LLM Be Professional At Fund Investment? A Live Arena perspective**
@@ -8,6 +10,10 @@ We evaluate the trading capability of LLM across various financial market given 
 
 
 > Disclaimer: This project is for educational and research purposes only, it does not actually trade.
+
+## Market Coverage
+- US Stock (Magnificent Seven)
+- More ...
 
 
 ## Setup
@@ -57,10 +63,20 @@ deepfund/
 ```
 
 
+# Data Source Dependency
+- Financial Dataset API
+  - Fundamental Analyst
+- Alpha Vantage API
+  - Insider Trades Analyst
+  - Techinical Analyst
+- YFinance API
+  - News Analysts
+  - Portfolio Manager
+
+
 ## Acknowledgements
 The project get inspiration from the following projects:
 - [AI Hedge Fund](https://github.com/virattt/ai-hedge-fund)
-- [Financial Datasets](https://financialdatasets.ai/)
 - [LangGraph Tutorial](https://langchain-ai.github.io/langgraph/tutorials/workflows)
 - [OpenManus](https://github.com/mannaandpoem/OpenManus)
 

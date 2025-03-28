@@ -1,8 +1,8 @@
 from typing import  Dict, Any
 from langgraph.graph import StateGraph, START, END
 
-from .schema import FundState, Action
-from .constants import AgentKey
+from graph.schema import FundState, Decision, Action
+from graph.constants import AgentKey
 from agents.registry import AgentRegistry
 from agents.planner import planner_agent
 from util.logger import logger
@@ -12,9 +12,9 @@ from time import perf_counter
 class AgentWorkflow:
     """Trading Decision Workflow."""
 
-    def __init__(self, config: Dict[str, Any], portfolio: dict, tickers: list):
+    def __init__(self, config: Dict[str, Any], portfolio: dict):
         self.llm_config = config['llm']
-        self.tickers = tickers
+        self.tickers = config['tickers']
         self.init_portfolio = portfolio
         
         # Workflow analysts
@@ -51,7 +51,8 @@ class AgentWorkflow:
         graph.add_edge(AgentKey.PORTFOLIO, END)
 
         # compile the workflow
-        workflow = graph.compile()        
+        workflow = graph.compile()
+
         return workflow 
         
     def analyst_router(self, state: FundState):
@@ -87,11 +88,13 @@ class AgentWorkflow:
         portfolio = self.init_portfolio 
         for ticker in self.tickers:
             self.load_analysts(ticker)
+            
+            # init FundState
             state = FundState(
                 ticker = ticker,
                 portfolio = portfolio,
                 llm_config = self.llm_config
-            ) # init FundState
+            ) 
 
             # build the workflow
             workflow = self.build()
@@ -103,10 +106,8 @@ class AgentWorkflow:
                 raise
 
             # update portfolio
-            action = final_state["decision"].action
-            shares = final_state["decision"].shares
-            trading_price = final_state["trading_price"]
-            portfolio = self.update_portfolio(portfolio, ticker, action, shares, trading_price)
+            portfolio = self.update_portfolio_ticker(portfolio, ticker, final_state["decision"])
+            logger.log_portfolio(f"{ticker} Portfolio", portfolio)
 
             # clean analysts
             if self.planner_mode:
@@ -118,14 +119,19 @@ class AgentWorkflow:
         return portfolio
 
 
-    def update_portfolio(self, portfolio, ticker: str, action: Action, shares: int, trading_price: float):
-        """Update the portfolio."""
+    def update_portfolio_ticker(self, portfolio, ticker: str, decision: Decision):
+        """Update the ticker asset in the portfolio."""
+
+        action = decision.action
+        shares = decision.shares
+        price = decision.price
+
         if action == Action.BUY:
             portfolio.positions[ticker].shares += shares
-            portfolio.positions[ticker].value = trading_price * shares
-            portfolio.cashflow -= trading_price * shares
+            portfolio.positions[ticker].value = price * shares
+            portfolio.cashflow -= price * shares
         elif action == Action.SELL:
             portfolio.positions[ticker].shares -= shares
-            portfolio.positions[ticker].value = trading_price * shares
-            portfolio.cashflow += trading_price * shares
+            portfolio.positions[ticker].value = price * shares
+            portfolio.cashflow += price * shares
         return portfolio

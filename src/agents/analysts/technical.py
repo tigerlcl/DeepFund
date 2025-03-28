@@ -1,6 +1,5 @@
 import math
 import pandas as pd
-
 from graph.schema import FundState, AnalystSignal
 from graph.constants import Signal, AgentKey
 from graph.prompt import TECHNICAL_PROMPT
@@ -65,7 +64,7 @@ def technical_agent(state: FundState):
     # Get LLM signal
     signal = agent_call(
         prompt=prompt,
-        config=llm_config,
+        llm_config=llm_config,
         pydantic_model=AnalystSignal
     )
 
