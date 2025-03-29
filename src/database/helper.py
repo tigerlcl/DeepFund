@@ -34,7 +34,7 @@ class DeepFundDB:
             logger.error(f"Config not found: {e}")
             return None
 
-    def create_config(self, config) -> Optional[str]:
+    def create_config(self, config: Dict) -> Optional[str]:
         """Create a new config entry."""
         try:
             conn = self._get_connection()
@@ -47,11 +47,11 @@ class DeepFundDB:
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (
                 config_id,
-                config.exp_name,
+                config["exp_name"],
                 datetime.now().isoformat(),
                 has_planner,
-                config.llm_model,
-                config.llm_provider
+                config["llm"]["model"],
+                config["llm"]["provider"]
             ))
             
             conn.commit()
@@ -180,7 +180,7 @@ class DeepFundDB:
             cursor.execute('''
                 INSERT INTO signal (id, portfolio_id, updated_at, ticker, llm_prompt,
                                   analyst, signal, justification)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 signal_id,
                 portfolio_id,
