@@ -1,7 +1,8 @@
 # Deep Fund Configuration
-exp_name: "deepseek-test"
+exp_name: "development"
 
 # Trading settings
+cashflow: 100000
 tickers:
   - MSFT
   - NVDA
@@ -9,9 +10,9 @@ tickers:
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
+  - news
   - technical
   - insider
-  - news
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:

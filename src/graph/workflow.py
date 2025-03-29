@@ -1,7 +1,7 @@
+import uuid
 from typing import  Dict, Any
 from langgraph.graph import StateGraph, START, END
-
-from graph.schema import FundState, Decision, Action, Position
+from graph.schema import FundState, Portfolio,Decision, Action, Position
 from graph.constants import AgentKey
 from agents.registry import AgentRegistry
 from agents.planner import planner_agent
@@ -15,7 +15,12 @@ class AgentWorkflow:
     def __init__(self, config: Dict[str, Any], portfolio: dict):
         self.llm_config = config['llm']
         self.tickers = config['tickers']
-        self.init_portfolio = portfolio
+
+        # parse portfolio
+        portfolio['id'] = str(uuid.uuid4()) # generate new id
+        portfolio['positions'] = {k: Position(**v) for k, v in portfolio['positions'].items()}
+        self.init_portfolio = Portfolio(**portfolio)
+        logger.info(f"Portfolio ID: {self.init_portfolio.id}")
         
         # Workflow analysts
         if config.get('workflow_analysts'):
@@ -25,10 +30,9 @@ class AgentWorkflow:
             self.workflow_analysts = None
             self.planner_mode = True
 
+
     def build(self) -> StateGraph:
         """Build the workflow"""
-        # logger.info("Building workflow")
-
         # Create the workflow
         graph = StateGraph(FundState)
         
@@ -78,9 +82,8 @@ class AgentWorkflow:
             logger.warning("No analysts provided, using planner agent to select.")
             analysts = planner_agent(ticker, self.llm_config)
             self.workflow_analysts = analysts
-            logger.info(f"Planner agent selected {len(analysts)} analysts: {analysts}")
     
-    def run(self):
+    def run(self) -> Dict[str, Any]:
         """Run the workflow."""
         start_time = perf_counter()
 
@@ -116,10 +119,11 @@ class AgentWorkflow:
         end_time = perf_counter()
         logger.info(f"Workflow completed in {end_time - start_time:.2f} seconds")
 
-        return portfolio
+        # Convert Pydantic model to dict
+        return portfolio.model_dump()
 
 
-    def update_portfolio_ticker(self, portfolio, ticker: str, decision: Decision):
+    def update_portfolio_ticker(self, portfolio: Portfolio, ticker: str, decision: Decision) -> Portfolio:
         """Update the ticker asset in the portfolio."""
 
         action = decision.action
@@ -140,4 +144,5 @@ class AgentWorkflow:
 
         # round cashflow
         portfolio.cashflow = round(portfolio.cashflow, 2)
+
         return portfolio

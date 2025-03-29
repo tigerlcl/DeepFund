@@ -55,7 +55,6 @@ tickers:
 workflow_analysts:
   - fundamental
   - technical
-  - insider
   - news
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
