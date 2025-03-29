@@ -12,8 +12,9 @@ dependencies:
   - requests
   - yfinance
   - pip:
-    - langgraph
+    - pydantic
     - typing-extensions 
+    - langgraph
     - langchain-openai
     - langchain-anthropic
     - langchain-deepseek

@@ -1,5 +1,5 @@
 import operator
-from typing import  List, Dict, Any, Optional, Literal
+from typing import  List, Dict, Any, Optional
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
 from graph.constants import Signal, Action
@@ -47,6 +47,7 @@ class Position(BaseModel):
 
 class Portfolio(BaseModel):
     """Portfolio state when running the workflow."""
+    id: str = Field(description="Portfolio id.")
     cashflow: float = Field(description="Cashflow for the fund.")
     positions: dict[str, Position] = Field(description="Positions for each ticker.")
 

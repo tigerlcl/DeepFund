@@ -13,6 +13,7 @@ The following signals have been generated from our analysis:
 - Profitability: {analysis[profitability]}
 - Growth: {analysis[growth]}
 - Financial Health: {analysis[financial_health]}
+- Cashflow: {analysis[cashflow]}
 
 """ + ANALYST_OUTPUT_FORMAT
 

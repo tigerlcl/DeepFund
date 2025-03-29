@@ -12,7 +12,7 @@ class DeepFundLogger:
         Args:
             log_dict: Dictionary containing log configuration.
         """
-        self.log_dir = os.path.join(os.getcwd(), 'logs')
+        self.log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
         self.log_level = log_level
         
         # Create log directory if it doesn't exist
@@ -34,7 +34,7 @@ class DeepFundLogger:
         console_handler.setLevel(self.log_level)
         
         # Create formatter
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
         
@@ -69,7 +69,7 @@ class DeepFundLogger:
 
     def log_decision(self, ticker: str, d: Decision):
         """Log the decision of a ticker."""
-        msg = f"Decision for {ticker}: {d.action} | Shares: {d.shares} | Price: {d.price} | Reason: {d.justification}"
+        msg = f"Decision for {ticker}: {d.action} | Shares: {d.shares} | Price: {d.price} | Justification: {d.justification}"
         self.info(msg)
 
     def log_signal(self, agent_name: str, ticker: str, s: AnalystSignal):

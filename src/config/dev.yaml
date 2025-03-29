@@ -1,5 +1,8 @@
 # Deep Fund Configuration
+exp_name: "development"
+
 # Trading settings
+cashflow: 100000
 tickers:
   - MSFT
   - NVDA
@@ -7,13 +10,12 @@ tickers:
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
+  - news
   - technical
   - insider
-  - news
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
-  provider: "Ollama"  # OpenAI, Groq, Anthropic, Deepseek, Ollama
-  model: "llama3.1:8b"
-  temperature: 0.5
+  provider: "DeepSeek" 
+  model: "deepseek-chat" # DeepSeek-V3
 

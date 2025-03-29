@@ -4,8 +4,8 @@ from graph.prompt import PORTFOLIO_PROMPT
 from graph.schema import Decision, FundState
 from llm.inference import agent_call
 from apis import YFinanceAPI
+from database.helper import db
 from util.logger import logger
-
 
 # Portfolio Manager Thresholds
 thresholds = {
@@ -35,7 +35,6 @@ def portfolio_agent(state: FundState):
         current_price=current_price,
         current_shares=current_shares,
         remaining_shares=remaining_shares,
-
     )
 
     # Generate the trading decision
@@ -45,11 +44,14 @@ def portfolio_agent(state: FundState):
         pydantic_model=Decision
     )
 
+    # save decision
     logger.log_decision(ticker, ticker_decision)
+    db.save_decision(portfolio.id, ticker, prompt, ticker_decision)
+
     return {"decision": ticker_decision}
 
 
-def calculate_ticker_shares(portfolio,current_price, ticker) -> float:
+def calculate_ticker_shares(portfolio, current_price, ticker) -> float:
     """calculate the remaining shares allowed for purchases for a given ticker based on portfolio composition"""
 
     # Get current position value (0 if no position exists)

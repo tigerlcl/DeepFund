@@ -38,4 +38,5 @@ def planner_agent(ticker: str, llm_config: Dict[str, Any]) -> List[str]:
         pydantic_model=PlannerOutput
     )
 
+    logger.info(f"Planner agent selected {result.analysts}\nJustification: {result.justification}")
     return result.analysts

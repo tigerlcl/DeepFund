@@ -5,6 +5,7 @@ from graph.constants import Signal, AgentKey
 from graph.prompt import TECHNICAL_PROMPT
 from llm.inference import agent_call
 from apis import AlphaVantageAPI
+from database.helper import db
 from util.logger import logger
 
 # Technical Thresholds
@@ -37,7 +38,8 @@ def technical_agent(state: FundState):
     agent_name = AgentKey.TECHNICAL
     ticker = state["ticker"]
     llm_config = state["llm_config"]
-
+    portfolio_id = state["portfolio"].id
+    
     logger.log_agent_status(agent_name, ticker, "Analyzing price data")
 
     # Get the price data
@@ -68,7 +70,9 @@ def technical_agent(state: FundState):
         pydantic_model=AnalystSignal
     )
 
+    # save signal
     logger.log_signal(agent_name, ticker, signal)
+    db.save_signal(portfolio_id, agent_name, ticker, prompt, signal)
 
     return {"analyst_signals": [signal]}
 
