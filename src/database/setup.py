@@ -32,7 +32,6 @@ def init_database():
         id VARCHAR(36) PRIMARY KEY,
         config_id VARCHAR(36) NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,                   
-        name VARCHAR(100) NOT NULL,
         cashflow DECIMAL(15,2) NOT NULL,
         total_assets DECIMAL(15,2) NOT NULL,
         positions JSON NOT NULL,
@@ -60,13 +59,14 @@ def init_database():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS signal (
         id VARCHAR(36) PRIMARY KEY,
-        decision_id VARCHAR(36) NOT NULL,
+        portfolio_id VARCHAR(36) NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         ticker VARCHAR(10) NOT NULL,
         llm_prompt TEXT NOT NULL,
+        analyst VARCHAR(50) NOT NULL,
         signal VARCHAR(10) NOT NULL,
         justification TEXT NOT NULL ,
-        FOREIGN KEY (decision_id) REFERENCES decision(id)
+        FOREIGN KEY (portfolio_id) REFERENCES portfolio(id)
     )
     ''')
 
@@ -75,9 +75,10 @@ def init_database():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_portfolio_updated ON portfolio(updated_at)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_decision_portfolio ON decision(portfolio_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_decision_updated ON decision(updated_at)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_signal_decision ON signal(decision_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_signal_portfolio ON signal(portfolio_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_signal_updated ON signal(updated_at)')
-
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_signal_analyst ON signal(analyst)')
+    
     conn.commit()
     conn.close()
 

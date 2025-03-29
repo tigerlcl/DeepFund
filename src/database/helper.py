@@ -3,9 +3,11 @@ import json
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
+from graph.schema import Decision, AnalystSignal
 from .setup import DB_PATH
+from util.logger import logger
 
-class DatabaseHelper:
+class DeepFundDB:
     def __init__(self):
         self.db_path = DB_PATH
 
@@ -15,98 +17,130 @@ class DatabaseHelper:
         conn.row_factory = sqlite3.Row # access columns by name
         return conn
 
-    def save_portfolio(self, name: str, cashflow: float, total_assets: float, 
-                      positions: Dict, llm_model: Optional[str] = None, 
-                      llm_provider: Optional[str] = None) -> Optional[str]:
-        """Save a new portfolio."""
+    def get_config_id_by_name(self, exp_name: str) -> Optional[str]:
+        """Get config id by experiment name."""
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            portfolio_id = str(uuid.uuid4())
+            cursor.execute('SELECT * FROM config WHERE exp_name = ?', (exp_name,))
+            row = cursor.fetchone()
+            conn.close()
+            
+            if row:
+                return row['id']
+            return None
+        except Exception as e:
+            logger.error(f"Config not found: {e}")
+            return None
+
+    def create_config(self, config) -> Optional[str]:
+        """Create a new config entry."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            config_id = str(uuid.uuid4())
+            has_planner = not config.get('workflow_analysts', None)
             cursor.execute('''
-                INSERT INTO portfolio (id, name, updated_at, cashflow, total_assets, positions, llm_model, llm_provider)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO config (id, exp_name, updated_at, has_planner, llm_model, llm_provider)
+                VALUES (?, ?, ?, ?, ?, ?)
             ''', (
-                portfolio_id,
-                name,
+                config_id,
+                config.exp_name,
                 datetime.now().isoformat(),
-                cashflow,
-                total_assets,
-                json.dumps(positions),
-                llm_model,
-                llm_provider
+                has_planner,
+                config.llm_model,
+                config.llm_provider
             ))
             
             conn.commit()
             conn.close()
-            return portfolio_id
+            return config_id
         except Exception as e:
-            print(f"Error saving portfolio: {e}")
+            logger.error(f"Error creating config: {e}")
             return None
 
-    def get_portfolio(self, name: str) -> Optional[Dict]:
-        """Get a portfolio by name."""
+    def get_latest_portfolio(self, config_id: str) -> Optional[Dict]:
+        """Get the latest portfolio for a config."""
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            cursor.execute('SELECT * FROM portfolio WHERE name = ?', (name,))
+            cursor.execute('''
+                SELECT * FROM portfolio 
+                WHERE config_id = ? 
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            ''', (config_id,))
             
             row = cursor.fetchone()
             conn.close()
             
             if row:
                 return {
+                    'id': row['id'],
                     'cashflow': row['cashflow'],
-                    'positions': json.loads(row['positions']),
+                    'positions': json.loads(row['positions'])
                 }
             return None
         except Exception as e:
-            print(f"Error getting portfolio: {e}")
+            logger.error(f"Portfolio not found: {e}")
             return None
 
-    def has_portfolio(self, name: str) -> bool:
-        """Check if a portfolio exists by name."""
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            cursor.execute('SELECT COUNT(*) FROM portfolio WHERE name = ?', (name,))
-            conn.close()
-            return cursor.fetchone() is not None
-        except Exception as e:
-            print(f"Error checking portfolio: {e}")
-            return False
-            
-    
-    def create_portfolio(self, cfg: Dict) -> Optional[str]:
+    def create_portfolio(self, config_id: str, cashflow: float) -> Optional[str]:
         """Create a new portfolio."""
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
+            
             portfolio_id = str(uuid.uuid4())
-            cursor.execute('INSERT INTO portfolio (id, name, updated_at, cashflow, total_assets, positions, llm_model, llm_provider) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (
+            cursor.execute('''
+                INSERT INTO portfolio (id, config_id, updated_at, cashflow, total_assets, positions)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
                 portfolio_id,
-                cfg.exp_name, 
-                datetime.now().isoformat(), 
-                cfg.cashflow, 
-                0, 
-                json.dumps({}),
-                cfg.llm.model, 
-                cfg.llm.provider
+                config_id,
+                datetime.now().isoformat(),
+                cashflow,
+                cashflow,
+                json.dumps({})
             ))
+            
             conn.commit()
             conn.close()
             return portfolio_id
         except Exception as e:
-            print(f"Error creating portfolio: {e}")
+            logger.error(f"Error creating portfolio: {e}")
             return None
 
-
-    def save_decision(self, portfolio_id: str, ticker: str, action: str, 
-                     shares: int, llm_prompt: Optional[str] = None,
-                     price: Optional[float] = None, 
-                     justification: Optional[str] = None) -> Optional[str]:
+    def update_portfolio(self, config_id: str, portfolio: Dict) -> bool:
+        """update portfolio incrementally."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            total_assets = portfolio['cashflow'] + sum(position['value'] for position in portfolio['positions'].values())
+            
+            cursor.execute('''
+                INSERT INTO portfolio (id, config_id, updated_at, cashflow, total_assets, positions)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                portfolio['id'],
+                config_id,
+                datetime.now().isoformat(),
+                portfolio['cashflow'],
+                total_assets,
+                json.dumps(portfolio['positions'])
+            ))
+            
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            logger.error(f"Error updating portfolio: {e}")
+            return False 
+        
+    def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: Decision):
         """Save a new decision."""
         try:
             conn = self._get_connection()
@@ -122,23 +156,21 @@ class DatabaseHelper:
                 portfolio_id,
                 datetime.now().isoformat(),
                 ticker,
-                llm_prompt,
-                action,
-                shares,
-                price,
-                justification
+                prompt,
+                str(decision.action),
+                decision.shares,
+                decision.price,
+                decision.justification
             ))
             
             conn.commit()
             conn.close()
             return decision_id
         except Exception as e:
-            print(f"Error saving decision: {e}")
+            logger.error(f"Error saving decision: {e}")
             return None
 
-    def save_signal(self, decision_id: str, ticker: str, signal: str,
-                   llm_prompt: Optional[str] = None,
-                   justification: Optional[str] = None) -> Optional[str]:
+    def save_signal(self, portfolio_id: str, analyst: str, ticker: str, prompt: str, signal: AnalystSignal):
         """Save a new signal."""
         try:
             conn = self._get_connection()
@@ -146,24 +178,25 @@ class DatabaseHelper:
             
             signal_id = str(uuid.uuid4())
             cursor.execute('''
-                INSERT INTO signal (id, decision_id, updated_at, ticker, llm_prompt,
-                                  signal, justification)
+                INSERT INTO signal (id, portfolio_id, updated_at, ticker, llm_prompt,
+                                  analyst, signal, justification)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
                 signal_id,
-                decision_id,
+                portfolio_id,
                 datetime.now().isoformat(),
                 ticker,
-                llm_prompt,
-                signal,
-                justification
+                prompt,
+                analyst,
+                str(signal.signal),
+                signal.justification
             ))
             
             conn.commit()
             conn.close()
             return signal_id
         except Exception as e:
-            print(f"Error saving signal: {e}")
+            logger.error(f"Error saving signal: {e}")
             return None
 
     def get_portfolio_decisions(self, portfolio_id: str) -> List[Dict]:
@@ -198,132 +231,5 @@ class DatabaseHelper:
             print(f"Error getting portfolio decisions: {e}")
             return []
 
-    def get_decision_signals(self, decision_id: str) -> List[Dict]:
-        """Get all signals for a decision."""
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            cursor.execute('''
-                SELECT * FROM signal 
-                WHERE decision_id = ?
-                ORDER BY updated_at DESC
-            ''', (decision_id,))
-            
-            signals = []
-            for row in cursor.fetchall():
-                signals.append({
-                    'id': row['id'],
-                    'decision_id': row['decision_id'],
-                    'updated_at': row['updated_at'],
-                    'ticker': row['ticker'],
-                    'llm_prompt': row['llm_prompt'],
-                    'signal': row['signal'],
-                    'justification': row['justification']
-                })
-            
-            conn.close()
-            return signals
-        except Exception as e:
-            print(f"Error getting decision signals: {e}")
-            return []
-
-    def log_agent_activity(self, portfolio_id: int, agent_type: str, agent_name: str, 
-                          ticker: str, activity_data: Dict, execution_id: Optional[str] = None) -> bool:
-        """Log an agent activity (signal or action)."""
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            # Generate execution_id if not provided
-            if not execution_id:
-                execution_id = str(uuid.uuid4())
-            
-            cursor.execute('''
-                INSERT INTO agent_activity 
-                (execution_id, portfolio_id, agent_type, agent_name, ticker, activity_data)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (
-                execution_id,
-                portfolio_id,
-                agent_type,
-                agent_name,
-                ticker,
-                json.dumps(activity_data)
-            ))
-            
-            conn.commit()
-            conn.close()
-            return True
-        except Exception as e:
-            print(f"Error logging agent activity: {e}")
-            return False
-
-    def get_activities_by_execution(self, execution_id: str) -> List[Dict]:
-        """Get all activities for a specific execution."""
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            cursor.execute('''
-                SELECT * FROM agent_activity 
-                WHERE execution_id = ?
-                ORDER BY activity_time
-            ''', (execution_id,))
-            
-            activities = []
-            for row in cursor.fetchall():
-                activities.append({
-                    'activity_id': row['activity_id'],
-                    'execution_id': row['execution_id'],
-                    'portfolio_id': row['portfolio_id'],
-                    'activity_time': row['activity_time'],
-                    'agent_type': row['agent_type'],
-                    'agent_name': row['agent_name'],
-                    'ticker': row['ticker'],
-                    'activity_data': json.loads(row['activity_data'])
-                })
-            
-            conn.close()
-            return activities
-        except Exception as e:
-            print(f"Error getting activities by execution: {e}")
-            return []
-
-    def get_portfolio_history(self, portfolio_id: int, 
-                            start_time: Optional[str] = None, 
-                            end_time: Optional[str] = None) -> List[Dict]:
-        """Get portfolio history within a time range."""
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            
-            query = "SELECT * FROM portfolio WHERE portfolio_id = ?"
-            params = [portfolio_id]
-            
-            if start_time:
-                query += " AND snapshot_time >= ?"
-                params.append(start_time)
-            if end_time:
-                query += " AND snapshot_time <= ?"
-                params.append(end_time)
-                
-            query += " ORDER BY snapshot_time"
-            
-            cursor.execute(query, params)
-            
-            history = []
-            for row in cursor.fetchall():
-                history.append({
-                    'portfolio_id': row['portfolio_id'],
-                    'snapshot_time': row['snapshot_time'],
-                    'cashflow': row['cashflow'],
-                    'positions': json.loads(row['positions']),
-                    'metadata': json.loads(row['metadata']) if row['metadata'] else None
-                })
-            
-            conn.close()
-            return history
-        except Exception as e:
-            print(f"Error getting portfolio history: {e}")
-            return [] 
+## init global instance
+db = DeepFundDB()

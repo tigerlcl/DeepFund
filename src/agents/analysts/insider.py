@@ -3,6 +3,7 @@ from graph.prompt import INSIDER_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
 from apis import AlphaVantageAPI
+from database.helper import db
 from util.logger import logger
 
 # Insider trading thresholds
@@ -15,6 +16,7 @@ def insider_agent(state: FundState):
     agent_name = AgentKey.INSIDER
     llm_config = state["llm_config"]
     ticker = state["ticker"]
+    portfolio_id = state["portfolio"].id
 
     logger.log_agent_status(agent_name, ticker, "Fetching insider trades")
     
@@ -41,7 +43,9 @@ def insider_agent(state: FundState):
         pydantic_model=AnalystSignal
     )
 
+    # save signal
     logger.log_signal(agent_name, ticker, signal)
+    db.save_signal(portfolio_id, agent_name, ticker, prompt, signal)
     
     return {"analyst_signals": [signal]}
 
