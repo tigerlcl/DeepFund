@@ -14,18 +14,29 @@ def init_database():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
+    # Create config table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS config (
+        id VARCHAR(36) PRIMARY KEY,
+        exp_name VARCHAR(100) NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        has_planner BOOLEAN NOT NULL DEFAULT FALSE,
+        llm_model VARCHAR(50) NOT NULL,
+        llm_provider VARCHAR(50) NOT NULL
+    )
+    ''')
+
     # Create portfolio table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS portfolio (
         id VARCHAR(36) PRIMARY KEY,
+        config_id VARCHAR(36) NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,                   
         name VARCHAR(100) NOT NULL,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        has_planner BOOLEAN NOT NULL DEFAULT FALSE,
         cashflow DECIMAL(15,2) NOT NULL,
         total_assets DECIMAL(15,2) NOT NULL,
         positions JSON NOT NULL,
-        llm_model VARCHAR(50),
-        llm_provider VARCHAR(50)
+        FOREIGN KEY (config_id) REFERENCES config(id)
     )
     ''')
 
@@ -36,11 +47,11 @@ def init_database():
         portfolio_id VARCHAR(36) NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         ticker VARCHAR(10) NOT NULL,
-        llm_prompt TEXT,
+        llm_prompt TEXT NOT NULL,
         action VARCHAR(10) NOT NULL,
         shares INTEGER NOT NULL,
-        price DECIMAL(15,2),
-        justification TEXT,
+        price DECIMAL(15,2) NOT NULL,
+        justification TEXT NOT NULL,
         FOREIGN KEY (portfolio_id) REFERENCES portfolio(id)
     )
     ''')
@@ -52,14 +63,15 @@ def init_database():
         decision_id VARCHAR(36) NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         ticker VARCHAR(10) NOT NULL,
-        llm_prompt TEXT,
+        llm_prompt TEXT NOT NULL,
         signal VARCHAR(10) NOT NULL,
-        justification TEXT,
+        justification TEXT NOT NULL ,
         FOREIGN KEY (decision_id) REFERENCES decision(id)
     )
     ''')
 
     # Create indices for better query performance
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_config_exp_name ON config(exp_name)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_portfolio_updated ON portfolio(updated_at)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_decision_portfolio ON decision(portfolio_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_decision_updated ON decision(updated_at)')

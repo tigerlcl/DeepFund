@@ -2,7 +2,7 @@ import sqlite3
 import json
 import uuid
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
 from .setup import DB_PATH
 
 class DatabaseHelper:
@@ -12,7 +12,7 @@ class DatabaseHelper:
     def _get_connection(self):
         """Get a database connection with row factory."""
         conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
+        conn.row_factory = sqlite3.Row # access columns by name
         return conn
 
     def save_portfolio(self, name: str, cashflow: float, total_assets: float, 
@@ -45,32 +45,63 @@ class DatabaseHelper:
             print(f"Error saving portfolio: {e}")
             return None
 
-    def get_portfolio(self, portfolio_id: str) -> Optional[Dict]:
-        """Get a portfolio by ID."""
+    def get_portfolio(self, name: str) -> Optional[Dict]:
+        """Get a portfolio by name."""
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            cursor.execute('SELECT * FROM portfolio WHERE id = ?', (portfolio_id,))
+            cursor.execute('SELECT * FROM portfolio WHERE name = ?', (name,))
             
             row = cursor.fetchone()
             conn.close()
             
             if row:
                 return {
-                    'id': row['id'],
-                    'name': row['name'],
-                    'updated_at': row['updated_at'],
                     'cashflow': row['cashflow'],
-                    'total_assets': row['total_assets'],
                     'positions': json.loads(row['positions']),
-                    'llm_model': row['llm_model'],
-                    'llm_provider': row['llm_provider']
                 }
             return None
         except Exception as e:
             print(f"Error getting portfolio: {e}")
             return None
+
+    def has_portfolio(self, name: str) -> bool:
+        """Check if a portfolio exists by name."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM portfolio WHERE name = ?', (name,))
+            conn.close()
+            return cursor.fetchone() is not None
+        except Exception as e:
+            print(f"Error checking portfolio: {e}")
+            return False
+            
+    
+    def create_portfolio(self, cfg: Dict) -> Optional[str]:
+        """Create a new portfolio."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            portfolio_id = str(uuid.uuid4())
+            cursor.execute('INSERT INTO portfolio (id, name, updated_at, cashflow, total_assets, positions, llm_model, llm_provider) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (
+                portfolio_id,
+                cfg.exp_name, 
+                datetime.now().isoformat(), 
+                cfg.cashflow, 
+                0, 
+                json.dumps({}),
+                cfg.llm.model, 
+                cfg.llm.provider
+            ))
+            conn.commit()
+            conn.close()
+            return portfolio_id
+        except Exception as e:
+            print(f"Error creating portfolio: {e}")
+            return None
+
 
     def save_decision(self, portfolio_id: str, ticker: str, action: str, 
                      shares: int, llm_prompt: Optional[str] = None,
