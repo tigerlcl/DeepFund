@@ -38,11 +38,10 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# graph
-*.png
 
 # Txt files
 *.txt
 
-# Logs
+# local files
 logs/
+asset/

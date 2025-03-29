@@ -4,19 +4,10 @@ from graph.schema import Portfolio, Position
 
 class DataLoader:
     """
-    DataLoader class for portfolio and ticker data processing.
+    DataLoader class for portfolio
     """
     def __init__(self):
-        self.local_path = "config/local_portfolio.json"
-        self.ticker_pool_path = "config/tickers.json"
-
-        # Load ticker pool
-        try:
-            with open(self.ticker_pool_path, 'r') as f:
-                self.ticker_pool = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            raise ValueError(f"Error loading ticker pool: {e}")
-
+        self.local_path = "asset/local_portfolio.json"
 
     def load_local_portfolio(self) -> Portfolio:
         """Load portfolio from JSON file and convert to Pydantic model."""
@@ -49,21 +40,4 @@ class DataLoader:
         except Exception as e:
             raise ValueError(f"Error saving portfolio file: {e}")
         
-    def load_api_portfolio(self):
-        """Load portfolio from API."""
-        pass
-    
-    def save_api_portfolio(self, portfolio: Portfolio):
-        """Save portfolio to API."""
-        pass
-
-    def get_tickers(self, ticker_scope: str = 'test'):
-        """Load tickers from the specified scope. Default to test scope."""
-
-        if ticker_scope not in self.ticker_pool:
-            logger.warning(f"Ticker scope not found, using default")
-
-        tickers = self.ticker_pool.get(ticker_scope)
-
-        return tickers
 
