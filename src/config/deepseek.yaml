@@ -1,4 +1,6 @@
 # Deep Fund Configuration
+exp_name: "deepseek-test"
+
 # Trading settings
 tickers:
   - MSFT
@@ -16,4 +18,3 @@ workflow_analysts:
 llm:
   provider: "DeepSeek" 
   model: "deepseek-chat" # DeepSeek-V3
-

@@ -1,4 +1,6 @@
 # Deep Fund Configuration
+exp_name: "deepseek-test"
+
 # Trading settings
 tickers:
   - MSFT
@@ -13,7 +15,6 @@ workflow_analysts:
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
-  provider: "Ollama"  # OpenAI, Groq, Anthropic, Deepseek, Ollama
-  model: "llama3.1:8b"
-  temperature: 0.5
+  provider: "DeepSeek" 
+  model: "deepseek-chat" # DeepSeek-V3
 
