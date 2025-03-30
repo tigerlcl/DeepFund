@@ -201,36 +201,70 @@ class DeepFundDB:
             logger.error(f"Error saving signal: {e}")
             return None
 
-    def get_portfolio_decisions(self, portfolio_id: str) -> List[Dict]:
-        """Get all decisions for a portfolio."""
+    def get_recent_portfolio_ids_by_config_id(self, config_id: str) -> List[str]:
+        """Get recent portfolio ids by config id."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()  
+            
+            cursor.execute('''
+                SELECT id FROM portfolio 
+                WHERE config_id = ?
+                ORDER BY updated_at DESC
+                LIMIT 5
+            ''', (config_id,))
+            
+            return [row['id'] for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error getting portfolio ids: {e}")   
+            return []
+            
+
+    def get_decision_memory(self, exp_name: str, ticker: str) -> List[Dict]:
+        """Get recent 5 decisions for a ticker."""
+        
+        # Step 1: Get config id by exp_name
+        config_id = self.get_config_id_by_name(exp_name)
+        if not config_id:
+            logger.error(f"Config not found for {exp_name}")
+            return []
+        
+        # Step 2: Get recent 5 portfolio transactions
+        portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id)
+        if not portfolio_ids:
+            logger.error(f"Portfolio not found for {config_id}")
+            return []
+        
+        # Step 3: Get decision memory by portfolio ids and ticker
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            cursor.execute('''
+            # Create the correct number of placeholders for the IN clause
+            placeholders = ','.join('?' * len(portfolio_ids))
+            query = f'''
                 SELECT * FROM decision 
-                WHERE portfolio_id = ?
+                WHERE portfolio_id IN ({placeholders}) AND ticker = ?
                 ORDER BY updated_at DESC
-            ''', (portfolio_id,))
+            '''
             
+            # Combine portfolio_ids and ticker into parameters
+            params = portfolio_ids + [ticker]
+            cursor.execute(query, params)
+              
             decisions = []
             for row in cursor.fetchall():
                 decisions.append({
-                    'id': row['id'],
-                    'portfolio_id': row['portfolio_id'],
                     'updated_at': row['updated_at'],
-                    'ticker': row['ticker'],
-                    'llm_prompt': row['llm_prompt'],
                     'action': row['action'],
                     'shares': row['shares'],
                     'price': row['price'],
-                    'justification': row['justification']
                 })
             
             conn.close()
             return decisions
         except Exception as e:
-            print(f"Error getting portfolio decisions: {e}")
+            logger.warning(f"No decision memory found for {ticker} in {exp_name}: {e}")
             return []
 
 ## init global instance
