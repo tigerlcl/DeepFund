@@ -15,6 +15,7 @@ class AgentWorkflow:
     def __init__(self, config: Dict[str, Any], portfolio: dict):
         self.llm_config = config['llm']
         self.tickers = config['tickers']
+        self.exp_name = config['exp_name']
 
         # parse portfolio
         portfolio['id'] = str(uuid.uuid4()) # generate new id
@@ -95,8 +96,9 @@ class AgentWorkflow:
             # init FundState
             state = FundState(
                 ticker = ticker,
+                exp_name = self.exp_name,
                 portfolio = portfolio,
-                llm_config = self.llm_config
+                llm_config = self.llm_config,
             ) 
 
             # build the workflow

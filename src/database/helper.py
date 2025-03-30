@@ -19,13 +19,13 @@ class DeepFundDB:
 
     def get_config_id_by_name(self, exp_name: str) -> Optional[str]:
         """Get config id by experiment name."""
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
             cursor.execute('SELECT * FROM config WHERE exp_name = ?', (exp_name,))
             row = cursor.fetchone()
-            conn.close()
             
             if row:
                 return row['id']
@@ -33,9 +33,13 @@ class DeepFundDB:
         except Exception as e:
             logger.error(f"Config not found: {e}")
             return None
+        finally:
+            if conn:
+                conn.close()
 
     def create_config(self, config: Dict) -> Optional[str]:
         """Create a new config entry."""
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
@@ -55,14 +59,17 @@ class DeepFundDB:
             ))
             
             conn.commit()
-            conn.close()
             return config_id
         except Exception as e:
             logger.error(f"Error creating config: {e}")
             return None
+        finally:
+            if conn:
+                conn.close()
 
     def get_latest_portfolio(self, config_id: str) -> Optional[Dict]:
         """Get the latest portfolio for a config."""
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
@@ -75,7 +82,6 @@ class DeepFundDB:
             ''', (config_id,))
             
             row = cursor.fetchone()
-            conn.close()
             
             if row:
                 return {
@@ -87,9 +93,13 @@ class DeepFundDB:
         except Exception as e:
             logger.error(f"Portfolio not found: {e}")
             return None
+        finally:
+            if conn:
+                conn.close()
 
     def create_portfolio(self, config_id: str, cashflow: float) -> Optional[str]:
         """Create a new portfolio."""
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
@@ -108,14 +118,17 @@ class DeepFundDB:
             ))
             
             conn.commit()
-            conn.close()
             return portfolio_id
         except Exception as e:
             logger.error(f"Error creating portfolio: {e}")
             return None
+        finally:
+            if conn:
+                conn.close()
 
     def update_portfolio(self, config_id: str, portfolio: Dict) -> bool:
         """update portfolio incrementally."""
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
@@ -134,18 +147,23 @@ class DeepFundDB:
             ))
             
             conn.commit()
-            conn.close()
             return True
         except Exception as e:
             logger.error(f"Error updating portfolio: {e}")
-            return False 
+            return False
+        finally:
+            if conn:
+                conn.close()
         
     def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: Decision):
         """Save a new decision."""
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
+            decison_price = decision.price if decision.price else 0
+
             decision_id = str(uuid.uuid4())
             cursor.execute('''
                 INSERT INTO decision (id, portfolio_id, updated_at, ticker, llm_prompt, 
@@ -159,19 +177,22 @@ class DeepFundDB:
                 prompt,
                 str(decision.action),
                 decision.shares,
-                decision.price,
+                decison_price,
                 decision.justification
             ))
             
             conn.commit()
-            conn.close()
             return decision_id
         except Exception as e:
             logger.error(f"Error saving decision: {e}")
             return None
+        finally:
+            if conn:
+                conn.close()
 
     def save_signal(self, portfolio_id: str, analyst: str, ticker: str, prompt: str, signal: AnalystSignal):
         """Save a new signal."""
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
@@ -193,43 +214,85 @@ class DeepFundDB:
             ))
             
             conn.commit()
-            conn.close()
             return signal_id
         except Exception as e:
             logger.error(f"Error saving signal: {e}")
             return None
+        finally:
+            if conn:
+                conn.close()
 
-    def get_portfolio_decisions(self, portfolio_id: str) -> List[Dict]:
-        """Get all decisions for a portfolio."""
+    def get_recent_portfolio_ids_by_config_id(self, config_id: str) -> List[str]:
+        """Get recent portfolio ids by config id."""
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()  
+            
+            cursor.execute('''
+                SELECT id FROM portfolio 
+                WHERE config_id = ?
+                ORDER BY updated_at DESC
+                LIMIT 5
+            ''', (config_id,))
+            
+            return [row['id'] for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error getting portfolio ids: {e}")   
+            return []
+        finally:
+            if conn:
+                conn.close()
+
+    def get_decision_memory(self, exp_name: str, ticker: str) -> List[Dict]:
+        """Get recent 5 decisions for a ticker."""
+        
+        # Step 1: Get config id by exp_name
+        config_id = self.get_config_id_by_name(exp_name)
+        if not config_id:
+            logger.error(f"Config not found for {exp_name}")
+            return []
+        
+        # Step 2: Get recent 5 portfolio transactions
+        portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id)
+        if not portfolio_ids:
+            logger.error(f"Portfolio not found for {config_id}")
+            return []
+        
+        # Step 3: Get decision memory by portfolio ids and ticker
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            cursor.execute('''
+            # Create the correct number of placeholders for the IN clause
+            placeholders = ','.join('?' * len(portfolio_ids))
+            query = f'''
                 SELECT * FROM decision 
-                WHERE portfolio_id = ?
+                WHERE portfolio_id IN ({placeholders}) AND ticker = ?
                 ORDER BY updated_at DESC
-            ''', (portfolio_id,))
+            '''
             
+            # Combine portfolio_ids and ticker into parameters
+            params = portfolio_ids + [ticker]
+            cursor.execute(query, params)
+              
             decisions = []
             for row in cursor.fetchall():
                 decisions.append({
-                    'id': row['id'],
-                    'portfolio_id': row['portfolio_id'],
                     'updated_at': row['updated_at'],
-                    'ticker': row['ticker'],
-                    'llm_prompt': row['llm_prompt'],
                     'action': row['action'],
                     'shares': row['shares'],
                     'price': row['price'],
-                    'justification': row['justification']
                 })
             
-            conn.close()
             return decisions
         except Exception as e:
-            print(f"Error getting portfolio decisions: {e}")
+            logger.warning(f"No decision memory found for {ticker} in {exp_name}: {e}")
             return []
+        finally:
+            if conn:
+                conn.close()
 
 ## init global instance
 db = DeepFundDB()

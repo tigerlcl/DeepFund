@@ -17,6 +17,7 @@ def portfolio_agent(state: FundState):
     agent_name = AgentKey.PORTFOLIO
     portfolio = state["portfolio"]
     ticker = state["ticker"]
+    exp_name = state["exp_name"]
     analyst_signals = state["analyst_signals"]
     llm_config = state["llm_config"]
 
@@ -27,10 +28,15 @@ def portfolio_agent(state: FundState):
         return {"decision": Decision(ticker=ticker)}
     
     current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker)
+
+    # Get decision memory
+    decision_memory = db.get_decision_memory(exp_name, ticker)
+
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
     # make prompt
     prompt = PORTFOLIO_PROMPT.format(
+        decision_memory=decision_memory,
         ticker_signals=signal_to_prompt(analyst_signals),
         current_price=current_price,
         current_shares=current_shares,

@@ -9,11 +9,8 @@ Your response should be well-reasoned and consider all aspects of the analysis.
 FUNDAMENTAL_PROMPT = """
 You are a financial analyst evaluating ticker based on fundamental analysis.
 
-The following signals have been generated from our analysis:
-- Profitability: {analysis[profitability]}
-- Growth: {analysis[growth]}
-- Financial Health: {analysis[financial_health]}
-- Cashflow: {analysis[cashflow]}
+The following fundamentals have been generated from our analysis:
+{fundamentals}
 
 """ + ANALYST_OUTPUT_FORMAT
 
@@ -55,10 +52,13 @@ Your response should be well-reasoned and consider all aspects of the analysis.
 """
 
 PORTFOLIO_PROMPT = """
-You are a portfolio manager making final trading decisions based on the signals from the analysts.
+You are a portfolio manager making final trading decisions based on the decision memory and signals from the analysts.
 
 If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
 If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
+
+Here are the recent decisions:
+{decision_memory}
 
 Here are the analyst signals:
 {ticker_signals}

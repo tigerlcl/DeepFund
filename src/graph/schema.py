@@ -56,9 +56,10 @@ class FundState(TypedDict):
 
     # from environment
     ticker: str = Field(description="Ticker in-the-flow.")
+    exp_name: str = Field(description="Experiment name.")
     portfolio: Portfolio = Field(description="Portfolio for the fund.")
     llm_config: Dict[str, Any] = Field(description="LLM configuration.")
-    
+
     # updated by workflow
     # ticker -> signal of all analysts
     analyst_signals: Annotated[List[AnalystSignal], operator.add]
