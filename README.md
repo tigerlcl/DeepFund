@@ -95,6 +95,9 @@ INFO - NVDA position update: cashflow=74819.08 positions={'NVDA': Position(value
 ```
 > Running fact: time 36 sec, LLM cost: 0.01 CNY
 
+## Expected Output
+Please refer to `src/example` for the expected output.
+
 ## Project Structure 
 ```
 deepfund/
@@ -102,13 +105,12 @@ deepfund/
 │   ├── main.py                   # Main entry point
 │   ├── agents/                   # Agent build and registry
 │   ├── apis/                     # APIs for external financial data
+│   ├── config/                   # Configuration files
+│   ├── database/                 # Database setup and helper
+│   ├── example/                  # Example log and db
+│   ├── graph/                    # Workflow, prompt, and schema
 │   ├── llm/                      # LLM providers
 │   ├── util/                     # Utility functions and helpers
-│   ├── graph/                    # Workflow, prompt, and schema
-│   ├── database/                 # Database setup and helper
-│   ├── config/                   # Configuration files
-│   ├── example/                  # Example files
-│   ├── logs/                     # Log files (auto-created)
 ├── environment.yml               # For Conda
 ├── README.md                     # Project documentation
 ├── ...
