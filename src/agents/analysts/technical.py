@@ -4,7 +4,7 @@ from graph.schema import FundState, AnalystSignal
 from graph.constants import Signal, AgentKey
 from graph.prompt import TECHNICAL_PROMPT
 from llm.inference import agent_call
-from apis import AlphaVantageAPI
+from apis.router import Router, APISource
 from database.helper import db
 from util.logger import logger
 
@@ -43,8 +43,8 @@ def technical_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Analyzing price data")
 
     # Get the price data
-    av_api = AlphaVantageAPI()
-    prices_df = av_api.get_daily_candles_df(ticker=ticker)
+    router = Router(APISource.ALPHA_VANTAGE)
+    prices_df = router.get_us_stock_daily_candles_df(ticker=ticker)
     if prices_df is None:
         logger.error(f"Failed to fetch price data for {ticker}")
         return state

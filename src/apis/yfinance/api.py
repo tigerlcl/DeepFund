@@ -23,12 +23,10 @@ class YFinanceAPI:
         for item in search_result.news:
             # process timestamp to human readable format
             publish_time = datetime.fromtimestamp(item["providerPublishTime"]).strftime("%Y-%m-%d %H:%M:%S")
-
             news_list.append(MediaNews(
                 title=item["title"],
                 publish_time=publish_time,
                 publisher=item["publisher"],
-                link=item["link"],
             ))
 
         return news_list

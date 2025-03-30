@@ -3,7 +3,7 @@ from graph.constants import AgentKey, Signal
 from graph.prompt import PORTFOLIO_PROMPT
 from graph.schema import Decision, FundState
 from llm.inference import agent_call
-from apis import YFinanceAPI
+from apis.router import Router, APISource
 from database.helper import db
 from util.logger import logger
 
@@ -22,8 +22,8 @@ def portfolio_agent(state: FundState):
     llm_config = state["llm_config"]
 
     # Get price data
-    yf_api = YFinanceAPI()
-    current_price = yf_api.get_last_close_price(ticker=ticker)
+    router = Router(APISource.YFINANCE)
+    current_price = router.get_us_stock_last_close_price(ticker=ticker)
     if current_price is None:
         return {"decision": Decision(ticker=ticker)}
     
