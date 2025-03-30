@@ -2,7 +2,7 @@ from graph.schema import FundState, AnalystSignal
 from graph.constants import AgentKey
 from graph.prompt import FUNDAMENTAL_PROMPT
 from llm.inference import agent_call
-from apis import AlphaVantageAPI
+from apis.router import Router, APISource
 from database.helper import db
 from util.logger import logger
 
@@ -17,8 +17,8 @@ def fundamental_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching financial metrics")
 
     # Get the financial metrics
-    av_api = AlphaVantageAPI()
-    fundamentals = av_api.get_fundamentals(ticker=ticker)
+    router = Router(APISource.ALPHA_VANTAGE)
+    fundamentals = router.get_us_stock_fundamentals(ticker=ticker)
     if not fundamentals:
         logger.error(f"Failed to fetch financial metrics for {ticker}")
         return state

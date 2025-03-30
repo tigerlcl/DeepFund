@@ -1,5 +1,6 @@
 """Unified data models across multiple APIs."""
 
+from typing import Optional
 from pydantic import BaseModel
 
 class OHLCVCandle(BaseModel):
@@ -16,4 +17,4 @@ class MediaNews(BaseModel):
     title: str
     publish_time: str
     publisher: str
-    link: str
+    link: Optional[str] = None

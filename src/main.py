@@ -62,8 +62,9 @@ def main():
         new_portfolio = app.run()
         logger.log_portfolio("Final Portfolio", new_portfolio)
         
-        logger.info("DeepFund run completed, updating portfolio")
+        logger.info("Updating portfolio to Database")
         db.update_portfolio(config_id, new_portfolio)
+        logger.info("DeepFund run completed")
                         
     except Exception as e:
         logger.error(f"Error during portfolio operations: {e}")
