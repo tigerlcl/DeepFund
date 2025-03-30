@@ -45,8 +45,9 @@ We apply **SQLite** as the database to store the agent activities and portfolio 
 ```bash
 cd src
 python database/setup.py
+# This will create a sqlite database in the path `src/assets/deepfund.db`
 ```
-> This will create a sqlite database in the path `src/asset/deepfund.db`.
+> You may install VSCode Extension [SQLite Viewer](https://marketplace.cursorapi.com/items?itemName=qwtel.sqlite-viewer) to view the database.
 
 ### Relation Diagram
 ![DeepFund ERD](./image/DeepFund_ERD.png)
