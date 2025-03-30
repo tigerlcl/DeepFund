@@ -6,14 +6,13 @@ This project serves as an ideal solution to the below key question:
 
 **Will LLM Be Professional At Fund Investment? A Live Arena perspective**
 
-We evaluate the trading capability of LLM across various financial market given a standard environment. We present the performance in a nearly live view of trading arena. The LLM shall ingest external information and make trading decisions. 
+We evaluate the trading capability of LLM across various financial markets given a unified environment. The LLM shall ingest external information, drive a multi-agent system, and make trading decisions. The LLM performance will be presented in a trading arena view across various dimensions. 
 
 
-> Disclaimer: This project is for educational and research purposes only, it does not actually trade.
+> Disclaimer: This project is for educational and research purposes only, **it does not trade actually.**
 
 ## Framework
 ![Framework](./image/framework.png)
-
 
 
 ## Market Coverage
@@ -104,15 +103,21 @@ deepfund/
 │   ├── apis/                     # APIs for external financial data
 │   ├── llm/                      # LLM providers
 │   ├── util/                     # Utility functions and helpers
-│   ├── graph/                    # Workflow, prompt and schema
+│   ├── graph/                    # Workflow, prompt, and schema
 │   ├── database/                 # Database setup and helper
 │   ├── config/                   # Configuration files
 │   ├── example/                  # Example files
-│   ├── logs/                     # Log files (auto created)
+│   ├── logs/                     # Log files (auto-created)
 ├── environment.yml               # For Conda
 ├── README.md                     # Project documentation
 ├── ...
 ```
+
+## Roadmap
+- MCPify Deepfund
+  - Turn APIs as LLM tools
+  - Renovate the database query style
+- Extend Financial Markets
 
 
 # Data Source Dependency
@@ -127,15 +132,11 @@ deepfund/
 
 
 ## Acknowledgements
-The project get inspiration from the following projects:
-- [AI Hedge Fund](https://github.com/virattt/ai-hedge-fund)
-- [LangGraph Tutorial](https://langchain-ai.github.io/langgraph/tutorials/workflows)
-- [OpenManus](https://github.com/mannaandpoem/OpenManus)
-
-
-## Roadmap
-MCPify Deepfund
-
+The project gets inspiration from the following projects:
+- [Cursor AI](https://www.cursor.com/), The AI Code Editor
+- [AI Hedge Fund](https://github.com/virattt/ai-hedge-fund), An AI Hedge Fund Team
+- [LangGraph](https://langchain-ai.github.io/langgraph/tutorials/workflows), Tutorial on Workflows and Agents
+- [OpenManus](https://github.com/mannaandpoem/OpenManus), An open-source framework for building general AI agents
 
 
 ## License
