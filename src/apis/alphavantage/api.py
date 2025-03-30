@@ -7,16 +7,16 @@ Free tier: 25 API requests per day
 
 import os
 import requests
-from apis.common_model import OHLCVCandle
-from .api_model import InsiderTrade
 import pandas as pd
+from apis.common_model import OHLCVCandle
+from .api_model import InsiderTrade, Fundamentals
 
 class AlphaVantageAPI:
     """Alpha Vantage API Wrapper."""
 
     def __init__(self):
         self.api_key = os.environ.get("ALPHA_VANTAGE_API_KEY")
-        self.base_url = "https://www.alphavantage.co"
+        self.base_url = "https://www.alphavantage.co/query"
 
     def get_daily_candles(self, ticker: str) -> list[OHLCVCandle]: 
         """
@@ -24,7 +24,7 @@ class AlphaVantageAPI:
         It defaults to latest 100 data points.
         """
         response = requests.get(
-            url=f"{self.base_url}/query",
+            url=self.base_url,
             params={
                 "function": "TIME_SERIES_DAILY", 
                 "symbol": ticker, 
@@ -83,7 +83,7 @@ class AlphaVantageAPI:
         This API returns the latest and historical insider transactions made be key stakeholders (e.g., founders, executives, board members, etc.) of a specific company.
         """
         response = requests.get(
-            url=f"{self.base_url}/query",
+            url=self.base_url,
             params={"function": "INSIDER_TRANSACTIONS", "symbol": ticker, "apikey": self.api_key})
         
         if response.status_code != 200:
@@ -92,3 +92,23 @@ class AlphaVantageAPI:
         recent_trades = response.json()["data"][:limit]
         
         return [InsiderTrade(**trade) for trade in recent_trades]
+
+    def get_fundamentals(self, ticker: str) -> Fundamentals:
+        """Get company fundamentals from Alpha Vantage."""
+        response = requests.get(
+            url=self.base_url,
+            params={"function": "OVERVIEW", "symbol": ticker, "apikey": self.api_key}
+        )
+        if response.status_code != 200:
+            response.raise_for_status()
+
+        data = response.json()
+        
+        # The field names in data match our model's aliases automatically
+        try:
+            fundamentals = Fundamentals(**data)  # Automatic field mapping happens here
+            return fundamentals
+        except Exception as e:
+            print(f"Error parsing response: {e}")
+            return None
+

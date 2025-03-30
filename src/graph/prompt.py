@@ -9,11 +9,8 @@ Your response should be well-reasoned and consider all aspects of the analysis.
 FUNDAMENTAL_PROMPT = """
 You are a financial analyst evaluating ticker based on fundamental analysis.
 
-The following signals have been generated from our analysis:
-- Profitability: {analysis[profitability]}
-- Growth: {analysis[growth]}
-- Financial Health: {analysis[financial_health]}
-- Cashflow: {analysis[cashflow]}
+The following fundamentals have been generated from our analysis:
+{fundamentals}
 
 """ + ANALYST_OUTPUT_FORMAT
 

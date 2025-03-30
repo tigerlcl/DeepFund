@@ -146,6 +146,8 @@ class DeepFundDB:
             conn = self._get_connection()
             cursor = conn.cursor()
             
+            decison_price = decision.price if decision.price else 0
+
             decision_id = str(uuid.uuid4())
             cursor.execute('''
                 INSERT INTO decision (id, portfolio_id, updated_at, ticker, llm_prompt, 
@@ -159,7 +161,7 @@ class DeepFundDB:
                 prompt,
                 str(decision.action),
                 decision.shares,
-                decision.price,
+                decison_price,
                 decision.justification
             ))
             

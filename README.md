@@ -121,9 +121,8 @@ deepfund/
 
 
 # Data Source Dependency
-- Financial Dataset API
-  - Fundamental Analyst
 - Alpha Vantage API
+  - Fundamental Analyst
   - Insider Trades Analyst
   - Technical Analyst
 - YFinance API
