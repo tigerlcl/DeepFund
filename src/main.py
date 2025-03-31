@@ -36,7 +36,6 @@ def load_portfolio(cfg: Dict[str, Any]):
     if not portfolio:
         raise RuntimeError(f"Failed to load newly created portfolio for config {cfg['exp_name']}")
     
-
     return config_id, portfolio
 
 def main():
@@ -46,7 +45,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
     parser.add_argument(
         "--config", type=str, required=True,
-        help="Name of configuration file"
+        help="Path to configuration file"
     )
     args = parser.parse_args()
     cfg = ConfigParser(args).get_config()

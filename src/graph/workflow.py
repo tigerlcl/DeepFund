@@ -42,14 +42,15 @@ class AgentWorkflow:
         graph.add_node(AgentKey.PORTFOLIO, portfolio_agent)
 
         # create functional nodes
-        graph.add_node("analyst_router", self.analyst_router)
-        graph.add_edge(START, "analyst_router")
+        # graph.add_node("analyst_router", self.analyst_router)
+        # graph.add_edge(START, "analyst_router")
         
         # create node for each analyst and add edge
         for analyst in self.workflow_analysts:
             agent_func = AgentRegistry.get_agent_func_by_key(analyst)
             graph.add_node(analyst, agent_func)
-            graph.add_edge("analyst_router", analyst) # route to analyst
+            graph.add_edge(START, analyst)
+            # graph.add_edge("analyst_router", analyst) # route to analyst
             graph.add_edge(analyst, AgentKey.PORTFOLIO)
         
         # Route portfolio manager to end
@@ -60,9 +61,9 @@ class AgentWorkflow:
 
         return workflow 
         
-    def analyst_router(self, state: FundState):
-        """Routing node."""
-        return state
+    # def analyst_router(self, state: FundState):
+    #     """Routing node."""
+    #     return state
 
     def load_analysts(self, ticker: str):
         """

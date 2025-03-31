@@ -55,8 +55,8 @@ class FundState(TypedDict):
     """Fund state when running the workflow."""
 
     # from environment
-    ticker: str = Field(description="Ticker in-the-flow.")
     exp_name: str = Field(description="Experiment name.")
+    ticker: str = Field(description="Ticker in-the-flow.")
     portfolio: Portfolio = Field(description="Portfolio for the fund.")
     llm_config: Dict[str, Any] = Field(description="LLM configuration.")
 

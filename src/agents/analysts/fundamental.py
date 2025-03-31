@@ -23,7 +23,7 @@ def fundamental_agent(state: FundState):
         logger.error(f"Failed to fetch financial metrics for {ticker}")
         return state
     
-    prompt = FUNDAMENTAL_PROMPT.format(fundamentals=fundamentals)
+    prompt = FUNDAMENTAL_PROMPT.format(fundamentals=fundamentals.model_dump())
     signal = agent_call(
         prompt=prompt, 
         llm_config=llm_config, 

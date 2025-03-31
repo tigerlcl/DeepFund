@@ -8,7 +8,7 @@ from util.logger import logger
 
 # Insider trading thresholds
 thresholds = {
-    "num_trades": 30,
+    "num_trades": 15,
 }
 
 def insider_agent(state: FundState):
@@ -30,7 +30,8 @@ def insider_agent(state: FundState):
         return state
 
     # Analyze insider trading signal via LLM
-    prompt = INSIDER_PROMPT.format(num_trades=thresholds["num_trades"],trades=insider_trades)
+    trades_dict = [m.model_dump() for m in insider_trades]
+    prompt = INSIDER_PROMPT.format(num_trades=thresholds["num_trades"],trades=trades_dict)
 
     signal = agent_call(
         prompt=prompt,

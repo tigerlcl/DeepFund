@@ -35,9 +35,10 @@ def portfolio_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
     # make prompt
+    ticker_signals = [s.model_dump() for s in analyst_signals]
     prompt = PORTFOLIO_PROMPT.format(
         decision_memory=decision_memory,
-        ticker_signals=signal_to_prompt(analyst_signals),
+        ticker_signals=ticker_signals,
         current_price=current_price,
         current_shares=current_shares,
         remaining_shares=remaining_shares,
@@ -78,7 +79,3 @@ def calculate_ticker_shares(portfolio, current_price, ticker) -> float:
         
     return current_shares, remaining_shares
     
-
-def signal_to_prompt(signals: List[Signal]) -> str:
-    """Converts a list of signals to a string for the portfolio manager prompt"""
-    return "\n".join([f"{s.signal}: {s.justification}" for s in signals])

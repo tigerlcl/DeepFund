@@ -1,0 +1,27 @@
+INFO - Loading configuration from /Users/tigerli/Desktop/Code Space/deepfund/src/config/dev.yaml
+INFO - Loading portfolio for development
+INFO - Creating new config for development
+INFO - Creating new portfolio for config development
+INFO - Initial Portfolio: {'id': '13bde682-8dfd-47c3-83fd-9f5a21ce41d7', 'cashflow': 100000, 'positions': {}}
+INFO - Init DeepFund and run
+INFO - Portfolio ID: d5e42117-3a76-459f-826e-8b77576cfccd
+INFO - MSFT workflow compiled successfully
+INFO - Agent: news | Ticker: MSFT | Status: Fetching company news
+INFO - Agent: insider | Ticker: MSFT | Status: Fetching insider trades
+INFO - Agent: insider | Ticker: MSFT | Signal: Neutral | Justification: The insider trades for MSFT show a mix of acquisitions (mostly Restricted Stock Units with $0.0 share price, likely part of compensation) and disposals (Common Stock at market price). The disposals by high-ranking executives (e.g., CFO, CMO) could indicate profit-taking or personal financial planning, but the volume is not alarmingly high. The acquisitions are largely routine and not indicative of strong insider confidence. Overall, the data does not strongly suggest bullish or bearish sentiment.
+INFO - Agent: news | Ticker: MSFT | Signal: Bullish | Justification: The majority of the recent news articles highlight positive aspects of Microsoft (MSFT), such as being the best gaming stock according to billionaires, its thriving status with a $3 trillion valuation, and being a top holding in the Gates Foundation portfolio. Additionally, there are mentions of AI stocks and Microsoft's role in the 'Magnificent Seven' AI stocks, which further bolster its positive sentiment. While there is one article questioning the scaling back of data centers, the overall sentiment is overwhelmingly positive.
+INFO - Agent: portfolio manager | Ticker: MSFT | Status: Making trading decisions
+INFO - Decision for MSFT: Buy | Shares: 32 | Price: 378.8 | Justification: The analyst signals are mixed, with one neutral and one bullish signal. The bullish signal is supported by strong positive news and sentiment around Microsoft (MSFT), while the neutral signal does not strongly contradict this. Given the remaining shares allowed for purchases (65.0), a conservative approach is taken by buying half of the allowed volume (32 shares) to capitalize on the bullish sentiment while managing risk.
+INFO - MSFT position update: id='d5e42117-3a76-459f-826e-8b77576cfccd' cashflow=87878.4 positions={'MSFT': Position(value=12121.6, shares=32)}
+INFO - NVDA workflow compiled successfully
+INFO - Agent: news | Ticker: NVDA | Status: Fetching company news
+INFO - Agent: insider | Ticker: NVDA | Status: Fetching insider trades
+INFO - Agent: news | Ticker: NVDA | Signal: Bullish | Justification: The majority of the news articles highlight positive sentiment around NVIDIA (NVDA) and AI-related stocks, with titles emphasizing investment opportunities, bullish outlooks from analysts like Jim Cramer, and NVIDIA's strong position in AI and gaming. The Motley Fool and Insider Monkey, reputable publishers, consistently portray NVIDIA and AI stocks favorably, suggesting a bullish trend.
+INFO - Agent: insider | Ticker: NVDA | Signal: Bearish | Justification: The recent insider trades for NVDA show a significant number of disposals (sales) by key executives, including the CEO, CFO, and other top-level executives. Notably, the CEO, Jen-Hsun Huang, sold a substantial amount of shares (431,611) at $115.43, and other executives also sold large quantities. While there were some acquisitions (buys), these were mostly at $0.0, likely due to stock grants or options exercises, which do not indicate confidence in the stock's future performance. The high volume of sales by insiders suggests a lack of confidence in the stock's near-term prospects, leading to a bearish signal.
+INFO - Agent: portfolio manager | Ticker: NVDA | Status: Making trading decisions
+INFO - Decision for NVDA: Hold | Shares: 0 | Price: None | Justification: The analyst signals are mixed, with one indicating a bearish trend due to insider sales and the other indicating a bullish trend based on positive news sentiment. Given the conflicting signals and no current holdings, it is prudent to hold and monitor the situation further before making a trading decision.
+INFO - NVDA position update: id='d5e42117-3a76-459f-826e-8b77576cfccd' cashflow=87878.4 positions={'MSFT': Position(value=12121.6, shares=32), 'NVDA': Position(value=0.0, shares=0)}
+INFO - Workflow completed in 59.84 seconds
+INFO - Final Portfolio: {'id': 'd5e42117-3a76-459f-826e-8b77576cfccd', 'cashflow': 87878.4, 'positions': {'MSFT': {'value': 12121.6, 'shares': 32}, 'NVDA': {'value': 0.0, 'shares': 0}}}
+INFO - Updating portfolio to Database
+INFO - DeepFund run completed
