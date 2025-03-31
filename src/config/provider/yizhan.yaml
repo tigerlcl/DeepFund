@@ -10,8 +10,8 @@ tickers:
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
-  # - news
-  # - technical
+  - news
+  - technical
   - insider
 
 # YiZhan is a unified API proxy for all LLM models
