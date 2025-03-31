@@ -36,7 +36,12 @@ cp .env.example .env
 ```
 
 ## Setup Database
-We apply **SQLite** as the database to store the agent activities and portfolio status when running the system.
+
+- Option 1: Use **Supabase**, a PostgreSQL-compatible Cloud Database.
+- How to: `from util.db_helper import db`
+
+- Option 2: Use **SQLite**, a lightweight database that stores data in a local DB file.
+- How to: `from database.helper import db`
 
 ```bash
 cd src
