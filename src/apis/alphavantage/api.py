@@ -16,7 +16,10 @@ class AlphaVantageAPI:
 
     def __init__(self):
         self.api_key = os.environ.get("ALPHA_VANTAGE_API_KEY")
-        self.base_url = "https://www.alphavantage.co/query"
+        self.entitlement = os.environ.get("ALPHA_VANTAGE_ENTITLEMENT", None) # Premium feature only
+        self.base_url = f"https://www.alphavantage.co/query?apikey={self.api_key}"
+        if self.entitlement:
+            self.base_url += f"&entitlement={self.entitlement}"
 
     def get_daily_candles(self, ticker: str) -> list[OHLCVCandle]: 
         """
@@ -27,8 +30,8 @@ class AlphaVantageAPI:
             url=self.base_url,
             params={
                 "function": "TIME_SERIES_DAILY", 
-                "symbol": ticker, 
-                "apikey": self.api_key}
+                "symbol": ticker
+            }
         )
 
         if response.status_code != 200:
@@ -84,7 +87,11 @@ class AlphaVantageAPI:
         """
         response = requests.get(
             url=self.base_url,
-            params={"function": "INSIDER_TRANSACTIONS", "symbol": ticker, "apikey": self.api_key})
+            params={
+                "function": "INSIDER_TRANSACTIONS", 
+                "symbol": ticker
+            }
+        )
         
         if response.status_code != 200:
             response.raise_for_status()
@@ -97,7 +104,10 @@ class AlphaVantageAPI:
         """Get company fundamentals from Alpha Vantage."""
         response = requests.get(
             url=self.base_url,
-            params={"function": "OVERVIEW", "symbol": ticker, "apikey": self.api_key}
+            params={
+                "function": "OVERVIEW", 
+                "symbol": ticker
+            }
         )
         if response.status_code != 200:
             response.raise_for_status()
