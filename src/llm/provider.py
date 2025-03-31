@@ -22,6 +22,7 @@ class Provider(str, Enum):
     ANTHROPIC = "Anthropic"
     DEEPSEEK = "DeepSeek"
     OLLAMA = "Ollama"
+    YIZHAN = "YiZhan"
 
     @property
     def config(self) -> ModelConfig:
@@ -42,6 +43,11 @@ class Provider(str, Enum):
             Provider.OLLAMA: ModelConfig(
                 model_class=ChatOllama,
                 requires_api_key=False,
+            ),
+            Provider.YIZHAN: ModelConfig(
+                model_class=ChatOpenAI,
+                env_key="YIZHAN_API_KEY",
+                base_url="https://vip.yi-zhan.top/v1",
             ),
         }
         return PROVIDER_CONFIGS[self]

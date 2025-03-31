@@ -56,7 +56,9 @@ def agent_call(prompt: str, llm_config: Dict[str, Any], pydantic_model: Type[T])
     """
     cfg = LLMConfig(**llm_config)
     llm = get_model(cfg)
-    llm = llm.with_structured_output(pydantic_model)
+
+    # Explicitly use function_calling method for structured output
+    llm = llm.with_structured_output(pydantic_model, method="function_calling")
     
     for attempt in range(cfg.max_retries):
         try:
