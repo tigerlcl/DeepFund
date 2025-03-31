@@ -222,7 +222,7 @@ class DeepFundDB:
             if conn:
                 conn.close()
 
-    def get_recent_portfolio_ids_by_config_id(self, config_id: str) -> List[str]:
+    def get_recent_portfolio_ids_by_config_id(self, config_id: str, limit: int = 5) -> List[str]:
         """Get recent portfolio ids by config id."""
         conn = None
         try:
@@ -233,8 +233,8 @@ class DeepFundDB:
                 SELECT id FROM portfolio 
                 WHERE config_id = ?
                 ORDER BY updated_at DESC
-                LIMIT 5
-            ''', (config_id,))
+                LIMIT ?
+            ''', (config_id, limit))
             
             return [row['id'] for row in cursor.fetchall()]
         except Exception as e:
@@ -254,7 +254,7 @@ class DeepFundDB:
             return []
         
         # Step 2: Get recent 5 portfolio transactions
-        portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id)
+        portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id, limit=5)
         if not portfolio_ids:
             logger.error(f"Portfolio not found for {config_id}")
             return []
@@ -295,4 +295,4 @@ class DeepFundDB:
                 conn.close()
 
 ## init global instance
-db = DeepFundDB()
+sqlite_db = DeepFundDB()

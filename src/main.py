@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from graph.workflow import AgentWorkflow
 from util.config import ConfigParser
 from util.logger import logger
-from database.helper import db
+from util.db_helper import db
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,6 +18,17 @@ def load_portfolio(cfg: Dict[str, Any]):
         if not config_id:
             raise RuntimeError(f"Failed to create config for {cfg['exp_name']}")
     
+    # validate config
+    db_config = db.get_config(config_id)
+    if db_config and any([
+        db_config["tickers"] != cfg["tickers"],
+        db_config["llm_provider"] != cfg["llm"]["provider"],
+        db_config["llm_model"] != cfg["llm"]["model"]
+    ]):
+        raise RuntimeError(
+            f"Config mismatch for {cfg['exp_name']}. Please use a different experiment name for different configurations."
+        )
+
     portfolio = db.get_latest_portfolio(config_id)    
     if portfolio:
         return config_id, portfolio

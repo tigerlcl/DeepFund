@@ -19,3 +19,4 @@ dependencies:
     - langchain-anthropic
     - langchain-deepseek
     - langchain-ollama
+    - supabase
