@@ -20,6 +20,7 @@ def init_database():
         id VARCHAR(36) PRIMARY KEY,
         exp_name VARCHAR(100) NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        tickers JSON NOT NULL,
         has_planner BOOLEAN NOT NULL DEFAULT FALSE,
         llm_model VARCHAR(50) NOT NULL,
         llm_provider VARCHAR(50) NOT NULL

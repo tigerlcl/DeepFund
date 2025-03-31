@@ -3,7 +3,7 @@ from graph.prompt import NEWS_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
 from apis.router import Router, APISource
-from database.helper import db
+from util.db_helper import db
 from util.logger import logger
 
 # thresholds

@@ -1,5 +1,5 @@
 # Deep Fund Configuration
-exp_name: "development"
+exp_name: "dev"
 
 # Trading settings
 cashflow: 100000

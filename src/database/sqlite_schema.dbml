@@ -4,6 +4,7 @@ Table config {
   id varchar(36) [pk]
   exp_name varchar(100) [not null]
   updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  tickers json [not null]
   has_planner boolean [not null, default: false]
   llm_model varchar(50) [not null]
   llm_provider varchar(50) [not null]
