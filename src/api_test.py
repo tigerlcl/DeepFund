@@ -1,11 +1,11 @@
-from apis.alphavantage import AlphaVantageAPI
+from apis.router import Router, APISource
 from dotenv import load_dotenv
 
 load_dotenv()
 
-api = AlphaVantageAPI()
+router = Router(APISource.ALPHA_VANTAGE)
 
 # Get just fundamentals
-fundamentals = api.get_fundamentals("IBM")
+fundamentals = router.get_us_stock_fundamentals("IBM")
 print(fundamentals.pe_ratio)  
 print(fundamentals.return_on_equity_ttm)

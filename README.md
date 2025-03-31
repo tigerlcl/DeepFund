@@ -15,7 +15,6 @@ We evaluate the trading capability of LLM across various financial markets given
 ![Framework](./image/framework.png)
 
 
-
 ## Setup Environment
 Pre-requisite: Install Conda (if not already installed): Go to [anaconda.com/download](https://www.anaconda.com/download/).
 
@@ -62,34 +61,32 @@ Enter the `src` directory and run the `main.py` file with configuration:
 cd src
 python main.py --config xxx.yaml
 ```
-Configs are saved in `src/config`. Below is a sample config file:
+Configs are saved in `src/config`. Below is a config template:
 ```yaml
 # Deep Fund Configuration
 exp_name: "my_unique_exp_name"
 
 # Trading settings
 tickers:
-  - MSFT
-  - NVDA
+  - ticker_a
+  - ticker_b
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
-  - fundamental
-  - technical
-  - news
-
+  - analyst_a
+  - analyst_b
+  - analyst_c
 
 # LLM model settings, refer to llm/inference.py
 llm:
-  provider: "DeepSeek" 
-  model: "deepseek-chat"
+  provider: "provider_name" 
+  model: "model_name"
 ```
 
-Comment out `workflow_analysts` configs to run planner. Planner agent coordinates which analysts to run and cook signals for portfolio manager.
+### Remarks
+- `exp_name` is unique identifier for each experiment. You shall use another `exp_name` for different experiments when `tickers`, `workflow_analysts`, or `llm` are changed.
+- Comment out `workflow_analysts` configs to run planner. Planner agent orchestrates which analysts to run and cook signals for portfolio manager.
 
-## Expected Output
-Please refer to `src/example` for the expected output.
-> Running fact: time 36 sec, LLM cost: 0.01 CNY
 
 ## Project Structure 
 ```
@@ -100,7 +97,7 @@ deepfund/
 │   ├── apis/                     # APIs for external financial data
 │   ├── config/                   # Configuration files
 │   ├── database/                 # Database setup and helper
-│   ├── example/                  # Example log and db
+│   ├── example/                  # Expected output
 │   ├── graph/                    # Workflow, prompt, and schema
 │   ├── llm/                      # LLM providers
 │   ├── util/                     # Utility functions and helpers
@@ -109,6 +106,10 @@ deepfund/
 ├── ...
 ```
 
+## LLM Providers
+- Official API Providers: OpenAI, DeepSeek, Anthropic, etc.
+- Proxy API Providers: YiZhan, etc.
+- Community API Providers: Ollama, etc.
 
 ## Data Source Dependency
 - Alpha Vantage API, [Claim Free API Key](https://www.alphavantage.co/support/#support)
@@ -118,6 +119,58 @@ deepfund/
 - YFinance API (No API Key Required)
   - News Analysts
   - Portfolio Manager
+
+
+## Advanced Usage
+### How to add a new analyst?
+
+To add a new analyst to the DeepFund system, follow these general steps:
+
+1.  **Define the Agent:**
+  Create a new Python file for your analyst within the `src/agents/analysts` directory. Implement the core logic for your analyst within this file. This typically involves defining an agent function that takes relevant inputs (like tickers, market data), performs analysis (potentially using LLMs or specific APIs), and returns signals.
+
+2.  **Define Prompts:**
+  If your analyst uses an LLM, define the prompt(s) it will use. These might go in the `src/graph/prompts/` directory or a similar location.
+
+3.  **Register the Analyst:**
+  Make the system aware of your new analyst. This might involve adding its name or reference to a central registry in `src/graph/constants.py` or within the agent registration logic in `src/agents/registry.py`. Check these files for patterns used by existing analysts.
+
+4.  **Update Configuration:**
+  Add the unique name or key of your new analyst to the `workflow_analysts` list in your desired configuration file (e.g., `src/config/my_config.yaml`).
+
+5.  **Add Data Dependencies (if any):**
+  If your analyst requires new external data sources (e.g., a specific API), add the necessary API client logic in the `src/apis/` directory, and update environment variable handling (`.env.example`, `.env`) if API keys are needed.
+
+6.  **Testing:**
+  Thoroughly test your new analyst by running the system with a configuration that includes it. Check the database tables (`Decision`, `Signal`) to ensure it produces the expected output and integrates correctly with the portfolio manager.
+
+Remember to consult the existing analyst implementations in `src/agents/` and the workflow definitions in `src/graph/` for specific patterns and conventions used in this project.
+
+---
+
+### How to add a new base LLM?
+
+To integrate a new LLM provider (e.g., a different API service) into the system:
+
+1.  **Implement Provider Logic:**
+    Please refer to `src/llm/new_provider.py` for the implementation. We align the structure of the new provider with the existing providers.
+
+2.  **Handle API Keys:**
+    If the new provider requires an API key or other credentials, add the corresponding environment variable(s) to `.env.example` and instruct users to add their keys to their `.env` file.
+
+3.  **Update Configuration:**
+    Document the necessary `provider` and `model` names for the new service. Users will need to specify these in their YAML configuration files under the `llm:` section (e.g., in `src/config/provider/my_config.yaml`).
+    ```yaml
+    llm:
+      provider: "" # The identifier you added in step 1
+      model: "" # provider-specific settings here
+    ```
+
+4.  **Testing:**
+    Run the system using a configuration file that specifies your new LLM provider. Ensure that the LLM calls are successful and that the agents receive the expected responses.
+
+Consult the implementations for existing providers (like OpenAI, DeepSeek) in `src/llm/` as a reference.
+
 
 
 ## Acknowledgements

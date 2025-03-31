@@ -1,0 +1,16 @@
+# Deep Fund Configuration
+exp_name: "planner-test"
+
+# Trading settings
+cashflow: 100000
+tickers:
+  - MSFT
+  - NVDA
+
+# Omit workflow_analysts to run planner
+#  workflow_analysts:
+
+# LLM model settings, refer to llm/inference.py: LLMConfig
+llm:
+  provider: "DeepSeek" 
+  model: "deepseek-chat" # DeepSeek-V3

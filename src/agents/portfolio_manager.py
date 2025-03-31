@@ -1,5 +1,4 @@
-from typing import List
-from graph.constants import AgentKey, Signal
+from graph.constants import AgentKey
 from graph.prompt import PORTFOLIO_PROMPT
 from graph.schema import Decision, FundState
 from llm.inference import agent_call
@@ -31,13 +30,13 @@ def portfolio_agent(state: FundState):
 
     # Get decision memory
     decision_memory = db.get_decision_memory(exp_name, ticker)
-
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
     # make prompt
+    ticker_signals = "\n".join([f"Signal: {s.signal}\nJustification: {s.justification}" for s in analyst_signals])
     prompt = PORTFOLIO_PROMPT.format(
         decision_memory=decision_memory,
-        ticker_signals=signal_to_prompt(analyst_signals),
+        ticker_signals=ticker_signals,
         current_price=current_price,
         current_shares=current_shares,
         remaining_shares=remaining_shares,
@@ -78,7 +77,3 @@ def calculate_ticker_shares(portfolio, current_price, ticker) -> float:
         
     return current_shares, remaining_shares
     
-
-def signal_to_prompt(signals: List[Signal]) -> str:
-    """Converts a list of signals to a string for the portfolio manager prompt"""
-    return "\n".join([f"{s.signal}: {s.justification}" for s in signals])
