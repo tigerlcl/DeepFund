@@ -1,4 +1,5 @@
 import os
+import uuid
 from typing import Dict, List, Optional
 from graph.schema import Decision, AnalystSignal
 from supabase import create_client
@@ -88,7 +89,9 @@ class SupabaseDB:
     def create_portfolio(self, config_id: str, cashflow: float) -> Optional[str]:
         """Create a new portfolio."""
         try:
+            portfolio_id = str(uuid.uuid4())
             data = {
+                'id': portfolio_id,
                 'config_id': config_id,
                 'cashflow': cashflow,
                 'total_assets': cashflow,
