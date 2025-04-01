@@ -92,15 +92,16 @@ llm:
   provider: "provider_name" 
   model: "model_name"
 ```
-Specify `--local-db` flag to use SQLite.
+
 
 ### Static vs Dynamic Workflow
 We use `workflow_analysts` configs to switch the mode:
-- Static mode: If specified, predefined analysts are running in parallel without orchestration.
-- Dynamic mode: If not specified, planner agent orchestrates which analysts to run from all registered analysts.
+- **Static mode**: If specified, predefined analysts are running in parallel without orchestration.
+- **Dynamic mode**: If not specified, planner agent orchestrates which analysts to run from all registered analysts.
 
 ### Remarks
-`exp_name` is unique identifier for each experiment. You shall use another `exp_name` for different experiments when `tickers`, `workflow_analysts`, or `llm` are changed.
+- `exp_name` is **unique identifier** for each experiment. You shall use another one for different experiments when configs are changed.
+- Specify `--local-db` flag to use SQLite. Otherwise, DeepFund connects to Supabase by default.
 
 
 ## Project Structure 
