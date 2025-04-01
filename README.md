@@ -1,6 +1,8 @@
-# DeepFund
+# 💰💰💰  DeepFund 🔥🔥🔥
 
 [![arXiv](https://img.shields.io/badge/arXiv-2503.18313-<COLOR>.svg)](https://arxiv.org/abs/2503.18313)
+
+![Arena](./image/arenafig.png)
 
 This project serves as an ideal solution to the below key question:
 
@@ -12,6 +14,7 @@ We evaluate the trading capability of LLM across various financial markets given
 
 ## Disclaimer
 This project is for educational and research purposes only, it **DOES NOT TRADE** actually.
+
 
 ## Framework
 ![Framework](./image/framework.png)
