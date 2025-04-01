@@ -21,7 +21,7 @@ class AgentWorkflow:
         portfolio['id'] = str(uuid.uuid4()) # generate new id
         portfolio['positions'] = {k: Position(**v) for k, v in portfolio['positions'].items()}
         self.init_portfolio = Portfolio(**portfolio)
-        logger.info(f"Portfolio ID: {self.init_portfolio.id}")
+        logger.info(f"New Portfolio ID: {self.init_portfolio.id}")
         
         # Workflow analysts
         if config.get('workflow_analysts'):

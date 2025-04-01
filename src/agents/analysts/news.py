@@ -3,7 +3,7 @@ from graph.prompt import NEWS_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
 from apis.router import Router, APISource
-from util.db_helper import db
+from util.db_helper import get_db
 from util.logger import logger
 
 # thresholds
@@ -17,6 +17,10 @@ def news_agent(state: FundState):
     ticker = state["ticker"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
+
+    # Get db instance
+    db = get_db()
+    
     logger.log_agent_status(agent_name, ticker, "Fetching company news")
     
     # Get the company news

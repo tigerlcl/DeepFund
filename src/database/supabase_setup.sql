@@ -3,7 +3,7 @@ Supabase: Open source Postgres database as a service.
 https://supabase.com/
 
 Initialize the Supabase database tables and indices.
-Note: The SQL commands below should be executed in the Supabase SQL editor to set up the database schema.
+Note: The SQL commands below should be executed in the Supabase Table Editor to set up the database schema.
 """
 
 -- Config table
