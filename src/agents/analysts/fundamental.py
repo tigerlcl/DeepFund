@@ -3,7 +3,7 @@ from graph.constants import AgentKey
 from graph.prompt import FUNDAMENTAL_PROMPT
 from llm.inference import agent_call
 from apis.router import Router, APISource
-from util.db_helper import db
+from util.db_helper import get_db
 from util.logger import logger
 
 
@@ -13,6 +13,9 @@ def fundamental_agent(state: FundState):
     ticker = state["ticker"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
+
+    # Get db instance
+    db = get_db()
 
     logger.log_agent_status(agent_name, ticker, "Fetching financial metrics")
 

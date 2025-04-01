@@ -3,7 +3,7 @@ from graph.prompt import PORTFOLIO_PROMPT
 from graph.schema import Decision, FundState
 from llm.inference import agent_call
 from apis.router import Router, APISource
-from util.db_helper import db
+from util.db_helper import get_db
 from util.logger import logger
 
 # Portfolio Manager Thresholds
@@ -19,6 +19,9 @@ def portfolio_agent(state: FundState):
     exp_name = state["exp_name"]
     analyst_signals = state["analyst_signals"]
     llm_config = state["llm_config"]
+
+    # Get database instance
+    db = get_db()
 
     # Get price data
     router = Router(APISource.YFINANCE)

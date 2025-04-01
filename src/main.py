@@ -4,12 +4,12 @@ from dotenv import load_dotenv
 from graph.workflow import AgentWorkflow
 from util.config import ConfigParser
 from util.logger import logger
-from util.db_helper import db
+from util.db_helper import db_initialize, get_db
 
 # Load environment variables from .env file
 load_dotenv()
 
-def load_portfolio(cfg: Dict[str, Any]):
+def load_portfolio(cfg: Dict[str, Any], db):
     """Load or initialize portfolio based on experiment configuration."""
     config_id = db.get_config_id_by_name(cfg["exp_name"])
     if not config_id:
@@ -21,7 +21,6 @@ def load_portfolio(cfg: Dict[str, Any]):
     # validate config
     db_config = db.get_config(config_id)
     if db_config and any([
-        db_config["tickers"] != cfg["tickers"],
         db_config["llm_provider"] != cfg["llm"]["provider"],
         db_config["llm_model"] != cfg["llm"]["model"]
     ]):
@@ -55,16 +54,22 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
     parser.add_argument(
-        "--config", type=str, required=True,
-        help="Path to configuration file"
+        "--config", type=str, required=True, help="Path to configuration file"
+    )
+    parser.add_argument(
+        "--local-db", action="store_true", help="Use local SQLite database"
     )
     args = parser.parse_args()
     cfg = ConfigParser(args).get_config()
 
+    # Initialize the global database connection based on the local-db flag
+    db_initialize(use_local_db=args.local_db)
+    db = get_db()
+
     logger.info(f"Loading portfolio for {cfg['exp_name']}")
     
     try:
-        config_id, portfolio = load_portfolio(cfg)
+        config_id, portfolio = load_portfolio(cfg, db)
         logger.log_portfolio("Initial Portfolio", portfolio)
 
         logger.info("Init DeepFund and run")
