@@ -4,10 +4,10 @@ import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 from graph.schema import Decision, AnalystSignal
-from .setup import DB_PATH
+from .sqlite_setup import DB_PATH
 from util.logger import logger
 
-class DeepFundDB:
+class SQLiteDB:
     def __init__(self):
         self.db_path = DB_PATH
 
@@ -17,6 +17,27 @@ class DeepFundDB:
         conn.row_factory = sqlite3.Row # access columns by name
         return conn
 
+
+    def get_config(self, config_id: str) -> Optional[Dict]:
+        """Get config by id."""
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT * FROM config WHERE id = ?', (config_id,))
+            row = cursor.fetchone()
+            
+            if row:
+                return row
+            return None
+        except Exception as e:
+            logger.error(f"Error getting config: {e}")
+            return None
+        finally:
+            if conn:
+                conn.close()
+            
     def get_config_id_by_name(self, exp_name: str) -> Optional[str]:
         """Get config id by experiment name."""
         conn = None
@@ -47,12 +68,13 @@ class DeepFundDB:
             config_id = str(uuid.uuid4())
             has_planner = not config.get('workflow_analysts', None)
             cursor.execute('''
-                INSERT INTO config (id, exp_name, updated_at, has_planner, llm_model, llm_provider)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO config (id, exp_name, updated_at, tickers, has_planner, llm_model, llm_provider)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
                 config_id,
                 config["exp_name"],
                 datetime.now().isoformat(),
+                json.dumps(config["tickers"]),
                 has_planner,
                 config["llm"]["model"],
                 config["llm"]["provider"]
@@ -295,4 +317,4 @@ class DeepFundDB:
                 conn.close()
 
 ## init global instance
-sqlite_db = DeepFundDB()
+# sqlite_db = SQLiteDB()
