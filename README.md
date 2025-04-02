@@ -1,6 +1,7 @@
 # 💰💰💰  DeepFund 🔥🔥🔥
 
-[![arXiv](https://img.shields.io/badge/arXiv-2503.18313-<COLOR>.svg)](https://arxiv.org/abs/2503.18313)
+[![arXiv](https://img.shields.io/badge/arXiv-2503.18313-b31b1b.svg?style=flat)](https://arxiv.org/abs/2503.18313)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat)](https://www.python.org/downloads/release/python-3110/)
 
 ![Arena](./image/arenafig.png)
 
@@ -26,8 +27,8 @@ Pre-requisite: Install Conda (if not already installed): Go to [anaconda.com/dow
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/HKUSTDial/deepfund
-cd deepfund
+git clone https://github.com/HKUSTDial/DeepFund.git
+cd DeepFund
 ```
 
 2. Create a virtual env from the env configuration file:
