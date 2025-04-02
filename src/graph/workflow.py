@@ -5,6 +5,7 @@ from graph.schema import FundState, Portfolio,Decision, Action, Position
 from graph.constants import AgentKey
 from agents.registry import AgentRegistry
 from agents.planner import planner_agent
+from util.db_helper import get_db
 from util.logger import logger
 from time import perf_counter
 
@@ -12,16 +13,23 @@ from time import perf_counter
 class AgentWorkflow:
     """Trading Decision Workflow."""
 
-    def __init__(self, config: Dict[str, Any], portfolio: dict):
+    def __init__(self, config: Dict[str, Any], config_id: str):
         self.llm_config = config['llm']
         self.tickers = config['tickers']
         self.exp_name = config['exp_name']
+        self.db = get_db()
 
-        # parse portfolio
-        portfolio['id'] = str(uuid.uuid4()) # generate new id
-        portfolio['positions'] = {k: Position(**v) for k, v in portfolio['positions'].items()}
-        self.init_portfolio = Portfolio(**portfolio)
-        logger.info(f"New Portfolio ID: {self.init_portfolio.id}")
+        # load latest portfolio
+        portfolio = self.db.get_latest_portfolio(config_id)
+        if not portfolio:
+            portfolio = self.db.create_portfolio(config_id, config['cashflow'])
+            if not portfolio:
+                raise RuntimeError(f"Failed to create portfolio for config {self.exp_name}")
+        
+        # copy portfolio with a new id
+        new_portfolio = self.db.copy_portfolio(config_id, portfolio)
+        self.init_portfolio = Portfolio(**new_portfolio)
+        logger.info(f"New portfolio ID: {self.init_portfolio.id}")
         
         # Workflow analysts
         if config.get('workflow_analysts'):
@@ -53,9 +61,6 @@ class AgentWorkflow:
 
         return workflow 
         
-    # def analyst_router(self, state: FundState):
-    #     """Routing node."""
-    #     return state
 
     def load_analysts(self, ticker: str):
         """

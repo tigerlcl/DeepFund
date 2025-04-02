@@ -19,7 +19,7 @@ create table if not exists config (
 
 -- Portfolio table
 create table if not exists portfolio (
-    id uuid primary key,
+    id uuid primary key default uuid_generate_v4(),
     config_id uuid references config(id),
     updated_at timestamp with time zone default now(),
     cashflow decimal(15,2) not null,
@@ -30,7 +30,7 @@ create table if not exists portfolio (
 -- Decision table
 create table if not exists decision (
     id uuid primary key default uuid_generate_v4(),
-    portfolio_id uuid not null,
+    portfolio_id uuid references portfolio(id),
     updated_at timestamp with time zone default now(),
     ticker varchar(10) not null,
     llm_prompt text not null,
@@ -43,7 +43,7 @@ create table if not exists decision (
 -- Signal table
 create table if not exists signal (
     id uuid primary key default uuid_generate_v4(),
-    portfolio_id uuid not null,
+    portfolio_id uuid references portfolio(id),
     updated_at timestamp with time zone default now(),
     ticker varchar(10) not null,
     llm_prompt text not null,

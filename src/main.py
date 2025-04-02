@@ -9,8 +9,8 @@ from util.db_helper import db_initialize, get_db
 # Load environment variables from .env file
 load_dotenv()
 
-def load_portfolio(cfg: Dict[str, Any], db):
-    """Load or initialize portfolio based on experiment configuration."""
+def load_portfolio_config(cfg: Dict[str, Any], db):
+    """Load and validate config based on experiment configuration."""
     config_id = db.get_config_id_by_name(cfg["exp_name"])
     if not config_id:
         logger.info(f"Creating new config for {cfg['exp_name']}")
@@ -27,26 +27,8 @@ def load_portfolio(cfg: Dict[str, Any], db):
         raise RuntimeError(
             f"Config mismatch for {cfg['exp_name']}. Please use a different experiment name for different configurations."
         )
-
-    portfolio = db.get_latest_portfolio(config_id)    
-    if portfolio:
-        return config_id, portfolio
-    
-    # Create new portfolio if it doesn't exist
-    logger.info(f"Creating new portfolio for config {cfg['exp_name']}")
-    portfolio_id = db.create_portfolio(
-        config_id=config_id,
-        cashflow=cfg["cashflow"]
-    )
-    if not portfolio_id:
-        raise RuntimeError(f"Failed to create portfolio for config {cfg['exp_name']}")
         
-    # Get the newly created portfolio
-    portfolio = db.get_latest_portfolio(config_id)
-    if not portfolio:
-        raise RuntimeError(f"Failed to load newly created portfolio for config {cfg['exp_name']}")
-    
-    return config_id, portfolio
+    return config_id
 
 def main():
     """Main entry point for the DeepFund multi-agent system."""
@@ -66,14 +48,12 @@ def main():
     db_initialize(use_local_db=args.local_db)
     db = get_db()
 
-    logger.info(f"Loading portfolio for {cfg['exp_name']}")
+    logger.info(f"Loading config for {cfg['exp_name']}")
     
     try:
-        config_id, portfolio = load_portfolio(cfg, db)
-        logger.log_portfolio("Initial Portfolio", portfolio)
-
+        config_id = load_portfolio_config(cfg, db)
         logger.info("Init DeepFund and run")
-        app = AgentWorkflow(cfg, portfolio)
+        app = AgentWorkflow(cfg, config_id)
         new_portfolio = app.run()
         logger.log_portfolio("Final Portfolio", new_portfolio)
         

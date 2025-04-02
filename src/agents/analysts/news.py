@@ -24,7 +24,7 @@ def news_agent(state: FundState):
     logger.log_agent_status(agent_name, ticker, "Fetching company news")
     
     # Get the company news
-    router = Router(APISource.YFINANCE)
+    router = Router(APISource.ALPHA_VANTAGE)
     company_news = router.get_us_stock_news(ticker, thresholds["news_count"])
     if not company_news:
         return state

@@ -24,7 +24,7 @@ def portfolio_agent(state: FundState):
     db = get_db()
 
     # Get price data
-    router = Router(APISource.YFINANCE)
+    router = Router(APISource.ALPHA_VANTAGE)
     current_price = router.get_us_stock_last_close_price(ticker=ticker)
     if current_price is None:
         return {"decision": Decision(ticker=ticker)}
