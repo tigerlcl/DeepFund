@@ -1,16 +1,18 @@
 # 💰💰💰  DeepFund 🔥🔥🔥
 
-[![arXiv](https://img.shields.io/badge/arXiv-2503.18313-<COLOR>.svg)](https://arxiv.org/abs/2503.18313)
+[![arXiv](https://img.shields.io/badge/arXiv-2503.18313-b31b1b.svg?style=flat)](https://arxiv.org/abs/2503.18313)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat)](https://www.python.org/downloads/release/python-3110/)
 
 ![Arena](./image/arenafig.png)
 
 This project serves as an ideal solution to the below key question:
 
-### Will LLM Be Professional At Fund Investment? A Live Arena Perspective
+### Will LLMs Be Professional At Fund Investment? 
 
 We evaluate the trading capability of LLM across various financial markets given a unified environment. The LLM shall ingest external information, drive a multi-agent system, and make trading decisions. The LLM performance will be presented in a trading arena view across various dimensions. 
 
-> We are working on adding more particular analysts, extensive market and a front-end dashboard to deliver fresh insights. Welcome to collaborate with us!
+> 🔔 We are working on adding more particular analysts, extensive market and a front-end dashboard to deliver fresh insights. Welcome to collaborate with us!
+
 
 ## Disclaimer
 This project is for educational and research purposes only, it **DOES NOT TRADE** actually.
@@ -25,8 +27,8 @@ Pre-requisite: Install Conda (if not already installed): Go to [anaconda.com/dow
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/HKUSTDial/deepfund
-cd deepfund
+git clone https://github.com/HKUSTDial/DeepFund.git
+cd DeepFund
 ```
 
 2. Create a virtual env from the env configuration file:
@@ -205,5 +207,16 @@ The project gets inspiration and supports from the following projects:
 - [Supabase](https://supabase.com/), The Open Source Firebase Alternative
 
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Citation
+If you find this project useful, please cite it as follows:
+```bibtex
+@misc{li2025deepfund,
+      title={DeepFund: Will LLM be Professional at Fund Investment? A Live Arena Perspective}, 
+      author={Changlun Li and Yao Shi and Yuyu Luo and Nan Tang},
+      year={2025},
+      eprint={2503.18313},
+      archivePrefix={arXiv},
+      primaryClass={cs.MA},
+      url={https://arxiv.org/abs/2503.18313}, 
+}
+```
