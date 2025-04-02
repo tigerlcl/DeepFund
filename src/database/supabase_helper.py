@@ -1,12 +1,12 @@
 import os
-import uuid
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from graph.schema import Decision, AnalystSignal
+from database.interface import BaseDB
 from supabase import create_client
 from util.logger import logger
 
-
-class SupabaseDB:
+class SupabaseDB(BaseDB):
     def __init__(self):
         # Supabase configuration
         self.url = os.getenv("SUPABASE_URL")
@@ -86,12 +86,10 @@ class SupabaseDB:
             logger.error(f"Portfolio not found: {e}")
             return None
 
-    def create_portfolio(self, config_id: str, cashflow: float) -> Optional[str]:
+    def create_portfolio(self, config_id: str, cashflow: float) -> Optional[Dict]:
         """Create a new portfolio."""
         try:
-            portfolio_id = str(uuid.uuid4())
             data = {
-                'id': portfolio_id,
                 'config_id': config_id,
                 'cashflow': cashflow,
                 'total_assets': cashflow,
@@ -99,28 +97,50 @@ class SupabaseDB:
             }
             
             response = self.client.table('portfolio').insert(data).execute()
-            
             if response.data and len(response.data) > 0:
-                return response.data[0]['id']
+                portfolio = response.data[0]
+                return {
+                    'id': portfolio['id'],  
+                    'cashflow': float(portfolio['cashflow']),  # Convert Decimal to float
+                    'positions': {},
+                }
             return None
         except Exception as e:
             logger.error(f"Error creating portfolio: {e}")
             return None
-
-    def update_portfolio(self, config_id: str, portfolio: Dict) -> bool:
-        """Update portfolio incrementally."""
+        
+    def copy_portfolio(self, config_id: str, portfolio: Dict) -> Optional[Dict]:
+        """Copy a portfolio."""
         try:
             total_assets = portfolio['cashflow'] + sum(position['value'] for position in portfolio['positions'].values())
-            
             data = {
-                'id': portfolio['id'],  # Need to keep this for update
                 'config_id': config_id,
-                'cashflow': portfolio['cashflow'],
+                'cashflow': portfolio['cashflow'],  
                 'total_assets': total_assets,
                 'positions': portfolio['positions']
             }
             
             response = self.client.table('portfolio').insert(data).execute()
+            if response.data and len(response.data) > 0:
+                return response.data[0]
+            return None
+        except Exception as e:
+            logger.error(f"Error copying portfolio: {e}")
+            return None
+
+    def update_portfolio(self, config_id: str, portfolio: Dict) -> bool:
+        """Update portfolio."""
+        try:
+            total_assets = portfolio['cashflow'] + sum(position['value'] for position in portfolio['positions'].values())
+            data = {
+                'config_id': config_id,
+                'updated_at': datetime.now(timezone.utc).isoformat(), # UTC time
+                'cashflow': portfolio['cashflow'],
+                'total_assets': total_assets,
+                'positions': portfolio['positions']
+            }
+            
+            response = self.client.table('portfolio').update(data).eq('id', portfolio['id']).execute()
             
             return bool(response.data)
         except Exception as e:
@@ -131,7 +151,6 @@ class SupabaseDB:
         """Save a new decision."""
         try:
             decision_price = decision.price if decision.price else 0
-            
             data = {
                 'portfolio_id': portfolio_id,
                 'ticker': ticker,
