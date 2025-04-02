@@ -15,7 +15,7 @@ class YFinanceAPI:
     def __init__(self):
         pass
     
-    def get_news(self, query: str, news_count: int) -> list[MediaNews]:
+    def get_yf_news(self, query: str, news_count: int) -> list[MediaNews]:
         """Get news for a ticker. Default news count is 8."""
         search_result = yf.Search(query=query, news_count=news_count)
         
@@ -30,9 +30,3 @@ class YFinanceAPI:
             ))
 
         return news_list
-
-    def get_last_close_price(self, ticker: str) -> float:
-        """Get the last close price for a ticker."""
-        ticker_info = yf.Ticker(ticker).fast_info
-        last_price = round(ticker_info["last_price"], 2)        
-        return last_price

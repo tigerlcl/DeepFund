@@ -18,3 +18,4 @@ class MediaNews(BaseModel):
     publish_time: str
     publisher: str
     link: Optional[str] = None
+    summary: Optional[str] = None

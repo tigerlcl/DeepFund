@@ -2,13 +2,13 @@
 Alpha Vantage API client implementation.
 Link: https://www.alphavantage.co/documentation/
 Free tier: 25 API requests per day
+Premium tier: 75 API requests per minute
 """
-
 
 import os
 import requests
 import pandas as pd
-from apis.common_model import OHLCVCandle
+from apis.common_model import OHLCVCandle, MediaNews
 from .api_model import InsiderTrade, Fundamentals
 
 class AlphaVantageAPI:
@@ -53,6 +53,18 @@ class AlphaVantageAPI:
             daily_candles.append(candle)
 
         return daily_candles
+    
+    def get_last_close_price(self, ticker: str) -> float:
+        """Get the last close price for a ticker."""
+        response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "GLOBAL_QUOTE", 
+                "symbol": ticker
+            }
+        )
+        last_price = response.json()["Global Quote"]["05. price"]
+        return float(last_price)
 
     def get_daily_candles_df(self, ticker: str) -> pd.DataFrame:
         """
@@ -122,3 +134,25 @@ class AlphaVantageAPI:
             print(f"Error parsing response: {e}")
             return None
 
+    def get_news(self, ticker: str, limit: int) -> list[MediaNews]:
+        """Get news for a ticker."""
+        response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "NEWS_SENTIMENT", 
+                "symbol": ticker,
+                "limit": limit
+            }
+        )
+        if response.status_code != 200:
+            response.raise_for_status()
+
+        news_list = []
+        for news in response.json()["feed"]:
+            news_list.append(MediaNews(
+                title=news["title"],
+                publish_time=news["time_published"],
+                summary=news["summary"],
+                publisher=news["source"]
+            ))
+        return news_list
