@@ -15,7 +15,7 @@ class YFinanceAPI:
     def __init__(self):
         pass
     
-    def get_yf_news(self, query: str, news_count: int) -> list[MediaNews]:
+    def get_news(self, query: str, news_count: int) -> list[MediaNews]:
         """Get news for a ticker. Default news count is 8."""
         search_result = yf.Search(query=query, news_count=news_count)
         

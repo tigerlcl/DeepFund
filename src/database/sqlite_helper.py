@@ -10,7 +10,6 @@ from util.logger import logger
 
 class SQLiteDB(BaseDB):
     def __init__(self):
-        super().__init__()
         self.db_path = DB_PATH
 
     def _get_connection(self):
