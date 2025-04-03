@@ -43,8 +43,7 @@ cp .env.example .env
 ```
 
 ## Connect to Database
-The database stores various tables such as Config, Portfolio, Decision, and Signal, which are essential for configuring the system, tracking portfolio updates, recording trading decisions and signals generated from the LLM reasoning.
-
+To better track the system performance, DeepFund uses a database to timely monitor the trading status. Besides, it also stores the LLM reasoning results for future analysis and traceback.
 
 ### Option 1: Use **Supabase**
 DeepFund connects to Supabase **by default**. 
