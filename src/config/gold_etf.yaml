@@ -1,0 +1,30 @@
+# Deep Fund Configuration
+exp_name: "gold-etf-stock-deepseek"
+
+# Trading settings
+cashflow: 100000
+tickers:
+  - NEM
+
+
+
+
+
+
+
+# test1    - MSFT  - NVDA
+# test2    - XAUUSD
+# test3    - GLD - SLV
+# test4    - MSFT - NVDA -NEM -GOLD
+
+# Analysts to run, refer to graph.constants.py
+workflow_analysts:
+  # - news
+  # - technical
+  - macroeconomic
+
+# LLM model settings, refer to llm/inference.py: LLMConfig
+llm:
+  provider: "DeepSeek" 
+  model: "deepseek-chat" # DeepSeek-V3
+

@@ -56,3 +56,38 @@ class Fundamentals(BaseModel):
     ev_to_revenue: str = Field(alias="EVToRevenue")
     ev_to_ebitda: str = Field(alias="EVToEBITDA")
     beta: str = Field(alias="Beta")
+
+
+
+# class MacroEconomic(BaseModel):
+#     """Economic indicator model."""
+#     # GDP
+#     real_gdp: str = Field(alias="REAL_GDP")   #default annual
+#     real_gdp_per_capita: str = Field(alias="REAL_GDP_PER_CAPITA")
+
+#     #inflation
+#     cpi: str = Field(alias="CPI") #monthly
+#     inflation: str = Field(alias="INFLATION") #annual
+
+    
+#     #利率
+#     treasury_yield: str = Field(alias="TREASURY_YIELD") 
+#     federal_funds_rate: str = Field(alias="FEDERAL_FUNDS_RATE") #interval=monthly. Strings daily, weekly, and monthly are accepted.
+
+#     retail_sales: str = Field(alias="RETAIL_SALES") #monthly
+#     durables: str = Field(alias="DURABLES") #monthly
+
+#     #失业率
+#     unemployment: str = Field(alias="UNEMPLOYMENT") #monthly
+#     nonfarm_payrolls: str = Field(alias="NONFARM_PAYROLLS") #monthly
+
+#     #原油+大宗商品价格
+#     wti: str = Field(alias="WTI") #interval=monthly. Strings daily, weekly, and monthly are accepted.
+#     brent: str = Field(alias="BRENT") #interval=monthly. Strings daily, weekly, and monthly are accepted.
+#     all_commodities: str = Field(alias="ALL_COMMODITIES") #monthly
+
+
+
+
+
+

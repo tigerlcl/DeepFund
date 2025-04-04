@@ -45,3 +45,9 @@ Thumbs.db
 # local files
 logs/
 assets/
+
+# under development
+src/apis/fred/
+src/agents/analysts/geopolitical.py
+src/config/gold_hedge.yaml
+

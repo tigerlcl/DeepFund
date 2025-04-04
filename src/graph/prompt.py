@@ -83,3 +83,15 @@ You must provide your decision as a structured output with the following fields:
 - justification: brief explanation of your selection
 
 """
+
+
+MACROECONOMIC_PROMPT = """
+You are senior macroeconomic analyst, conduct a comprehensive evaluation of how current macroeconomic conditions will impact the given ticker(s).
+
+Here are the macroeconomic indicators:
+{economic_indicators}
+here are the ticker:
+{ticker}
+
+""" + ANALYST_OUTPUT_FORMAT
+

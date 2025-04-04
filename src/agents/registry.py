@@ -5,7 +5,8 @@ from agents.analysts import (
     technical_agent, 
     insider_agent,
     news_agent,
-    fundamental_agent
+    fundamental_agent,
+    macroeconomic_agent
 )
 from .portfolio_manager import portfolio_agent
 
@@ -22,6 +23,7 @@ class AgentRegistry:
         AgentKey.FUNDAMENTAL,
         AgentKey.INSIDER,
         AgentKey.NEWS,
+        AgentKey.MACROECONOMIC
     ]
 
     @classmethod
@@ -84,6 +86,12 @@ class AgentRegistry:
             key=AgentKey.TECHNICAL,
             agent_func=technical_agent,
             agent_doc="Technical analysis specialist using multiple technical analysis strategies."
+        )
+
+        cls.register_agent(
+            key=AgentKey.MACROECONOMIC,
+            agent_func=macroeconomic_agent,
+            agent_doc="Macroeconomic analysis specialist focusing on economic indicators, interest rates, inflation and market trends."
         )
 
     @classmethod

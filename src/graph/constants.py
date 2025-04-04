@@ -6,6 +6,7 @@ class AgentKey:
     FUNDAMENTAL = "fundamental"
     INSIDER = "insider"
     NEWS = "news"
+    MACROECONOMIC = "macroeconomic"
 
     # workflow keys
     PORTFOLIO = "portfolio manager"

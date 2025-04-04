@@ -156,3 +156,169 @@ class AlphaVantageAPI:
                 publisher=news["source"]
             ))
         return news_list
+    
+    def get_economic_indicators(self):
+        """Get economic indicators from Alpha Vantage."""
+        indicators = {}
+        
+        # GDP
+        gdp_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "REAL_GDP",
+                "interval": "quarterly"
+            }
+        )
+        if gdp_response.status_code == 200:
+            data = gdp_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["REAL_GDP"] = data["data"][0]["value"]
+        
+        gdp_per_capita_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "REAL_GDP_PER_CAPITA"
+            }
+        )
+        if gdp_per_capita_response.status_code == 200:
+            data = gdp_per_capita_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["REAL_GDP_PER_CAPITA"] = data["data"][0]["value"]
+        
+        #  CPI monthly
+        cpi_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "CPI",
+                "interval": "monthly"
+            }
+        )
+        if cpi_response.status_code == 200:
+            data = cpi_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["CPI"] = data["data"][0]["value"]
+        
+        # inflation annual
+        inflation_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "INFLATION"
+            }
+        )
+        if inflation_response.status_code == 200:
+            data = inflation_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["INFLATION"] = data["data"][0]["value"]
+        
+        # retail
+        retail_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "RETAIL_SALES"
+            }
+        )
+        if retail_response.status_code == 200:
+            data = retail_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["RETAIL_SALES"] = data["data"][0]["value"]
+        
+        # durable
+        durables_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "DURABLES"
+            }
+        )
+        if durables_response.status_code == 200:
+            data = durables_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["DURABLES"] = data["data"][0]["value"]
+        
+        # unemployment
+        unemployment_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "UNEMPLOYMENT"
+            }
+        )
+        if unemployment_response.status_code == 200:
+            data = unemployment_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["UNEMPLOYMENT"] = data["data"][0]["value"]
+        
+        # nfp
+        nonfarm_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "NONFARM_PAYROLL"
+            }
+        )
+        if nonfarm_response.status_code == 200:
+            data = nonfarm_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["NONFARM_PAYROLLS"] = data["data"][0]["value"]
+        
+        # tips & rates 
+        treasury_yield_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "TREASURY_YIELD",
+                "interval": "monthly",
+                "maturity": "10year"
+            }
+        )
+        if treasury_yield_response.status_code == 200:
+            data = treasury_yield_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["TREASURY_YIELD"] = data["data"][0]["value"]
+        
+        fed_rate_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "FEDERAL_FUNDS_RATE",
+                "interval": "monthly"
+            }
+        )
+        if fed_rate_response.status_code == 200:
+            data = fed_rate_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["FEDERAL_FUNDS_RATE"] = data["data"][0]["value"]
+        
+        # crude oil  monthly
+        wti_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "WTI",
+                "interval": "monthly"
+            }
+        )
+        if wti_response.status_code == 200:
+            data = wti_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["WTI"] = data["data"][0]["value"]
+        
+        brent_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "BRENT",
+                "interval": "monthly"
+            }
+        )
+        if brent_response.status_code == 200:
+            data = brent_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["BRENT"] = data["data"][0]["value"]
+        
+        # commodity index monthly
+        commodities_response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "ALL_COMMODITIES"
+            }
+        )
+        if commodities_response.status_code == 200:
+            data = commodities_response.json()
+            if "data" in data and len(data["data"]) > 0:
+                indicators["ALL_COMMODITIES"] = data["data"][0]["value"]
+        
+        return indicators
