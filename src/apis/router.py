@@ -41,4 +41,8 @@ class Router():
     def get_economic_indicators(self):
         """Get economic indicators."""
         return self.api.get_economic_indicators()
+    
+    def get_topic_news_sentiment(self, limit: int, topic: str):
+        """Get market news and sentiment."""
+        return self.api.get_market_news_sentiment(limit, topic)
 

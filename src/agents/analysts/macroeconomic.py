@@ -9,7 +9,7 @@ from util.db_helper import get_db
 from util.logger import logger
 
 def macroeconomic_agent(state: FundState):
-    """Macroeconomic analysis specialist focusing on economic indicators, interest rates, inflation and market trends."""
+    """Macroeconomic analysis specialist focusing on economic indicators."""
     agent_name = AgentKey.MACROECONOMIC
     ticker = state["ticker"]
     llm_config = state["llm_config"]
@@ -18,7 +18,7 @@ def macroeconomic_agent(state: FundState):
     # Get db instance
     db = get_db()
 
-    logger.log_agent_status(agent_name, ticker, "Fetching economic indicators")
+    logger.log_agent_status(agent_name, ticker, "Fetching macro economic indicators")
 
     # Get the economic indicators
     router = Router(APISource.ALPHA_VANTAGE)
@@ -27,7 +27,7 @@ def macroeconomic_agent(state: FundState):
         logger.error(f"Failed to fetch economic indicators")
         return state
     
-    prompt = MACROECONOMIC_PROMPT.format(economic_indicators=economic_indicators, ticker=ticker)
+    prompt = MACROECONOMIC_PROMPT.format(economic_indicators=economic_indicators)
     signal = agent_call(
         prompt=prompt, 
         llm_config=llm_config, 

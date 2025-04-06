@@ -7,7 +7,7 @@ class AgentKey:
     INSIDER = "insider"
     NEWS = "news"
     MACROECONOMIC = "macroeconomic"
-
+    POLICY = "policy"
     # workflow keys
     PORTFOLIO = "portfolio manager"
     PLANNER = "analyst planner" 

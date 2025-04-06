@@ -86,12 +86,20 @@ You must provide your decision as a structured output with the following fields:
 
 
 MACROECONOMIC_PROMPT = """
-You are senior macroeconomic analyst, conduct a comprehensive evaluation of how current macroeconomic conditions will impact the given ticker(s).
+You are senior macroeconomic analyst, conduct a comprehensive evaluation of current macroeconomic conditions.
 
-Here are the macroeconomic indicators:
+Here are the macroeconomic indicators of past periods:
 {economic_indicators}
-here are the ticker:
-{ticker}
 
 """ + ANALYST_OUTPUT_FORMAT
 
+POLICY_PROMPT = """
+You are a policy analyst. Evaluate the given news related to fiscal and monetary policy, and classify their short-term (6-month) economic impact.
+
+Here are the fiscal policy:
+{fiscal_policy}
+
+Here are the monetary policy:
+{monetary_policy}
+
+""" + ANALYST_OUTPUT_FORMAT

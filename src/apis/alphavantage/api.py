@@ -9,7 +9,7 @@ import os
 import requests
 import pandas as pd
 from apis.common_model import OHLCVCandle, MediaNews
-from .api_model import InsiderTrade, Fundamentals
+from .api_model import InsiderTrade, Fundamentals, MarketNewsSentiment, MacroEconomic
 
 class AlphaVantageAPI:
     """Alpha Vantage API Wrapper."""
@@ -157,168 +157,68 @@ class AlphaVantageAPI:
             ))
         return news_list
     
+
     def get_economic_indicators(self):
-        """Get economic indicators from Alpha Vantage."""
-        indicators = {}
+        """
+        Get all economic indicators in one call
+        """
+        indicators = {
+            "real_gdp": self._fetch_indicator("REAL_GDP"),  # default annual
+            "cpi": self._fetch_indicator("CPI"),
+            "treasury_yield": self._fetch_indicator("TREASURY_YIELD"),
+            "federal_funds_rate": self._fetch_indicator("FEDERAL_FUNDS_RATE"),
+            "unemployment": self._fetch_indicator("UNEMPLOYMENT"),
+            "nonfarm_payrolls": self._fetch_indicator("NONFARM_PAYROLL"),
+        }
         
-        # GDP
-        gdp_response = requests.get(
+        # 确保没有None值（如果API调用失败）
+        indicators = {k: v or {} for k, v in indicators.items()}
+        
+        return MacroEconomic(**indicators)
+
+    def _fetch_indicator(self, function: str) -> dict:
+        """Unified indicator fetcher matching pattern"""
+        try:
+            response = requests.get(
+                url=self.base_url,
+                params={
+                    "function": function
+                },
+                timeout=10
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data", [{}])[0]  # test，use first data point，better to use 3 data points
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching {function}: {str(e)}")
+            return None
+
+    
+    def get_market_news_sentiment(self, limit: int, topic: str) -> list[MarketNewsSentiment]:
+        """
+        Get market news and sentiment from Alpha Vantage.
+        """
+
+        response = requests.get(
             url=self.base_url,
             params={
-                "function": "REAL_GDP",
-                "interval": "quarterly"
+                "function": "NEWS_SENTIMENT",
+                "topics": topic,
+                "limit": limit
             }
         )
-        if gdp_response.status_code == 200:
-            data = gdp_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["REAL_GDP"] = data["data"][0]["value"]
-        
-        gdp_per_capita_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "REAL_GDP_PER_CAPITA"
-            }
-        )
-        if gdp_per_capita_response.status_code == 200:
-            data = gdp_per_capita_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["REAL_GDP_PER_CAPITA"] = data["data"][0]["value"]
-        
-        #  CPI monthly
-        cpi_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "CPI",
-                "interval": "monthly"
-            }
-        )
-        if cpi_response.status_code == 200:
-            data = cpi_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["CPI"] = data["data"][0]["value"]
-        
-        # inflation annual
-        inflation_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "INFLATION"
-            }
-        )
-        if inflation_response.status_code == 200:
-            data = inflation_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["INFLATION"] = data["data"][0]["value"]
-        
-        # retail
-        retail_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "RETAIL_SALES"
-            }
-        )
-        if retail_response.status_code == 200:
-            data = retail_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["RETAIL_SALES"] = data["data"][0]["value"]
-        
-        # durable
-        durables_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "DURABLES"
-            }
-        )
-        if durables_response.status_code == 200:
-            data = durables_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["DURABLES"] = data["data"][0]["value"]
-        
-        # unemployment
-        unemployment_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "UNEMPLOYMENT"
-            }
-        )
-        if unemployment_response.status_code == 200:
-            data = unemployment_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["UNEMPLOYMENT"] = data["data"][0]["value"]
-        
-        # nfp
-        nonfarm_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "NONFARM_PAYROLL"
-            }
-        )
-        if nonfarm_response.status_code == 200:
-            data = nonfarm_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["NONFARM_PAYROLLS"] = data["data"][0]["value"]
-        
-        # tips & rates 
-        treasury_yield_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "TREASURY_YIELD",
-                "interval": "monthly",
-                "maturity": "10year"
-            }
-        )
-        if treasury_yield_response.status_code == 200:
-            data = treasury_yield_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["TREASURY_YIELD"] = data["data"][0]["value"]
-        
-        fed_rate_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "FEDERAL_FUNDS_RATE",
-                "interval": "monthly"
-            }
-        )
-        if fed_rate_response.status_code == 200:
-            data = fed_rate_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["FEDERAL_FUNDS_RATE"] = data["data"][0]["value"]
-        
-        # crude oil  monthly
-        wti_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "WTI",
-                "interval": "monthly"
-            }
-        )
-        if wti_response.status_code == 200:
-            data = wti_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["WTI"] = data["data"][0]["value"]
-        
-        brent_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "BRENT",
-                "interval": "monthly"
-            }
-        )
-        if brent_response.status_code == 200:
-            data = brent_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["BRENT"] = data["data"][0]["value"]
-        
-        # commodity index monthly
-        commodities_response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "ALL_COMMODITIES"
-            }
-        )
-        if commodities_response.status_code == 200:
-            data = commodities_response.json()
-            if "data" in data and len(data["data"]) > 0:
-                indicators["ALL_COMMODITIES"] = data["data"][0]["value"]
-        
-        return indicators
+
+        if response.status_code != 200:
+            response.raise_for_status()
+
+        data = response.json()
+        news_sentiment_list = []
+        for news_item in data["feed"]:
+            news_sentiment_list.append(MarketNewsSentiment(
+                title=news_item["title"],
+                time_published=news_item["time_published"],
+                summary=news_item["summary"],
+                overall_sentiment_score=news_item["overall_sentiment_score"],
+                overall_sentiment_label=news_item["overall_sentiment_label"],
+            ))
+        return news_sentiment_list
