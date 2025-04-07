@@ -52,6 +52,9 @@ def portfolio_agent(state: FundState):
         pydantic_model=Decision
     )
 
+    if ticker_decision.price is None:
+        ticker_decision.price = current_price
+        
     # save decision
     logger.log_decision(ticker, ticker_decision)
     db.save_decision(portfolio.id, ticker, prompt, ticker_decision)

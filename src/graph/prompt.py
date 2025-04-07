@@ -33,8 +33,8 @@ Here are recent {num_trades} insider trades:
 
 """ + ANALYST_OUTPUT_FORMAT
 
-NEWS_PROMPT = """
-You are a news sentiment analyst evaluating ticker based on recent news. Title, publisher, and publish time are provided.
+COMPANY_NEWS_PROMPT = """
+You are a company news analyst evaluating ticker based on recent news. Title, publisher, and publish time are provided.
 
 Here are recent news:
 {news}
@@ -45,7 +45,7 @@ DECISION_OUTPUT_FORMAT = """
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
 - shares: Number of shares to buy or sell, set 0 for hold
-- price: current price to buy or sell, set None for hold
+- price: The current price of the ticker 
 - justification: A brief explanation of your decision
 
 Your response should be well-reasoned and consider all aspects of the analysis.
@@ -83,3 +83,23 @@ You must provide your decision as a structured output with the following fields:
 - justification: brief explanation of your selection
 
 """
+
+
+MACROECONOMIC_PROMPT = """
+You are senior macroeconomic analyst, conduct a comprehensive evaluation of current macroeconomic conditions.
+
+Here are the macroeconomic indicators of past periods:
+{economic_indicators}
+
+""" + ANALYST_OUTPUT_FORMAT
+
+POLICY_PROMPT = """
+You are a policy analyst. Evaluate the given news related to fiscal and monetary policy, and classify their short-term (6-month) economic impact.
+
+Here are the fiscal policy:
+{fiscal_policy}
+
+Here are the monetary policy:
+{monetary_policy}
+
+""" + ANALYST_OUTPUT_FORMAT

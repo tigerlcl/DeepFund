@@ -1,5 +1,5 @@
 from graph.constants import AgentKey
-from graph.prompt import NEWS_PROMPT
+from graph.prompt import POLICY_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
 from apis.router import Router, APISource
@@ -11,9 +11,9 @@ thresholds = {
     "news_count": 10,
 }
 
-def news_agent(state: FundState):
-    """News sentiment specialist analyzing market news to provide a signal."""
-    agent_name = AgentKey.NEWS
+def policy_agent(state: FundState):
+    """policy specialist analyzing market news to provide a signal."""
+    agent_name = AgentKey.POLICY
     ticker = state["ticker"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
@@ -21,17 +21,18 @@ def news_agent(state: FundState):
     # Get db instance
     db = get_db()
     
-    logger.log_agent_status(agent_name, ticker, "Fetching company news")
+    logger.log_agent_status(agent_name, ticker, "Fetching policy related news")
     
-    # Get the company news
+    # Get the policy news
     router = Router(APISource.ALPHA_VANTAGE)
-    company_news = router.get_us_stock_news(ticker, thresholds["news_count"])
-    if not company_news:
-        return state
+
+    fiscal_policy = router.get_topic_news(topic="economy_fiscal", news_count=thresholds["news_count"])
+    monetary_policy = router.get_topic_news(topic="economy_monetary", news_count=thresholds["news_count"])
 
     # Analyze news sentiment via LLM
-    news_dict = [m.model_dump() for m in company_news]
-    prompt = NEWS_PROMPT.format(news=news_dict)
+    fiscal_policy_dict = [m.model_dump() for m in fiscal_policy]
+    monetary_policy_dict = [m.model_dump() for m in monetary_policy]
+    prompt = POLICY_PROMPT.format(fiscal_policy=fiscal_policy_dict, monetary_policy=monetary_policy_dict)
 
     # Get LLM signal
     signal = agent_call(

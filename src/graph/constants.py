@@ -5,8 +5,9 @@ class AgentKey:
     TECHNICAL = "technical"
     FUNDAMENTAL = "fundamental"
     INSIDER = "insider"
-    NEWS = "news"
-
+    COMPANY_NEWS = "company_news"
+    MACROECONOMIC = "macroeconomic"
+    POLICY = "policy"
     # workflow keys
     PORTFOLIO = "portfolio manager"
     PLANNER = "analyst planner" 
