@@ -1,5 +1,5 @@
 from graph.constants import AgentKey
-from graph.prompt import NEWS_PROMPT
+from graph.prompt import COMPANY_NEWS_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
 from apis.router import Router, APISource
@@ -11,9 +11,9 @@ thresholds = {
     "news_count": 10,
 }
 
-def news_agent(state: FundState):
-    """News sentiment specialist analyzing market news to provide a signal."""
-    agent_name = AgentKey.NEWS
+def company_news_agent(state: FundState):
+    """News specialist analyzing company news to provide a signal."""
+    agent_name = AgentKey.COMPANY_NEWS
     ticker = state["ticker"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
@@ -31,7 +31,7 @@ def news_agent(state: FundState):
 
     # Analyze news sentiment via LLM
     news_dict = [m.model_dump() for m in company_news]
-    prompt = NEWS_PROMPT.format(news=news_dict)
+    prompt = COMPANY_NEWS_PROMPT.format(news=news_dict)
 
     # Get LLM signal
     signal = agent_call(
