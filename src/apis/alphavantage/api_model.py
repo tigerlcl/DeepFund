@@ -57,8 +57,6 @@ class Fundamentals(BaseModel):
     ev_to_ebitda: str = Field(alias="EVToEBITDA")
     beta: str = Field(alias="Beta")
 
-
-
 class MacroEconomic(BaseModel):
     """Economic indicator model."""
     real_gdp: dict   #default annual,quarterly
@@ -68,13 +66,6 @@ class MacroEconomic(BaseModel):
     unemployment: dict #monthly
     nonfarm_payrolls: dict #monthly
 
-class MarketNewsSentiment(BaseModel):
-    """Market news sentiment model."""
-    title: str
-    time_published: str
-    summary: str
-    overall_sentiment_score: float = Field(default=0.0)
-    overall_sentiment_label: str = Field(default="Neutral")
 
 
 

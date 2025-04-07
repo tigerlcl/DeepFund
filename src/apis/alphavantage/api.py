@@ -9,7 +9,7 @@ import os
 import requests
 import pandas as pd
 from apis.common_model import OHLCVCandle, MediaNews
-from .api_model import InsiderTrade, Fundamentals, MarketNewsSentiment, MacroEconomic
+from .api_model import InsiderTrade, Fundamentals, MacroEconomic
 
 class AlphaVantageAPI:
     """Alpha Vantage API Wrapper."""
@@ -170,8 +170,6 @@ class AlphaVantageAPI:
             "unemployment": self._fetch_indicator("UNEMPLOYMENT"),
             "nonfarm_payrolls": self._fetch_indicator("NONFARM_PAYROLL"),
         }
-        
-        # 确保没有None值（如果API调用失败）
         indicators = {k: v or {} for k, v in indicators.items()}
         
         return MacroEconomic(**indicators)
@@ -194,11 +192,10 @@ class AlphaVantageAPI:
             return None
 
     
-    def get_market_news_sentiment(self, limit: int, topic: str) -> list[MarketNewsSentiment]:
+    def get_market_news(self, topic: str,limit: int) -> list[MediaNews]:
         """
-        Get market news and sentiment from Alpha Vantage.
+        Get different topics news from Alpha Vantage.
         """
-
         response = requests.get(
             url=self.base_url,
             params={
@@ -211,14 +208,12 @@ class AlphaVantageAPI:
         if response.status_code != 200:
             response.raise_for_status()
 
-        data = response.json()
-        news_sentiment_list = []
-        for news_item in data["feed"]:
-            news_sentiment_list.append(MarketNewsSentiment(
-                title=news_item["title"],
-                time_published=news_item["time_published"],
-                summary=news_item["summary"],
-                overall_sentiment_score=news_item["overall_sentiment_score"],
-                overall_sentiment_label=news_item["overall_sentiment_label"],
+        news_list = []
+        for news in response.json()["feed"]:
+            news_list.append(MediaNews(
+                title=news["title"],
+                publish_time=news["time_published"],
+                summary=news["summary"],
+                publisher=news["source"]
             ))
-        return news_sentiment_list
+        return news_list

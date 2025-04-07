@@ -38,11 +38,11 @@ class Router():
         """Get fundamentals for a ticker"""
         return self.api.get_fundamentals(ticker)
     
-    def get_economic_indicators(self):
+    def get_us_economic_indicators(self):
         """Get economic indicators."""
         return self.api.get_economic_indicators()
     
-    def get_topic_news_sentiment(self, limit: int, topic: str):
-        """Get market news and sentiment."""
-        return self.api.get_market_news_sentiment(limit, topic)
+    def get_topic_news(self, topic: str, news_count: int = 10):
+        """Get market news for a topic."""
+        return self.api.get_market_news(topic, news_count)
 
