@@ -195,6 +195,7 @@ class AlphaVantageAPI:
     def get_market_news(self, topic: str,limit: int) -> list[MediaNews]:
         """
         Get different topics news from Alpha Vantage.
+        supported topics: https://www.alphavantage.co/documentation/#news-sentiment
         """
         response = requests.get(
             url=self.base_url,

@@ -26,8 +26,8 @@ def policy_agent(state: FundState):
     # Get the policy news
     router = Router(APISource.ALPHA_VANTAGE)
 
-    fiscal_policy = router.get_topic_news(topic="economy_fiscal", news_count=10)
-    monetary_policy = router.get_topic_news(topic="economy_monetary", news_count=10)
+    fiscal_policy = router.get_topic_news(topic="economy_fiscal", news_count=thresholds["news_count"])
+    monetary_policy = router.get_topic_news(topic="economy_monetary", news_count=thresholds["news_count"])
 
     # Analyze news sentiment via LLM
     fiscal_policy_dict = [m.model_dump() for m in fiscal_policy]
