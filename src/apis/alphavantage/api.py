@@ -9,7 +9,7 @@ import os
 import requests
 import pandas as pd
 from apis.common_model import OHLCVCandle, MediaNews
-from .api_model import InsiderTrade, Fundamentals
+from .api_model import InsiderTrade, Fundamentals, MacroEconomic
 
 class AlphaVantageAPI:
     """Alpha Vantage API Wrapper."""
@@ -144,6 +144,67 @@ class AlphaVantageAPI:
                 "limit": limit
             }
         )
+        if response.status_code != 200:
+            response.raise_for_status()
+
+        news_list = []
+        for news in response.json()["feed"]:
+            news_list.append(MediaNews(
+                title=news["title"],
+                publish_time=news["time_published"],
+                summary=news["summary"],
+                publisher=news["source"]
+            ))
+        return news_list
+    
+
+    def get_economic_indicators(self):
+        """
+        Get all economic indicators in one call
+        """
+        indicators = {
+            "real_gdp": self._fetch_indicator("REAL_GDP"),  # default annual
+            "cpi": self._fetch_indicator("CPI"),
+            "treasury_yield": self._fetch_indicator("TREASURY_YIELD"),
+            "federal_funds_rate": self._fetch_indicator("FEDERAL_FUNDS_RATE"),
+            "unemployment": self._fetch_indicator("UNEMPLOYMENT"),
+            "nonfarm_payrolls": self._fetch_indicator("NONFARM_PAYROLL"),
+        }
+        indicators = {k: v or {} for k, v in indicators.items()}
+        
+        return MacroEconomic(**indicators)
+
+    def _fetch_indicator(self, function: str) -> dict:
+        """Unified indicator fetcher matching pattern"""
+        try:
+            response = requests.get(
+                url=self.base_url,
+                params={
+                    "function": function
+                },
+                timeout=10
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data", [{}])[0]  # test，use first data point，better to use 3 data points
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching {function}: {str(e)}")
+            return None
+
+    
+    def get_market_news(self, topic: str,limit: int) -> list[MediaNews]:
+        """
+        Get different topics news from Alpha Vantage.
+        """
+        response = requests.get(
+            url=self.base_url,
+            params={
+                "function": "NEWS_SENTIMENT",
+                "topics": topic,
+                "limit": limit
+            }
+        )
+
         if response.status_code != 200:
             response.raise_for_status()
 

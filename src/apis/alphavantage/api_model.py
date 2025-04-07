@@ -56,3 +56,18 @@ class Fundamentals(BaseModel):
     ev_to_revenue: str = Field(alias="EVToRevenue")
     ev_to_ebitda: str = Field(alias="EVToEBITDA")
     beta: str = Field(alias="Beta")
+
+class MacroEconomic(BaseModel):
+    """Economic indicator model."""
+    real_gdp: dict   #default annual,quarterly
+    cpi: dict #monthly
+    treasury_yield: dict #default monthly, 10years
+    federal_funds_rate: dict #default monthly. Strings daily, weekly, and monthly are accepted.
+    unemployment: dict #monthly
+    nonfarm_payrolls: dict #monthly
+
+
+
+
+
+

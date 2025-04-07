@@ -37,4 +37,12 @@ class Router():
     def get_us_stock_fundamentals(self, ticker: str):
         """Get fundamentals for a ticker"""
         return self.api.get_fundamentals(ticker)
+    
+    def get_us_economic_indicators(self):
+        """Get economic indicators."""
+        return self.api.get_economic_indicators()
+    
+    def get_topic_news(self, topic: str, news_count: int = 10):
+        """Get market news for a topic."""
+        return self.api.get_market_news(topic, news_count)
 
