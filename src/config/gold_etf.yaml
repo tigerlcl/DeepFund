@@ -4,24 +4,25 @@ exp_name: "gold-etf-stock-deepseek"
 # Trading settings
 cashflow: 100000
 tickers:
+  - GLD
   - NEM
+  - GOLD
 
-
-
-
-
-
-
-# test1    - MSFT  - NVDA
-# test2    - XAUUSD
-# test3    - GLD - SLV
-# test4    - MSFT - NVDA -NEM -GOLD
+# gold stock
+# -NEM -GOLD -AEM
+#gold etf 
+# - GLD - IAU
 
 # Analysts to run, refer to graph.constants.py
+# —— fundamental and insider analyst not applicable to gold etf
 workflow_analysts:
+  # - fundamental
+  # - insider
   # - news
-  # - technical
+  - technical
   - macroeconomic
+  - policy
+  
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
