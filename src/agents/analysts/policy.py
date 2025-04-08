@@ -1,5 +1,5 @@
 from graph.constants import AgentKey
-from graph.prompt import POLICY_PROMPT
+from llm.prompt import POLICY_PROMPT
 from graph.schema import FundState, AnalystSignal
 from llm.inference import agent_call
 from apis.router import Router, APISource

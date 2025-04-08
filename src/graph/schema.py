@@ -36,6 +36,7 @@ class Decision(BaseModel):
     )
 
 class Position(BaseModel):
+    """Position for a single ticker"""
     value: float = Field(
         default=0.0,
         description="Monetary value for the position."

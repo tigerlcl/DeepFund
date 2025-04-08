@@ -41,49 +41,6 @@ Here are recent news:
 
 """ + ANALYST_OUTPUT_FORMAT
 
-DECISION_OUTPUT_FORMAT = """
-You must provide your decision as a structured output with the following fields:
-- action: One of ["Buy", "Sell", "Hold"]
-- shares: Number of shares to buy or sell, set 0 for hold
-- price: The current price of the ticker 
-- justification: A brief explanation of your decision
-
-Your response should be well-reasoned and consider all aspects of the analysis.
-"""
-
-PORTFOLIO_PROMPT = """
-You are a portfolio manager making final trading decisions based on the decision memory and signals from the analysts.
-
-If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
-If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
-
-Here are the recent decisions:
-{decision_memory}
-
-Here are the analyst signals:
-{ticker_signals}
-
-Current Price: {current_price}
-Holding Shares at current: {current_shares}
-Remaining Shares Allowed For Purchases: {remaining_shares}
-
-""" + DECISION_OUTPUT_FORMAT
-
-PLANNER_PROMPT = """
-You are a planner agent that decides which analysts to perform based on the your knowledge of the ticker and features of analysts.
-
-Here is the ticker:
-{ticker}
-
-Here are the available analysts:
-{analysts}
-
-You must provide your decision as a structured output with the following fields:
-- analysts: selected one or at most 5 analysts
-- justification: brief explanation of your selection
-
-"""
-
 
 MACROECONOMIC_PROMPT = """
 You are senior macroeconomic analyst, conduct a comprehensive evaluation of current macroeconomic conditions.
@@ -103,3 +60,43 @@ Here are the monetary policy:
 {monetary_policy}
 
 """ + ANALYST_OUTPUT_FORMAT
+
+
+PORTFOLIO_PROMPT = """
+You are a portfolio manager making final trading decisions based on the decision memory and signals from the analysts.
+
+If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
+If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
+
+Here are the recent decisions:
+{decision_memory}
+
+Here are the analyst signals:
+{ticker_signals}
+
+Current Price: {current_price}
+Holding Shares at current: {current_shares}
+Remaining Shares Allowed For Purchases: {remaining_shares}
+
+You must provide your decision as a structured output with the following fields:
+- action: One of ["Buy", "Sell", "Hold"]
+- shares: Number of shares to buy or sell, set 0 for hold
+- price: The current price of the ticker 
+- justification: A brief explanation of your decision
+
+Your response should be well-reasoned and consider all aspects of the analysis.
+"""
+
+PLANNER_PROMPT = """
+You are a planner agent that decides which analysts to perform based on the your knowledge of the ticker and features of analysts.
+
+Here is the ticker:
+{ticker}
+
+Here are the available analysts:
+{analysts}
+
+You must provide your decision as a structured output with the following fields:
+- analysts: selected one or at most 5 analysts
+- justification: brief explanation of your selection
+"""

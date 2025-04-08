@@ -1,12 +1,9 @@
 import os
 from typing import Type, TypeVar, Dict, Any
 from dataclasses import dataclass
-
 from pydantic import BaseModel
-from langchain_core.language_models.chat_models import BaseChatModel
-
+from llm.provider import Provider
 from util.logger import logger
-from .provider import Provider
 
 @dataclass
 class LLMConfig:
@@ -18,7 +15,7 @@ class LLMConfig:
 
 T = TypeVar('T', bound=BaseModel)
 
-def get_model(config: LLMConfig) -> BaseChatModel:
+def get_model(config: LLMConfig):
     """Get a model instance based on configuration."""
 
     provider = Provider(config.provider)
@@ -54,20 +51,20 @@ def agent_call(prompt: str, llm_config: Dict[str, Any], pydantic_model: Type[T])
     Returns:
         An instance of output_model (with defaults if error occurs)
     """
-    cfg = LLMConfig(**llm_config)
-    llm = get_model(cfg)
+    llm_cfg = LLMConfig(**llm_config)
+    llm = get_model(llm_cfg)
 
     # Explicitly use function_calling method for structured output
     llm = llm.with_structured_output(pydantic_model, method="function_calling")
-    
-    for attempt in range(cfg.max_retries):
+
+    for attempt in range(llm_cfg.max_retries):
         try:
             result = llm.invoke(prompt)
             return result
         except Exception as e:
-            logger.warning(f"Attempt {attempt + 1}/{cfg.max_retries} failed: {e}")
-            if attempt == cfg.max_retries - 1:
-                logger.error(f"All {cfg.max_retries} attempts failed")
+            logger.warning(f"Attempt {attempt + 1}/{llm_cfg.max_retries} failed: {e}")
+            if attempt == llm_cfg.max_retries - 1:
+                logger.error(f"All {llm_cfg.max_retries} attempts failed")
                 return pydantic_model()
     
     return pydantic_model() 
