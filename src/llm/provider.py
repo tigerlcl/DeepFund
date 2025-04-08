@@ -25,6 +25,7 @@ class Provider(str, Enum):
     OLLAMA = "Ollama"
     FIREWORKS= "Fireworks"
     YIZHAN = "YiZhan"
+    AIHUBMIX = "AiHubMix"
 
     @property
     def config(self) -> ModelConfig:
@@ -54,6 +55,11 @@ class Provider(str, Enum):
                 model_class=ChatOpenAI,
                 env_key="YIZHAN_API_KEY",
                 base_url="https://vip.yi-zhan.top/v1",
+            ),
+            Provider.AIHUBMIX: ModelConfig(
+                model_class=ChatOpenAI,
+                env_key="AIHUBMIX_API_KEY",
+                base_url="https://api.aihubmix.com/v1",
             ),
         }
         return PROVIDER_CONFIGS[self]

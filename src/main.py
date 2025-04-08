@@ -18,15 +18,15 @@ def load_portfolio_config(cfg: Dict[str, Any], db):
         if not config_id:
             raise RuntimeError(f"Failed to create config for {cfg['exp_name']}")
     
-    # validate config
-    db_config = db.get_config(config_id)
-    if db_config and any([
-        db_config["llm_provider"] != cfg["llm"]["provider"],
-        db_config["llm_model"] != cfg["llm"]["model"]
-    ]):
-        raise RuntimeError(
-            f"Config mismatch for {cfg['exp_name']}. Please use a different experiment name for different configurations."
-        )
+    # # validate config
+    # db_config = db.get_config(config_id)
+    # if db_config and any([
+    #     db_config["llm_provider"] != cfg["llm"]["provider"],
+    #     db_config["llm_model"] != cfg["llm"]["model"]
+    # ]):
+    #     raise RuntimeError(
+    #         f"Config mismatch for {cfg['exp_name']}. Please use a different experiment name for different configurations."
+    #     )
         
     return config_id
 
