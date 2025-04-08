@@ -11,7 +11,7 @@ tickers:
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
-  - news
+  - company_news
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:

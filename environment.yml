@@ -19,4 +19,5 @@ dependencies:
     - langchain-anthropic
     - langchain-deepseek
     - langchain-ollama
+    - langchain-fireworks
     - supabase
