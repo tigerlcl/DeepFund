@@ -1,5 +1,5 @@
 from graph.constants import AgentKey
-from graph.prompt import PORTFOLIO_PROMPT
+from llm.prompt import PORTFOLIO_PROMPT
 from graph.schema import Decision, FundState
 from llm.inference import agent_call
 from apis.router import Router, APISource

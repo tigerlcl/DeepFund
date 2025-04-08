@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_deepseek import ChatDeepSeek
 from langchain_ollama import ChatOllama
+from langchain_fireworks import ChatFireworks
 from langchain_core.language_models.chat_models import BaseChatModel
 
 @dataclass
@@ -22,7 +23,9 @@ class Provider(str, Enum):
     ANTHROPIC = "Anthropic"
     DEEPSEEK = "DeepSeek"
     OLLAMA = "Ollama"
+    FIREWORKS= "Fireworks"
     YIZHAN = "YiZhan"
+    AIHUBMIX = "AiHubMix"
 
     @property
     def config(self) -> ModelConfig:
@@ -44,10 +47,19 @@ class Provider(str, Enum):
                 model_class=ChatOllama,
                 requires_api_key=False,
             ),
+            Provider.FIREWORKS: ModelConfig(
+                model_class=ChatFireworks,
+                env_key="FIREWORKS_API_KEY",
+            ),
             Provider.YIZHAN: ModelConfig(
                 model_class=ChatOpenAI,
                 env_key="YIZHAN_API_KEY",
                 base_url="https://vip.yi-zhan.top/v1",
+            ),
+            Provider.AIHUBMIX: ModelConfig(
+                model_class=ChatOpenAI,
+                env_key="AIHUBMIX_API_KEY",
+                base_url="https://api.aihubmix.com/v1",
             ),
         }
         return PROVIDER_CONFIGS[self]

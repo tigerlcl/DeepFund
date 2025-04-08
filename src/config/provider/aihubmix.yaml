@@ -1,19 +1,19 @@
 # Deep Fund Configuration
-exp_name: "deepseek-test"
+exp_name: "yizhan-test"
 
 # Trading settings
 cashflow: 100000
 tickers:
   - MSFT
   - NVDA
-  - TSLA
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
-  - fundamental
   - company_news
+  - insider
 
-# LLM model settings, refer to llm/inference.py: LLMConfig
+# YiZhan is a unified API proxy for all LLM models
 llm:
-  provider: "DeepSeek" 
-  model: "deepseek-chat" # DeepSeek-V3
+  provider: "AiHubMix" 
+  model: "claude-3-7-sonnet-20250219" 
+

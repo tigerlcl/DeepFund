@@ -137,9 +137,9 @@ deepfund/
 
 ## System Dependencies
 ### LLM Providers
-- Official API Providers: OpenAI, DeepSeek, etc.
-- LLM Proxy API Providers: [YiZhan](https://vip.yi-zhan.top/), etc.
-- Community API Providers: Ollama, etc.
+- Official API: OpenAI, DeepSeek, Anthropic, etc.
+- LLM Proxy API: Fireworks, AiHubMix, YiZhan, etc.
+- Local API: Ollama, etc.
 
 ### Financial Data Source 
 - Alpha Vantage API: Stock Market Data API, [Claim Free API Key](https://www.alphavantage.co)

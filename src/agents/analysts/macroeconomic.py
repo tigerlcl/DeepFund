@@ -1,6 +1,6 @@
 from graph.schema import FundState, AnalystSignal
 from graph.constants import AgentKey
-from graph.prompt import MACROECONOMIC_PROMPT
+from llm.prompt import MACROECONOMIC_PROMPT
 from llm.inference import agent_call
 from apis.router import Router, APISource
 from util.db_helper import get_db

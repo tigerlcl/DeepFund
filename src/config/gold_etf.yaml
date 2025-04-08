@@ -18,7 +18,7 @@ tickers:
 workflow_analysts:
   # - fundamental
   # - insider
-  # - news
+  # - company_news
   - technical
   - macroeconomic
   - policy
