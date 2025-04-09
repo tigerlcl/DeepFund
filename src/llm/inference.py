@@ -1,5 +1,5 @@
 import os
-from typing import Type, TypeVar, Dict, Any
+from typing import Dict, Any
 from dataclasses import dataclass
 from pydantic import BaseModel
 from llm.provider import Provider
@@ -13,7 +13,6 @@ class LLMConfig:
     temperature: float = 0.5
     max_retries: int = 3
 
-T = TypeVar('T', bound=BaseModel)
 
 def get_model(config: LLMConfig):
     """Get a model instance based on configuration."""
@@ -40,7 +39,7 @@ def get_model(config: LLMConfig):
         logger.error(f"{provider} Chat Error: {e}")
         raise ValueError(f"{provider} Chat Error: {e}")
 
-def agent_call(prompt: str, llm_config: Dict[str, Any], pydantic_model: Type[T]) -> T:
+def agent_call(prompt: str, llm_config: Dict[str, Any], pydantic_model: BaseModel):
     """
     Makes an agent call with retry logic and structured output.
     
