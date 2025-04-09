@@ -37,6 +37,7 @@ def technical_agent(state: FundState):
     """Technical analysis specialist that excels at short to medium-term price movement predictions."""
     agent_name = AgentKey.TECHNICAL
     ticker = state["ticker"]
+    trading_date = state["trading_date"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
     
@@ -47,7 +48,7 @@ def technical_agent(state: FundState):
 
     # Get the price data
     router = Router(APISource.ALPHA_VANTAGE)
-    prices_df = router.get_us_stock_daily_candles_df(ticker=ticker)
+    prices_df = router.get_us_stock_daily_candles_df(ticker=ticker, trading_date=trading_date)
     if prices_df is None:
         logger.error(f"Failed to fetch price data for {ticker}")
         return state

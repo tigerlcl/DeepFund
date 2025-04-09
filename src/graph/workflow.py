@@ -1,4 +1,3 @@
-import uuid
 from typing import  Dict, Any
 from langgraph.graph import StateGraph, START, END
 from graph.schema import FundState, Portfolio,Decision, Action, Position
@@ -17,6 +16,7 @@ class AgentWorkflow:
         self.llm_config = config['llm']
         self.tickers = config['tickers']
         self.exp_name = config['exp_name']
+        self.trading_date = config['trading_date']
         self.db = get_db()
 
         # load latest portfolio
@@ -95,8 +95,9 @@ class AgentWorkflow:
             state = FundState(
                 ticker = ticker,
                 exp_name = self.exp_name,
-                portfolio = portfolio,
+                trading_date = self.trading_date,
                 llm_config = self.llm_config,
+                portfolio = portfolio,
             ) 
 
             # build the workflow

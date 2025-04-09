@@ -1,5 +1,5 @@
-import os
 import yaml
+from datetime import datetime
 from util.logger import logger
 from typing import Dict, Any
 
@@ -10,7 +10,7 @@ class ConfigParser:
         """Initialize the configuration manager."""
         self.config_path = args.config
         self.config = self._load_config()
-
+        
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML file."""
         try:
@@ -23,5 +23,11 @@ class ConfigParser:
             raise ValueError(f"Error parsing configuration file: {e}")
 
     def get_config(self) -> Dict[str, Any]:
-        """Get the configuration."""
+        """Get the configuration with normalization."""
+
+        if 'trading_date' in self.config:
+            self.config['trading_date'] = datetime.strptime(self.config['trading_date'], '%Y-%m-%d')
+        else:
+            self.config['trading_date'] = datetime.today()
+
         return self.config

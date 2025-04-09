@@ -35,20 +35,17 @@ def main():
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
-    parser.add_argument(
-        "--config", type=str, required=True, help="Path to configuration file"
-    )
-    parser.add_argument(
-        "--local-db", action="store_true", help="Use local SQLite database"
-    )
+    parser.add_argument("--config", type=str, required=True, help="Path to configuration file")
+    parser.add_argument("--local-db", action="store_true", help="Use local SQLite database")
     args = parser.parse_args()
+
     cfg = ConfigParser(args).get_config()
 
     # Initialize the global database connection based on the local-db flag
     db_initialize(use_local_db=args.local_db)
     db = get_db()
 
-    logger.info(f"Loading config for {cfg['exp_name']}")
+    logger.info(f"Loading config for {cfg['exp_name']}, trading date: {cfg['trading_date']}")
     
     try:
         config_id = load_portfolio_config(cfg, db)

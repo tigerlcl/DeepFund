@@ -1,4 +1,5 @@
 import operator
+from datetime import datetime
 from typing import  List, Dict, Any
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
@@ -56,9 +57,10 @@ class FundState(TypedDict):
 
     # from environment
     exp_name: str = Field(description="Experiment name.")
+    trading_date: datetime = Field(description="Trading date.")
     ticker: str = Field(description="Ticker in-the-flow.")
-    portfolio: Portfolio = Field(description="Portfolio for the fund.")
     llm_config: Dict[str, Any] = Field(description="LLM configuration.")
+    portfolio: Portfolio = Field(description="Portfolio for the fund.")
 
     # updated by workflow
     # ticker -> signal of all analysts

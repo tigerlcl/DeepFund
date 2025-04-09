@@ -17,6 +17,7 @@ def portfolio_agent(state: FundState):
     portfolio = state["portfolio"]
     ticker = state["ticker"]
     exp_name = state["exp_name"]
+    trading_date = state["trading_date"]
     analyst_signals = state["analyst_signals"]
     llm_config = state["llm_config"]
 
@@ -25,7 +26,7 @@ def portfolio_agent(state: FundState):
 
     # Get price data
     router = Router(APISource.ALPHA_VANTAGE)
-    current_price = router.get_us_stock_last_close_price(ticker=ticker)
+    current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
     if current_price is None:
         return {"decision": Decision(ticker=ticker)}
     

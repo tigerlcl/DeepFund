@@ -1,18 +1,19 @@
 # Deep Fund Configuration
 exp_name: "dev"
+trading_date: "2025-04-01"
 
 # Trading settings
 cashflow: 100000
 tickers:
-  - MSFT
+  - TSLA
   - NVDA
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
-  - fundamental
-  - company_news
   - technical
+  - company_news
   - insider
+  - policy
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
