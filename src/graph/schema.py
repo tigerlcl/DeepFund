@@ -1,5 +1,5 @@
 import operator
-from typing import  List, Dict, Any, Optional
+from typing import  List, Dict, Any
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
 from graph.constants import Signal, Action
@@ -26,9 +26,8 @@ class Decision(BaseModel):
         description="Number of shares to buy or sell, set 0 for hold",
         default=0
     )
-    price: Optional[float] = Field(
-        description="Trading price for the ticker.",
-        default=None
+    price: float = Field(
+        description="Current price for the ticker",
     )
     justification: str = Field(
         description="Brief explanation for the decision",

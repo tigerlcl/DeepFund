@@ -60,6 +60,8 @@ def agent_call(prompt: str, llm_config: Dict[str, Any], pydantic_model: Type[T])
     for attempt in range(llm_cfg.max_retries):
         try:
             result = llm.invoke(prompt)
+            if result is None:
+                raise ValueError("LLM returned None")
             return result
         except Exception as e:
             logger.warning(f"Attempt {attempt + 1}/{llm_cfg.max_retries} failed: {e}")
