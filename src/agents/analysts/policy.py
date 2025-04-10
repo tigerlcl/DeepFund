@@ -15,6 +15,7 @@ def policy_agent(state: FundState):
     """policy specialist analyzing market news to provide a signal."""
     agent_name = AgentKey.POLICY
     ticker = state["ticker"]
+    trading_date = state["trading_date"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
 
@@ -25,9 +26,16 @@ def policy_agent(state: FundState):
     
     # Get the policy news
     router = Router(APISource.ALPHA_VANTAGE)
-
-    fiscal_policy = router.get_topic_news(topic="economy_fiscal", news_count=thresholds["news_count"])
-    monetary_policy = router.get_topic_news(topic="economy_monetary", news_count=thresholds["news_count"])
+    fiscal_policy = router.get_market_news(
+        topic="economy_fiscal", 
+        trading_date=trading_date, 
+        news_count=thresholds["news_count"]
+    )
+    monetary_policy = router.get_market_news(
+        topic="economy_monetary", 
+        trading_date=trading_date, 
+        news_count=thresholds["news_count"]
+    )
 
     # Analyze news sentiment via LLM
     fiscal_policy_dict = [m.model_dump() for m in fiscal_policy]

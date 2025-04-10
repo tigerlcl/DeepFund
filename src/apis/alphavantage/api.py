@@ -8,6 +8,7 @@ Premium tier: 75 API requests per minute
 import os
 import requests
 import pandas as pd
+from datetime import datetime, timedelta
 from apis.common_model import OHLCVCandle, MediaNews
 from .api_model import InsiderTrade, Fundamentals, MacroEconomic
 
@@ -21,11 +22,8 @@ class AlphaVantageAPI:
         if self.entitlement:
             self.base_url += f"&entitlement={self.entitlement}"
 
-    def get_daily_candles(self, ticker: str) -> list[OHLCVCandle]: 
-        """
-        Get daily candles for a ticker. 
-        It defaults to latest 100 data points.
-        """
+    def _get_daily_candles(self, ticker: str, trading_date: datetime) -> list[OHLCVCandle]: 
+        """Get daily candles for a ticker. Filter candles by trading_date."""
         response = requests.get(
             url=self.base_url,
             params={
@@ -42,6 +40,11 @@ class AlphaVantageAPI:
         daily_candles = []
         
         for date, data in candle_series.items():
+            candle_date = datetime.strptime(date, "%Y-%m-%d")
+            # Filter by trading_date
+            if candle_date > trading_date:
+                continue
+                
             candle = OHLCVCandle(
                 date=date,
                 open=float(data["1. open"]),
@@ -54,24 +57,17 @@ class AlphaVantageAPI:
 
         return daily_candles
     
-    def get_last_close_price(self, ticker: str) -> float:
+    def get_last_close_price(self, ticker: str, trading_date: datetime) -> float:
         """Get the last close price for a ticker."""
-        response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "GLOBAL_QUOTE", 
-                "symbol": ticker
-            }
-        )
-        last_price = response.json()["Global Quote"]["05. price"]
-        return float(last_price)
+        daily_candles = self._get_daily_candles(ticker, trading_date)
+        if daily_candles:
+            return daily_candles[0].close
 
-    def get_daily_candles_df(self, ticker: str) -> pd.DataFrame:
-        """
-        Get daily candles for a ticker as a pandas DataFrame.
-        Returns a DataFrame with datetime index and numeric columns.
-        """
-        daily_candles = self.get_daily_candles(ticker)
+        return None
+
+    def get_daily_candles_df(self, ticker: str, trading_date: datetime) -> pd.DataFrame:
+        """Convert daily candles into a DataFrame Object with datetime index and numeric columns."""
+        daily_candles = self._get_daily_candles(ticker, trading_date)
         
         # Convert list of OHLCVCandle objects to DataFrame
         df = pd.DataFrame([candle.model_dump() for candle in daily_candles])
@@ -92,10 +88,18 @@ class AlphaVantageAPI:
         return df
 
 
-    def get_insider_trades(self, ticker: str, limit: int) -> list[InsiderTrade]:
+    def get_insider_trades(self, ticker: str, trading_date: datetime, limit: int=None) -> list[InsiderTrade]:
         """
         Get insider trades for a ticker.
-        This API returns the latest and historical insider transactions made be key stakeholders (e.g., founders, executives, board members, etc.) of a specific company.
+        This API returns the latest and historical insider transactions made by key stakeholders.
+        
+        Args:
+            ticker (str): The ticker symbol
+            limit (int): Maximum number of trades to return
+            trading_date (datetime): Filter trades up to this date
+            
+        Returns:
+            list[InsiderTrade]: List of insider trades sorted by transaction date
         """
         response = requests.get(
             url=self.base_url,
@@ -108,9 +112,21 @@ class AlphaVantageAPI:
         if response.status_code != 200:
             response.raise_for_status()
 
-        recent_trades = response.json()["data"][:limit]
+        trades = response.json()["data"]
+
+        # Filter trades by trading_date if provided
+        if trading_date:
+            filtered_trades = []
+            for trade in trades:
+                transaction_date = datetime.strptime(trade["transaction_date"], "%Y-%m-%d")
+                if transaction_date < trading_date:
+                    filtered_trades.append(trade)
+            trades = filtered_trades
+            
+
+        trades = trades[:limit]
         
-        return [InsiderTrade(**trade) for trade in recent_trades]
+        return [InsiderTrade(**trade) for trade in trades]
 
     def get_fundamentals(self, ticker: str) -> Fundamentals:
         """Get company fundamentals from Alpha Vantage."""
@@ -134,16 +150,35 @@ class AlphaVantageAPI:
             print(f"Error parsing response: {e}")
             return None
 
-    def get_news(self, ticker: str, limit: int) -> list[MediaNews]:
-        """Get news for a ticker."""
+    def get_news(self, ticker: str = None, topic: str = None, trading_date: datetime = None, limit: int = None) -> list[MediaNews]:
+        """
+        Get news from Alpha Vantage.
+        
+        Args:
+            ticker (str, optional): Stock ticker symbol for company-specific news
+            topic (str, optional): Topic for market news (e.g., 'blockchain', 'economy_fiscal')
+            trading_date (datetime, optional): Get news up to this date in the past week (used with ticker)
+            limit (int, optional): Maximum number of news items to return
+            
+        Returns:
+            list[MediaNews]: List of news articles
+        """
+        params = {"function": "NEWS_SENTIMENT"}
+        
+        if ticker:
+            params["tickers"] = ticker
+        if topic:
+            params["topics"] = topic
+        if trading_date:
+            params["time_to"] = trading_date.strftime("%Y%m%dT%H%M")
+            time_from = trading_date - timedelta(days=7)
+            params["time_from"] = time_from.strftime("%Y%m%dT%H%M")
+
         response = requests.get(
             url=self.base_url,
-            params={
-                "function": "NEWS_SENTIMENT", 
-                "symbol": ticker,
-                "limit": limit
-            }
+            params=params
         )
+        
         if response.status_code != 200:
             response.raise_for_status()
 
@@ -155,7 +190,7 @@ class AlphaVantageAPI:
                 summary=news["summary"],
                 publisher=news["source"]
             ))
-        return news_list
+        return news_list[:limit]
     
 
     def get_economic_indicators(self):
@@ -191,30 +226,3 @@ class AlphaVantageAPI:
             print(f"Error fetching {function}: {str(e)}")
             return None
 
-    
-    def get_market_news(self, topic: str,limit: int) -> list[MediaNews]:
-        """
-        Get different topics news from Alpha Vantage.
-        supported topics: https://www.alphavantage.co/documentation/#news-sentiment
-        """
-        response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "NEWS_SENTIMENT",
-                "topics": topic,
-                "limit": limit
-            }
-        )
-
-        if response.status_code != 200:
-            response.raise_for_status()
-
-        news_list = []
-        for news in response.json()["feed"]:
-            news_list.append(MediaNews(
-                title=news["title"],
-                publish_time=news["time_published"],
-                summary=news["summary"],
-                publisher=news["source"]
-            ))
-        return news_list

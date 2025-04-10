@@ -1,14 +1,7 @@
 from apis.router import Router, APISource
-from dotenv import load_dotenv
-
-load_dotenv()
-
+from datetime import datetime
 router = Router(APISource.ALPHA_VANTAGE)
 
-# Get just fundamentals
-# fundamentals = router.get_us_stock_fundamentals("IBM")
-# print(fundamentals.pe_ratio)  
-# print(fundamentals.return_on_equity_ttm)
-
-economic_indicators = router.get_economic_indicators()
-print(economic_indicators)
+trading_date = datetime.strptime("2025-04-01", "%Y-%m-%d")
+news = router.get_us_stock_news(ticker="TSLA", trading_date=trading_date, news_count=10)
+print(news)

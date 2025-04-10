@@ -9,6 +9,7 @@ from util.logger import logger
 # Portfolio Manager Thresholds
 thresholds = {
     "position_factor_gt": 0.25, 
+    "decision_memory_limit": 5
 }
 
 def portfolio_agent(state: FundState):
@@ -17,6 +18,7 @@ def portfolio_agent(state: FundState):
     portfolio = state["portfolio"]
     ticker = state["ticker"]
     exp_name = state["exp_name"]
+    trading_date = state["trading_date"]
     analyst_signals = state["analyst_signals"]
     llm_config = state["llm_config"]
 
@@ -25,14 +27,14 @@ def portfolio_agent(state: FundState):
 
     # Get price data
     router = Router(APISource.ALPHA_VANTAGE)
-    current_price = router.get_us_stock_last_close_price(ticker=ticker)
+    current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
     if current_price is None:
         return {"decision": Decision(ticker=ticker)}
     
     current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker)
 
     # Get decision memory
-    decision_memory = db.get_decision_memory(exp_name, ticker)
+    decision_memory = db.get_decision_memory(exp_name, ticker, thresholds["decision_memory_limit"])
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
     # make prompt
@@ -51,13 +53,10 @@ def portfolio_agent(state: FundState):
         llm_config=llm_config,
         pydantic_model=Decision
     )
-
-    if ticker_decision.price is None:
-        ticker_decision.price = current_price
         
     # save decision
     logger.log_decision(ticker, ticker_decision)
-    db.save_decision(portfolio.id, ticker, prompt, ticker_decision)
+    db.save_decision(portfolio.id, ticker, prompt, ticker_decision, trading_date)
 
     return {"decision": ticker_decision}
 

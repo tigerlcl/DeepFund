@@ -17,17 +17,6 @@ def load_portfolio_config(cfg: Dict[str, Any], db):
         config_id = db.create_config(cfg)
         if not config_id:
             raise RuntimeError(f"Failed to create config for {cfg['exp_name']}")
-    
-    # # validate config
-    # db_config = db.get_config(config_id)
-    # if db_config and any([
-    #     db_config["llm_provider"] != cfg["llm"]["provider"],
-    #     db_config["llm_model"] != cfg["llm"]["model"]
-    # ]):
-    #     raise RuntimeError(
-    #         f"Config mismatch for {cfg['exp_name']}. Please use a different experiment name for different configurations."
-    #     )
-        
     return config_id
 
 def main():
@@ -35,32 +24,29 @@ def main():
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
-    parser.add_argument(
-        "--config", type=str, required=True, help="Path to configuration file"
-    )
-    parser.add_argument(
-        "--local-db", action="store_true", help="Use local SQLite database"
-    )
+    parser.add_argument("--config", type=str, required=True, help="Path to configuration file")
+    parser.add_argument("--trading-date", type=str, required=True, help="Trading date in format YYYY-MM-DD")
+    parser.add_argument("--local-db", action="store_true", help="Use local SQLite database")
     args = parser.parse_args()
+
     cfg = ConfigParser(args).get_config()
 
     # Initialize the global database connection based on the local-db flag
     db_initialize(use_local_db=args.local_db)
     db = get_db()
+    logger.info(f"Loading config for {cfg['exp_name']}, trading date: {args.trading_date}")
+    config_id = load_portfolio_config(cfg, db)
+    logger.info("Init DeepFund and run")
 
-    logger.info(f"Loading config for {cfg['exp_name']}")
+    # make sure trading date is in chronological order in DB portfolio table
+    latest_trading_date = db.get_latest_trading_date(config_id)
+    if latest_trading_date and latest_trading_date > cfg["trading_date"]:
+        raise RuntimeError(f"Trading date {args.trading_date} is not in chronological order based on current experiment {cfg['exp_name']}")
     
     try:
-        config_id = load_portfolio_config(cfg, db)
-        logger.info("Init DeepFund and run")
         app = AgentWorkflow(cfg, config_id)
-        new_portfolio = app.run()
-        logger.log_portfolio("Final Portfolio", new_portfolio)
-        
-        logger.info("Updating portfolio to Database")
-        db.update_portfolio(config_id, new_portfolio)
-        logger.info("DeepFund run completed")
-                        
+        time_cost = app.run(config_id)
+        logger.info(f"DeepFund run completed in {time_cost:.2f} seconds")
     except Exception as e:
         logger.error(f"Error during portfolio operations: {e}")
         raise

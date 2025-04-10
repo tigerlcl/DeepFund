@@ -90,6 +90,32 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
 
+    def get_latest_trading_date(self, config_id: str) -> Optional[datetime]:
+        """Get the latest trading date for a config."""
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT trading_date FROM portfolio 
+                WHERE config_id = ? AND trading_date IS NOT NULL
+                ORDER BY trading_date DESC 
+                LIMIT 1
+            ''', (config_id,))
+            
+            row = cursor.fetchone()
+            
+            if row:
+                return datetime.fromisoformat(row['trading_date'])
+            return None
+        except Exception as e:
+            logger.error(f"Error getting latest trading date: {e}")
+            return None
+        finally:
+            if conn:
+                conn.close()
+
     def get_latest_portfolio(self, config_id: str) -> Optional[Dict]:
         """Get the latest portfolio for a config."""
         conn = None
@@ -99,8 +125,8 @@ class SQLiteDB(BaseDB):
             
             cursor.execute('''
                 SELECT * FROM portfolio 
-                WHERE config_id = ? 
-                ORDER BY updated_at DESC 
+                WHERE config_id = ? AND trading_date IS NOT NULL
+                ORDER BY trading_date DESC 
                 LIMIT 1
             ''', (config_id,))
             
@@ -120,7 +146,7 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
 
-    def create_portfolio(self, config_id: str, cashflow: float) -> Optional[Dict]:
+    def create_portfolio(self, config_id: str, cashflow: float, trading_date: datetime) -> Optional[Dict]:
         """Create a new portfolio."""
         conn = None
         try:
@@ -129,12 +155,13 @@ class SQLiteDB(BaseDB):
             
             portfolio_id = str(uuid.uuid4())
             cursor.execute('''
-                INSERT INTO portfolio (id, config_id, updated_at, cashflow, total_assets, positions)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO portfolio (id, config_id, updated_at, trading_date, cashflow, total_assets, positions)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
                 portfolio_id,
                 config_id,
                 datetime.now(timezone.utc).isoformat(), # UTC time
+                trading_date.isoformat(),
                 cashflow,
                 cashflow,
                 json.dumps({})
@@ -154,7 +181,7 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
 
-    def copy_portfolio(self, config_id: str, portfolio: Dict) -> Optional[Dict]:
+    def copy_portfolio(self, config_id: str, portfolio: Dict, trading_date: datetime) -> Optional[Dict]:
         """Copy a portfolio."""
         conn = None
         try:
@@ -164,12 +191,13 @@ class SQLiteDB(BaseDB):
             portfolio_id = str(uuid.uuid4())
             total_assets = portfolio['cashflow'] + sum(position['value'] for position in portfolio['positions'].values())
             cursor.execute('''
-                INSERT INTO portfolio (id, config_id, updated_at, cashflow, total_assets, positions)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO portfolio (id, config_id, updated_at, trading_date, cashflow, total_assets, positions)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
                 portfolio_id,
                 config_id,
                 datetime.now(timezone.utc).isoformat(), # UTC time
+                trading_date.isoformat(),
                 portfolio['cashflow'],
                 total_assets,
                 json.dumps(portfolio['positions'])
@@ -188,7 +216,7 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
 
-    def update_portfolio(self, config_id: str, portfolio: Dict) -> bool:
+    def update_portfolio(self, config_id: str, portfolio: Dict, trading_date: datetime) -> bool:
         """update portfolio."""
         conn = None
         try:
@@ -198,11 +226,12 @@ class SQLiteDB(BaseDB):
             
             cursor.execute('''
                 UPDATE portfolio 
-                SET config_id = ?, updated_at = ?, cashflow = ?, total_assets = ?, positions = ?
+                SET config_id = ?, updated_at = ?, trading_date = ?, cashflow = ?, total_assets = ?, positions = ?
                 WHERE id = ?
             ''', (
                 config_id,
                 datetime.now(timezone.utc).isoformat(), # UTC time
+                trading_date.isoformat(),
                 portfolio['cashflow'],
                 total_assets,
                 json.dumps(portfolio['positions']),
@@ -218,29 +247,28 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
         
-    def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: Decision) -> Optional[str]:
+    def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: Decision, trading_date: datetime) -> Optional[str]:
         """Save a new decision."""
         conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            
-            decison_price = decision.price if decision.price else 0
 
             decision_id = str(uuid.uuid4())
             cursor.execute('''
-                INSERT INTO decision (id, portfolio_id, updated_at, ticker, llm_prompt, 
+                INSERT INTO decision (id, portfolio_id, updated_at, trading_date, ticker, llm_prompt, 
                                    action, shares, price, justification)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 decision_id,
                 portfolio_id,
                 datetime.now(timezone.utc).isoformat(), # UTC time
+                trading_date.isoformat(),
                 ticker,
                 prompt,
                 str(decision.action),
                 decision.shares,
-                decison_price,
+                decision.price,
                 decision.justification
             ))
             
@@ -285,7 +313,7 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
 
-    def get_recent_portfolio_ids_by_config_id(self, config_id: str, limit: int = 5) -> List[str]:
+    def get_recent_portfolio_ids_by_config_id(self, config_id: str, limit: int) -> List[str]:
         """Get recent portfolio ids by config id."""
         conn = None
         try:
@@ -294,8 +322,8 @@ class SQLiteDB(BaseDB):
             
             cursor.execute('''
                 SELECT id FROM portfolio 
-                WHERE config_id = ?
-                ORDER BY updated_at DESC
+                WHERE config_id = ? AND trading_date IS NOT NULL
+                ORDER BY trading_date DESC
                 LIMIT ?
             ''', (config_id, limit))
             
@@ -307,8 +335,8 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
 
-    def get_decision_memory(self, exp_name: str, ticker: str) -> List[Dict]:
-        """Get recent 5 decisions for a ticker."""
+    def get_decision_memory(self, exp_name: str, ticker: str, limit: int) -> List[Dict]:
+        """Get recent decisions for a ticker."""
         
         # Step 1: Get config id by exp_name
         config_id = self.get_config_id_by_name(exp_name)
@@ -317,7 +345,7 @@ class SQLiteDB(BaseDB):
             return []
         
         # Step 2: Get recent 5 portfolio transactions
-        portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id, limit=5)
+        portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id, limit)
         if not portfolio_ids:
             logger.error(f"Portfolio not found for {config_id}")
             return []
@@ -333,7 +361,7 @@ class SQLiteDB(BaseDB):
             query = f'''
                 SELECT * FROM decision 
                 WHERE portfolio_id IN ({placeholders}) AND ticker = ?
-                ORDER BY updated_at DESC
+                ORDER BY trading_date DESC
             '''
             
             # Combine portfolio_ids and ticker into parameters
@@ -343,7 +371,7 @@ class SQLiteDB(BaseDB):
             decisions = []
             for row in cursor.fetchall():
                 decisions.append({
-                    'updated_at': row['updated_at'],
+                    'trading_date': row['trading_date'],
                     'action': row['action'],
                     'shares': row['shares'],
                     'price': row['price'],

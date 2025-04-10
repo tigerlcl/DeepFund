@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 class BaseDB(ABC):
     @abstractmethod
@@ -14,23 +15,27 @@ class BaseDB(ABC):
         pass
 
     @abstractmethod
+    def get_latest_trading_date(self, config_id: str) -> datetime:
+        pass
+
+    @abstractmethod
     def get_latest_portfolio(self, config_id: str) -> dict:
         pass
 
     @abstractmethod
-    def create_portfolio(self, config_id: str, cashflow: float) -> str:
+    def create_portfolio(self, config_id: str, cashflow: float, trading_date: datetime) -> str:
         pass
 
     @abstractmethod
-    def copy_portfolio(self, config_id: str, portfolio: dict) -> str:
+    def copy_portfolio(self, config_id: str, portfolio: dict, trading_date: datetime) -> str:
         pass
 
     @abstractmethod
-    def update_portfolio(self, config_id: str, portfolio: dict) -> bool:
+    def update_portfolio(self, config_id: str, portfolio: dict, trading_date: datetime) -> bool:
         pass
 
     @abstractmethod
-    def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: dict) -> str:
+    def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: dict, trading_date: datetime) -> str:
         pass
 
     @abstractmethod
@@ -38,9 +43,9 @@ class BaseDB(ABC):
         pass
 
     @abstractmethod
-    def get_recent_portfolio_ids_by_config_id(self, config_id: str, limit: int = 5) -> list:
+    def get_recent_portfolio_ids_by_config_id(self, config_id: str, limit: int) -> list:
         pass
 
     @abstractmethod
-    def get_decision_memory(self, exp_name: str, ticker: str) -> list:
+    def get_decision_memory(self, exp_name: str, ticker: str, limit: int) -> list:
         pass

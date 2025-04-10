@@ -8,7 +8,7 @@ from util.logger import logger
 
 # Insider trading thresholds
 thresholds = {
-    "num_trades": 15,
+    "num_trades": 10,
 }
 
 def insider_agent(state: FundState):
@@ -16,6 +16,7 @@ def insider_agent(state: FundState):
     agent_name = AgentKey.INSIDER
     llm_config = state["llm_config"]
     ticker = state["ticker"]
+    trading_date = state["trading_date"]
     portfolio_id = state["portfolio"].id
 
     # Get db instance
@@ -27,6 +28,7 @@ def insider_agent(state: FundState):
     router = Router(APISource.ALPHA_VANTAGE)
     insider_trades = router.get_us_stock_insider_trades(
         ticker=ticker,
+        trading_date=trading_date,
         limit=thresholds["num_trades"],
     )
     if not insider_trades:
