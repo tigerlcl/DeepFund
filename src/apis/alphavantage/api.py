@@ -11,7 +11,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from apis.common_model import OHLCVCandle, MediaNews
 from .api_model import InsiderTrade, Fundamentals, MacroEconomic
-from .cache_manager import CacheManager
 
 class AlphaVantageAPI:
     """Alpha Vantage API Wrapper."""
@@ -22,24 +21,9 @@ class AlphaVantageAPI:
         self.base_url = f"https://www.alphavantage.co/query?apikey={self.api_key}"
         if self.entitlement:
             self.base_url += f"&entitlement={self.entitlement}"
-        self._cache_manager = CacheManager()
 
-    def get_daily_candles(self, ticker: str, trading_date: datetime = None) -> list[OHLCVCandle]: 
-        """
-        Get daily candles for a ticker. 
-        
-        Args:
-            ticker (str): The ticker symbol
-            trading_date (datetime, optional): Filter candles before this date (exclusive)
-            
-        Returns:
-            list[OHLCVCandle]: List of daily OHLCV candles
-        """
-        # Check cache first
-        cached_candles = self._cache_manager.get_candles(ticker, trading_date)
-        if cached_candles is not None:
-            return cached_candles
-        
+    def _get_daily_candles(self, ticker: str, trading_date: datetime) -> list[OHLCVCandle]: 
+        """Get daily candles for a ticker. Filter candles by trading_date."""
         response = requests.get(
             url=self.base_url,
             params={
@@ -57,8 +41,8 @@ class AlphaVantageAPI:
         
         for date, data in candle_series.items():
             candle_date = datetime.strptime(date, "%Y-%m-%d")
-            # Filter by trading_date if provided (exclusive)
-            if trading_date and candle_date >= trading_date:
+            # Filter by trading_date
+            if candle_date > trading_date:
                 continue
                 
             candle = OHLCVCandle(
@@ -71,38 +55,19 @@ class AlphaVantageAPI:
             )
             daily_candles.append(candle)
 
-        # Store in cache
-        self._cache_manager.set_candles(ticker, trading_date, daily_candles)
         return daily_candles
     
-    def get_last_close_price(self, ticker: str, trading_date: datetime = None) -> float:
+    def get_last_close_price(self, ticker: str, trading_date: datetime) -> float:
         """Get the last close price for a ticker."""
-        # Try to get from cache first
-        cached_candles = self._cache_manager.get_candles(ticker, trading_date)
-        if cached_candles:
-            # Get the most recent candle (they are already sorted by date)
-            return cached_candles[0].close
-            
-        # Fallback to API call if no cache
-        daily_candles = self.get_daily_candles(ticker, trading_date)
+        daily_candles = self._get_daily_candles(ticker, trading_date)
         if daily_candles:
             return daily_candles[0].close
 
         return None
 
-    def get_daily_candles_df(self, ticker: str, trading_date: datetime = None) -> pd.DataFrame:
-        """
-        Get daily candles for a ticker as a pandas DataFrame.
-        Returns a DataFrame with datetime index and numeric columns.
-        
-        Args:
-            ticker (str): The ticker symbol
-            trading_date (datetime, optional): Filter candles before this date (exclusive)
-            
-        Returns:
-            pd.DataFrame: DataFrame with OHLCV data
-        """
-        daily_candles = self.get_daily_candles(ticker, trading_date)
+    def get_daily_candles_df(self, ticker: str, trading_date: datetime) -> pd.DataFrame:
+        """Convert daily candles into a DataFrame Object with datetime index and numeric columns."""
+        daily_candles = self._get_daily_candles(ticker, trading_date)
         
         # Convert list of OHLCVCandle objects to DataFrame
         df = pd.DataFrame([candle.model_dump() for candle in daily_candles])
@@ -123,7 +88,7 @@ class AlphaVantageAPI:
         return df
 
 
-    def get_insider_trades(self, ticker: str, trading_date: datetime = None, limit: int=None) -> list[InsiderTrade]:
+    def get_insider_trades(self, ticker: str, trading_date: datetime, limit: int=None) -> list[InsiderTrade]:
         """
         Get insider trades for a ticker.
         This API returns the latest and historical insider transactions made by key stakeholders.
@@ -131,7 +96,7 @@ class AlphaVantageAPI:
         Args:
             ticker (str): The ticker symbol
             limit (int): Maximum number of trades to return
-            trading_date (datetime, optional): Filter trades up to this date
+            trading_date (datetime): Filter trades up to this date
             
         Returns:
             list[InsiderTrade]: List of insider trades sorted by transaction date
@@ -192,7 +157,7 @@ class AlphaVantageAPI:
         Args:
             ticker (str, optional): Stock ticker symbol for company-specific news
             topic (str, optional): Topic for market news (e.g., 'blockchain', 'economy_fiscal')
-            trading_date (datetime, optional): Get news up to this date (used with ticker)
+            trading_date (datetime, optional): Get news up to this date in the past 15 days (used with ticker)
             limit (int, optional): Maximum number of news items to return
             
         Returns:

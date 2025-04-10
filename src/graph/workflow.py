@@ -22,7 +22,7 @@ class AgentWorkflow:
         # load latest portfolio
         portfolio = self.db.get_latest_portfolio(config_id)
         if not portfolio:
-            portfolio = self.db.create_portfolio(config_id, config['cashflow'])
+            portfolio = self.db.create_portfolio(config_id, config['cashflow'], config['trading_date'])
             if not portfolio:
                 raise RuntimeError(f"Failed to create portfolio for config {self.exp_name}")
         
@@ -82,7 +82,7 @@ class AgentWorkflow:
             analysts = planner_agent(ticker, self.llm_config)
             self.workflow_analysts = analysts
     
-    def run(self) -> Dict[str, Any]:
+    def run(self, config_id: str) -> float:
         """Run the workflow."""
         start_time = perf_counter()
 
@@ -117,11 +117,14 @@ class AgentWorkflow:
             if self.planner_mode:
                 self.workflow_analysts = None
 
-        end_time = perf_counter()
-        logger.info(f"Workflow completed in {end_time - start_time:.2f} seconds")
+        logger.log_portfolio("Final Portfolio", portfolio)
+        logger.info("Updating portfolio to Database")
+        self.db.update_portfolio(config_id, portfolio)
 
-        # Convert Pydantic model to dict
-        return portfolio.model_dump()
+        end_time = perf_counter()
+        time_cost = end_time - start_time
+
+        return time_cost
 
 
     def update_portfolio_ticker(self, portfolio: Portfolio, ticker: str, decision: Decision) -> Portfolio:

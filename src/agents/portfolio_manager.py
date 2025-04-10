@@ -9,6 +9,7 @@ from util.logger import logger
 # Portfolio Manager Thresholds
 thresholds = {
     "position_factor_gt": 0.25, 
+    "decision_memory_limit": 5
 }
 
 def portfolio_agent(state: FundState):
@@ -33,7 +34,7 @@ def portfolio_agent(state: FundState):
     current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker)
 
     # Get decision memory
-    decision_memory = db.get_decision_memory(exp_name, ticker)
+    decision_memory = db.get_decision_memory(exp_name, ticker, thresholds["decision_memory_limit"])
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
     # make prompt
