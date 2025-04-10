@@ -107,7 +107,7 @@ class SQLiteDB(BaseDB):
             row = cursor.fetchone()
             
             if row:
-                return row['trading_date']
+                return datetime.fromisoformat(row['trading_date'])
             return None
         except Exception as e:
             logger.error(f"Error getting latest trading date: {e}")

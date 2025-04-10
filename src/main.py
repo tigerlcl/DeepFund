@@ -52,7 +52,7 @@ def main():
     # make sure trading date is in chronological order in DB portfolio table
     latest_trading_date = db.get_latest_trading_date(config_id)
     if latest_trading_date and latest_trading_date > cfg["trading_date"]:
-        raise RuntimeError(f"Trading date {cfg['trading_date']} is not in chronological order")
+        raise RuntimeError(f"Trading date {args.trading_date} is not in chronological order based on current experiment {cfg['exp_name']}")
     
     try:
         app = AgentWorkflow(cfg, config_id)

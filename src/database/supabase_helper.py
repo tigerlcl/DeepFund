@@ -70,8 +70,8 @@ class SupabaseDB(BaseDB):
             response = self.client.table('portfolio') \
                 .select('trading_date') \
                 .eq('config_id', config_id) \
-            .order('trading_date', desc=True) \
-            .execute()
+                .order('trading_date', desc=True) \
+                .execute()
         
             if response.data and len(response.data) > 0:
                 return response.data[0]['trading_date']
