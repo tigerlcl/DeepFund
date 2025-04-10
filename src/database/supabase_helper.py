@@ -70,11 +70,13 @@ class SupabaseDB(BaseDB):
             response = self.client.table('portfolio') \
                 .select('trading_date') \
                 .eq('config_id', config_id) \
+                .not_.is_("trading_date", None) \
                 .order('trading_date', desc=True) \
                 .execute()
         
             if response.data and len(response.data) > 0:
-                return response.data[0]['trading_date']
+                dt = datetime.fromisoformat(response.data[0]['trading_date'])
+                return dt.replace(tzinfo=None)
             return None
         except Exception as e:
             logger.error(f"Error getting latest trading date: {e}")

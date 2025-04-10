@@ -99,7 +99,7 @@ class SQLiteDB(BaseDB):
             
             cursor.execute('''
                 SELECT trading_date FROM portfolio 
-                WHERE config_id = ? 
+                WHERE config_id = ? AND trading_date IS NOT NULL
                 ORDER BY trading_date DESC 
                 LIMIT 1
             ''', (config_id,))
