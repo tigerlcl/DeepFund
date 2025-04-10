@@ -36,6 +36,7 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run the deep fund trading system")
     parser.add_argument("--config", type=str, required=True, help="Path to configuration file")
+    parser.add_argument("--trading-date", type=str, required=True, help="Trading date in format YYYY-MM-DD")
     parser.add_argument("--local-db", action="store_true", help="Use local SQLite database")
     args = parser.parse_args()
 
@@ -51,13 +52,8 @@ def main():
         config_id = load_portfolio_config(cfg, db)
         logger.info("Init DeepFund and run")
         app = AgentWorkflow(cfg, config_id)
-        new_portfolio = app.run()
-        logger.log_portfolio("Final Portfolio", new_portfolio)
-        
-        logger.info("Updating portfolio to Database")
-        db.update_portfolio(config_id, new_portfolio)
-        logger.info("DeepFund run completed")
-                        
+        time_cost = app.run(config_id)
+        logger.info(f"DeepFund run completed in {time_cost:.2f} seconds")
     except Exception as e:
         logger.error(f"Error during portfolio operations: {e}")
         raise

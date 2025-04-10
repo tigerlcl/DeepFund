@@ -1,6 +1,5 @@
 # Deep Fund Configuration
 exp_name: "dev"
-trading_date: "2025-04-01"
 
 # Trading settings
 cashflow: 100000

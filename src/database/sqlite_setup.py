@@ -32,7 +32,8 @@ def init_database():
     CREATE TABLE IF NOT EXISTS portfolio (
         id VARCHAR(36) PRIMARY KEY,
         config_id VARCHAR(36) NOT NULL,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,                   
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        trading_date TIMESTAMP NOT NULL,                   
         cashflow DECIMAL(15,2) NOT NULL,
         total_assets DECIMAL(15,2) NOT NULL,
         positions JSON NOT NULL,
@@ -46,6 +47,7 @@ def init_database():
         id VARCHAR(36) PRIMARY KEY,
         portfolio_id VARCHAR(36) NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        trading_date TIMESTAMP NOT NULL,
         ticker VARCHAR(10) NOT NULL,
         llm_prompt TEXT NOT NULL,
         action VARCHAR(10) NOT NULL,
@@ -74,8 +76,10 @@ def init_database():
     # Create indices for better query performance
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_config_exp_name ON config(exp_name)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_portfolio_updated ON portfolio(updated_at)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_portfolio_trading_date ON portfolio(trading_date)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_decision_portfolio ON decision(portfolio_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_decision_updated ON decision(updated_at)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_decision_trading_date ON decision(trading_date)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_signal_portfolio ON signal(portfolio_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_signal_updated ON signal(updated_at)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_signal_analyst ON signal(analyst)')
