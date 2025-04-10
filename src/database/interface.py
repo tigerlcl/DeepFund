@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+
 class BaseDB(ABC):
     @abstractmethod
     def get_config(self, config_id: str) -> dict:
@@ -11,6 +12,10 @@ class BaseDB(ABC):
 
     @abstractmethod
     def create_config(self, config: dict) -> str:
+        pass
+
+    @abstractmethod
+    def get_latest_trading_date(self, config_id: str) -> datetime:
         pass
 
     @abstractmethod

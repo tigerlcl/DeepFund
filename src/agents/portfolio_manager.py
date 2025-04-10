@@ -56,7 +56,7 @@ def portfolio_agent(state: FundState):
         
     # save decision
     logger.log_decision(ticker, ticker_decision)
-    db.save_decision(portfolio.id, ticker, prompt, ticker_decision)
+    db.save_decision(portfolio.id, ticker, prompt, ticker_decision, trading_date)
 
     return {"decision": ticker_decision}
 

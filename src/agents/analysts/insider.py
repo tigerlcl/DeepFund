@@ -8,7 +8,7 @@ from util.logger import logger
 
 # Insider trading thresholds
 thresholds = {
-    "num_trades": 15,
+    "num_trades": 10,
 }
 
 def insider_agent(state: FundState):

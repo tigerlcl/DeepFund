@@ -90,6 +90,32 @@ class SQLiteDB(BaseDB):
             if conn:
                 conn.close()
 
+    def get_latest_trading_date(self, config_id: str) -> Optional[datetime]:
+        """Get the latest trading date for a config."""
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT trading_date FROM portfolio 
+                WHERE config_id = ? 
+                ORDER BY trading_date DESC 
+                LIMIT 1
+            ''', (config_id,))
+            
+            row = cursor.fetchone()
+            
+            if row:
+                return row['trading_date']
+            return None
+        except Exception as e:
+            logger.error(f"Error getting latest trading date: {e}")
+            return None
+        finally:
+            if conn:
+                conn.close()
+
     def get_latest_portfolio(self, config_id: str) -> Optional[Dict]:
         """Get the latest portfolio for a config."""
         conn = None

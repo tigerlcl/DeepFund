@@ -45,12 +45,16 @@ def main():
     # Initialize the global database connection based on the local-db flag
     db_initialize(use_local_db=args.local_db)
     db = get_db()
+    logger.info(f"Loading config for {cfg['exp_name']}, trading date: {args.trading_date}")
+    config_id = load_portfolio_config(cfg, db)
+    logger.info("Init DeepFund and run")
 
-    logger.info(f"Loading config for {cfg['exp_name']}, trading date: {cfg['trading_date']}")
+    # make sure trading date is in chronological order in DB portfolio table
+    latest_trading_date = db.get_latest_trading_date(config_id)
+    if latest_trading_date and latest_trading_date > cfg["trading_date"]:
+        raise RuntimeError(f"Trading date {cfg['trading_date']} is not in chronological order")
     
     try:
-        config_id = load_portfolio_config(cfg, db)
-        logger.info("Init DeepFund and run")
         app = AgentWorkflow(cfg, config_id)
         time_cost = app.run(config_id)
         logger.info(f"DeepFund run completed in {time_cost:.2f} seconds")

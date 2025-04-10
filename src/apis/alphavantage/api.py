@@ -157,7 +157,7 @@ class AlphaVantageAPI:
         Args:
             ticker (str, optional): Stock ticker symbol for company-specific news
             topic (str, optional): Topic for market news (e.g., 'blockchain', 'economy_fiscal')
-            trading_date (datetime, optional): Get news up to this date in the past 15 days (used with ticker)
+            trading_date (datetime, optional): Get news up to this date in the past week (used with ticker)
             limit (int, optional): Maximum number of news items to return
             
         Returns:
@@ -171,10 +171,8 @@ class AlphaVantageAPI:
             params["topics"] = topic
         if trading_date:
             params["time_to"] = trading_date.strftime("%Y%m%dT%H%M")
-            time_from = trading_date - timedelta(days=15)
+            time_from = trading_date - timedelta(days=7)
             params["time_from"] = time_from.strftime("%Y%m%dT%H%M")
-        if limit:
-            params["limit"] = limit
 
         response = requests.get(
             url=self.base_url,
@@ -192,7 +190,7 @@ class AlphaVantageAPI:
                 summary=news["summary"],
                 publisher=news["source"]
             ))
-        return news_list
+        return news_list[:limit]
     
 
     def get_economic_indicators(self):

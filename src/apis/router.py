@@ -24,10 +24,10 @@ class Router():
         else:  # YFinanceAPI
             return self.api.get_news(query=ticker, news_count=news_count)
     
-    def get_market_news(self, topic, news_count):
+    def get_market_news(self, topic, trading_date, news_count):
         """Get market news for a topic."""
         if isinstance(self.api, AlphaVantageAPI):
-            return self.api.get_news(topic=topic, limit=news_count)
+            return self.api.get_news(topic=topic, trading_date=trading_date, limit=news_count)
         else:  # YFinanceAPI
             return self.api.get_news(query=topic, news_count=news_count)
 

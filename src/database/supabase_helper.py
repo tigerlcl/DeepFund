@@ -64,6 +64,22 @@ class SupabaseDB(BaseDB):
             logger.error(f"Error creating config: {e}")
             return None
 
+    def get_latest_trading_date(self, config_id: str) -> Optional[datetime]:
+        """Get the latest trading date for a config."""
+        try:
+            response = self.client.table('portfolio') \
+                .select('trading_date') \
+                .eq('config_id', config_id) \
+            .order('trading_date', desc=True) \
+            .execute()
+        
+            if response.data and len(response.data) > 0:
+                return response.data[0]['trading_date']
+            return None
+        except Exception as e:
+            logger.error(f"Error getting latest trading date: {e}")
+            return None
+
     def get_latest_portfolio(self, config_id: str) -> Optional[Dict]:
         """Get the latest portfolio for a config."""
         try:

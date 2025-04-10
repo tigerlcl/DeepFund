@@ -1,6 +1,6 @@
 from typing import  Dict, Any
 from langgraph.graph import StateGraph, START, END
-from graph.schema import FundState, Portfolio,Decision, Action, Position
+from graph.schema import FundState, Portfolio, Decision, Action, Position
 from graph.constants import AgentKey
 from agents.registry import AgentRegistry
 from agents.planner import planner_agent
@@ -19,7 +19,7 @@ class AgentWorkflow:
         self.trading_date = config['trading_date']
         self.db = get_db()
 
-        # load latest portfolio
+        # load latest portfolio from DB
         portfolio = self.db.get_latest_portfolio(config_id)
         if not portfolio:
             portfolio = self.db.create_portfolio(config_id, config['cashflow'], config['trading_date'])
@@ -27,7 +27,7 @@ class AgentWorkflow:
                 raise RuntimeError(f"Failed to create portfolio for config {self.exp_name}")
         
         # copy portfolio with a new id
-        new_portfolio = self.db.copy_portfolio(config_id, portfolio)
+        new_portfolio = self.db.copy_portfolio(config_id, portfolio, config['trading_date'])
         self.init_portfolio = Portfolio(**new_portfolio)
         logger.info(f"New portfolio ID: {self.init_portfolio.id}")
         
@@ -119,7 +119,8 @@ class AgentWorkflow:
 
         logger.log_portfolio("Final Portfolio", portfolio)
         logger.info("Updating portfolio to Database")
-        self.db.update_portfolio(config_id, portfolio)
+        portfolio_dict = portfolio.model_dump()
+        self.db.update_portfolio(config_id, portfolio_dict, self.trading_date)
 
         end_time = perf_counter()
         time_cost = end_time - start_time

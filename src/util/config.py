@@ -24,14 +24,10 @@ class ConfigParser:
         except yaml.YAMLError as e:
             raise ValueError(f"Error parsing configuration file: {e}")
         
-        self.set_config_key('trading_date', datetime.strptime(self.trading_date, '%Y-%m-%d'))
+        cfg['trading_date'] = datetime.strptime(self.trading_date, '%Y-%m-%d')
 
         return cfg
 
     def get_config(self) -> Dict[str, Any]:
         """Get the configuration with normalization."""
         return self.config
-    
-    def set_config_key(self, key: str, value: Any):
-        """Set a key in the configuration."""
-        self.config[key] = value
