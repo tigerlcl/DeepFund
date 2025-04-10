@@ -29,5 +29,5 @@ class ConfigParser:
         return cfg
 
     def get_config(self) -> Dict[str, Any]:
-        """Get the configuration with normalization."""
+        """Get the configuration."""
         return self.config

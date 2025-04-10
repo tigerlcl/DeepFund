@@ -45,4 +45,3 @@ Thumbs.db
 # local files
 logs/
 assets/
-*_test.py

@@ -88,6 +88,7 @@ class SupabaseDB(BaseDB):
             response = self.client.table('portfolio') \
                 .select('id, cashflow, positions') \
                 .eq('config_id', config_id) \
+                .not_.is_("trading_date", None) \
                 .order('trading_date', desc=True) \
                 .limit(1) \
                 .execute()
@@ -218,6 +219,7 @@ class SupabaseDB(BaseDB):
             response = self.client.table('portfolio') \
                 .select('id') \
                 .eq('config_id', config_id) \
+                .not_.is_("trading_date", None) \
                 .order('trading_date', desc=True) \
                 .limit(limit) \
                 .execute()

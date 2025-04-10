@@ -125,7 +125,7 @@ class SQLiteDB(BaseDB):
             
             cursor.execute('''
                 SELECT * FROM portfolio 
-                WHERE config_id = ? 
+                WHERE config_id = ? AND trading_date IS NOT NULL
                 ORDER BY trading_date DESC 
                 LIMIT 1
             ''', (config_id,))
@@ -322,7 +322,7 @@ class SQLiteDB(BaseDB):
             
             cursor.execute('''
                 SELECT id FROM portfolio 
-                WHERE config_id = ?
+                WHERE config_id = ? AND trading_date IS NOT NULL
                 ORDER BY trading_date DESC
                 LIMIT ?
             ''', (config_id, limit))
