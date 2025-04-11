@@ -39,13 +39,6 @@ Support and Resistance Levels:
 - Price Distance to Support: {analysis[price_levels][price_to_support]:.2%} if not None
 - Price Distance to Resistance: {analysis[price_levels][price_to_resistance]:.2%} if not None
 
-When analyzing, consider:
-1. The alignment of multiple timeframe trends
-2. Volume confirmation of price movements
-3. Key support/resistance levels
-4. Momentum and mean reversion signals
-5. Any divergences between price and indicators
-
 """ + ANALYST_OUTPUT_FORMAT
 
 INSIDER_PROMPT = """
