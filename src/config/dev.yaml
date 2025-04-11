@@ -9,6 +9,8 @@ tickers:
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
+  - fundamental
+  - macroeconomic
   - technical
   - company_news
   - insider
