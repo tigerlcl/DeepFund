@@ -36,8 +36,8 @@ thresholds = {
         "unusual_volume": 2.0,
     },
     "support_resistance": {
-        "window1": 5,
-        "window2": 20,
+        "pivot_window": 5,
+        "lookback_period": 20,
     }
 
 }
@@ -47,6 +47,7 @@ def technical_agent(state: FundState):
     """Technical analysis specialist that excels at short to medium-term price movement predictions."""
     agent_name = AgentKey.TECHNICAL
     ticker = state["ticker"]
+    trading_date = state["trading_date"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
     
@@ -57,7 +58,7 @@ def technical_agent(state: FundState):
 
     # Get the price data
     router = Router(APISource.ALPHA_VANTAGE)
-    prices_df = router.get_us_stock_daily_candles_df(ticker=ticker)
+    prices_df = router.get_us_stock_daily_candles_df(ticker=ticker, trading_date=trading_date)
     if prices_df is None:
         logger.error(f"Failed to fetch price data for {ticker}")
         return state
@@ -226,34 +227,37 @@ def get_volume_analysis(prices_df, params):
 
 def get_support_resistance(prices_df, params):
     """Calculate support and resistance levels"""
-    def is_support(prices: pd.Series, i: int, window: int = params["window1"]) -> bool:
-        """Check if the price point is a support level"""
-        start_idx = max(0, i - window)
-        end_idx = min(len(prices), i + window + 1)
+    def _is_level(prices: pd.Series, i: int, level_type: str, pivot_window: int = params["pivot_window"]) -> bool:
+        """Check if the price point is a support/resistance level by comparing with surrounding prices"""
+        start_idx = max(0, i - pivot_window)
+        end_idx = min(len(prices), i + pivot_window + 1)
         window_prices = prices.iloc[start_idx:end_idx]
         current_price = prices.iloc[i]
-        return all(current_price <= p for idx, p in window_prices.items() if idx != i)
+        
+        left_prices = window_prices.iloc[:pivot_window]
+        right_prices = window_prices.iloc[pivot_window+1:]
+        
+        if level_type == 'support':
+            return (len(left_prices[left_prices > current_price]) >= 2 and 
+                   len(right_prices[right_prices > current_price]) >= 2)
+        elif level_type == 'resistance':
+            return (len(left_prices[left_prices < current_price]) >= 2 and 
+                   len(right_prices[right_prices < current_price]) >= 2)
+        else:
+            raise ValueError("level_type must be 'support' or 'resistance'")
     
-    def is_resistance(prices: pd.Series, i: int, window: int = params["window1"]) -> bool:
-        """Check if the price point is a resistance level"""
-        start_idx = max(0, i - window)
-        end_idx = min(len(prices), i + window + 1)
-        window_prices = prices.iloc[start_idx:end_idx]
-        current_price = prices.iloc[i]
-        return all(current_price >= p for idx, p in window_prices.items() if idx != i)
-    
-    def find_levels(prices: pd.Series, window: int = params["window2"]):
+    def _find_levels(prices: pd.Series, lookback_period: int = params["lookback_period"]):
         levels = []
-        for i in range(window, len(prices)):
-            if is_support(prices, i):
+        for i in range(lookback_period, len(prices)):
+            if _is_level(prices, i, 'support'):
                 levels.append((i, prices.iloc[i]))
-            elif is_resistance(prices, i):
+            elif _is_level(prices, i, 'resistance'):
                 levels.append((i, prices.iloc[i]))
         return levels
     
     price_data = prices_df['close']
     current_price = price_data.iloc[-1]
-    levels = find_levels(price_data)
+    levels = _find_levels(price_data)
     
     support_levels = [price for _, price in levels if price < current_price]
     resistance_levels = [price for _, price in levels if price > current_price]
