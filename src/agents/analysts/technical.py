@@ -58,9 +58,10 @@ def technical_agent(state: FundState):
 
     # Get the price data
     router = Router(APISource.ALPHA_VANTAGE)
-    prices_df = router.get_us_stock_daily_candles_df(ticker=ticker, trading_date=trading_date)
-    if prices_df is None:
-        logger.error(f"Failed to fetch price data for {ticker}")
+    try:
+        prices_df = router.get_us_stock_daily_candles_df(ticker=ticker, trading_date=trading_date)
+    except Exception as e:
+        logger.error(f"Failed to fetch price data for {ticker}: {e}")
         return state
 
     # Analyze technical indicators
@@ -219,11 +220,11 @@ def get_volume_analysis(prices_df, params):
     # Calculate volume trend
     vol_trend = (volume > vol_ma.shift(1)).astype(int)
     
-    return {
-        'volume_trend': Signal.BULLISH if vol_trend.iloc[-1] == 1 else Signal.BEARISH,
-        'price_volume_correlation': price_volume_corr.iloc[-1],
-        'unusual_volume': volume.iloc[-1] > (vol_ma.iloc[-1] * params["unusual_volume"])
-    }
+    result = f"- Volume trend: {Signal.BULLISH if vol_trend.iloc[-1] == 1 else Signal.BEARISH}\n"
+    result += f"- Price-volume correlation: {price_volume_corr.iloc[-1]}\n"
+    result += f"- Unusual volume: {volume.iloc[-1] > (vol_ma.iloc[-1] * params['unusual_volume'])}\n"
+    return result
+
 
 def get_support_resistance(prices_df, params):
     """Calculate support and resistance levels"""
@@ -264,11 +265,13 @@ def get_support_resistance(prices_df, params):
     
     support = max(support_levels) if support_levels else None
     resistance = min(resistance_levels) if resistance_levels else None
-    
-    return {
-        'current_price': current_price,
-        'nearest_support': support,
-        'nearest_resistance': resistance,
-        'price_to_support': (current_price - support) / support if support else None,
-        'price_to_resistance': (resistance - current_price) / current_price if resistance else None
-    }
+
+    if support is None or resistance is None:
+        return "Failed to analyze support and resistance levels"
+    else:
+        result = f"- Current price: {current_price}\n"
+        result += f"- Nearest support: {support}\n"
+        result += f"- Nearest resistance: {resistance}\n"
+        result += f"- Price to support: {(current_price - support) / support}\n"
+        result += f"- Price to resistance: {(resistance - current_price) / current_price}\n"
+        return result

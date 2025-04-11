@@ -27,11 +27,11 @@ def portfolio_agent(state: FundState):
 
     # Get price data
     router = Router(APISource.ALPHA_VANTAGE)
-    current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
-    if current_price is None:
-        return {"decision": Decision(ticker=ticker)}
-    # make prompt
-    ticker_signals = "\n".join([f"Signal: {s.signal}\nJustification: {s.justification}" for s in analyst_signals])
+    try:
+        current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
+    except Exception as e:
+        logger.error(f"Failed to fetch price data for {ticker}: {e}")
+        raise RuntimeError(f"Failed to make decision")
     
     # Get decision memory
     decision_memory = db.get_decision_memory(exp_name, ticker, thresholds["decision_memory_limit"])

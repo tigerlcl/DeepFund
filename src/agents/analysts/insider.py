@@ -26,12 +26,14 @@ def insider_agent(state: FundState):
     
     # Get the insider trades
     router = Router(APISource.ALPHA_VANTAGE)
-    insider_trades = router.get_us_stock_insider_trades(
-        ticker=ticker,
-        trading_date=trading_date,
-        limit=thresholds["num_trades"],
-    )
-    if not insider_trades:
+    try:
+        insider_trades = router.get_us_stock_insider_trades(
+            ticker=ticker,
+            trading_date=trading_date,
+            limit=thresholds["num_trades"],
+        )
+    except Exception as e:
+        logger.error(f"Failed to fetch insider trades for {ticker}: {e}")
         return state
 
     # Analyze insider trading signal via LLM

@@ -26,8 +26,10 @@ def company_news_agent(state: FundState):
     
     # Get the company news
     router = Router(APISource.ALPHA_VANTAGE)
-    company_news = router.get_us_stock_news(ticker, trading_date, thresholds["news_count"])
-    if not company_news:
+    try:
+        company_news = router.get_us_stock_news(ticker, trading_date, thresholds["news_count"])
+    except Exception as e:
+        logger.error(f"Failed to fetch company news for {ticker}: {e}")
         return state
 
     # Analyze news sentiment via LLM
