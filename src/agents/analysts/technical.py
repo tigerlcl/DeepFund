@@ -243,8 +243,8 @@ def get_support_resistance(prices_df, params):
         elif level_type == 'resistance':
             return (len(left_prices[left_prices < current_price]) >= 2 and 
                    len(right_prices[right_prices < current_price]) >= 2)
-        else:
-            raise ValueError("level_type must be 'support' or 'resistance'")
+        # else:
+        #     raise ValueError("level_type must be 'support' or 'resistance'")
     
     def _find_levels(prices: pd.Series, lookback_period: int = params["lookback_period"]):
         levels = []
