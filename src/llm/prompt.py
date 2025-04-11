@@ -28,16 +28,10 @@ Mean Reversion and Momentum:
 - Volatility: {analysis[volatility]}
 
 Volume Analysis:
-- Volume Trend: {analysis[volume][volume_trend]}
-- Price-Volume Correlation: {analysis[volume][price_volume_correlation]:.2f}
-- Unusual Volume: {analysis[volume][unusual_volume]}
+{analysis[volume]}
 
 Support and Resistance Levels:
-- Current Price: {analysis[price_levels][current_price]}
-- Nearest Support: {analysis[price_levels][nearest_support]}
-- Nearest Resistance: {analysis[price_levels][nearest_resistance]}
-- Price Distance to Support: {analysis[price_levels][price_to_support]:.2%} if not None
-- Price Distance to Resistance: {analysis[price_levels][price_to_resistance]:.2%} if not None
+{analysis[price_levels]}
 
 """ + ANALYST_OUTPUT_FORMAT
 

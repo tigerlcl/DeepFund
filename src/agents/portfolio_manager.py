@@ -27,9 +27,11 @@ def portfolio_agent(state: FundState):
 
     # Get price data
     router = Router(APISource.ALPHA_VANTAGE)
-    current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
-    if current_price is None:
-        return {"decision": Decision(ticker=ticker)}
+    try:
+        current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
+    except Exception as e:
+        logger.error(f"Failed to fetch price data for {ticker}: {e}")
+        raise RuntimeError(f"Failed to make decision")
     
     current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker)
 
