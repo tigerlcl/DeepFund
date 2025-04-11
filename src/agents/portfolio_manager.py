@@ -1,6 +1,6 @@
 from graph.constants import AgentKey
-from llm.prompt import PORTFOLIO_PROMPT
-from graph.schema import Decision, FundState
+from llm.prompt import PORTFOLIO_PROMPT, RISK_CONTROL_PROMPT
+from graph.schema import Decision, FundState, RiskAssessment
 from llm.inference import agent_call
 from apis.router import Router, APISource
 from util.db_helper import get_db
@@ -30,19 +30,36 @@ def portfolio_agent(state: FundState):
     current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
     if current_price is None:
         return {"decision": Decision(ticker=ticker)}
+    # make prompt
+    ticker_signals = "\n".join([f"Signal: {s.signal}\nJustification: {s.justification}" for s in analyst_signals])
     
-    current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker)
-
     # Get decision memory
     decision_memory = db.get_decision_memory(exp_name, ticker, thresholds["decision_memory_limit"])
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
-    # make prompt
-    ticker_signals = "\n".join([f"Signal: {s.signal}\nJustification: {s.justification}" for s in analyst_signals])
+    # risk control
+    risk_prompt = RISK_CONTROL_PROMPT.format(
+        ticker_signals=ticker_signals,
+        current_price=current_price,
+    )
+    risk_assessment = agent_call(
+        prompt=risk_prompt,
+        llm_config=llm_config,
+        pydantic_model=RiskAssessment
+    )
+    
+    logger.log_agent_status(agent_name, ticker, "Risk control")
+    logger.log_risk(ticker, risk_assessment)
+
+    if risk_assessment.max_position:
+        thresholds["position_factor_gt"] = risk_assessment.max_position 
+
+    current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker)
+    # make trading decision
     prompt = PORTFOLIO_PROMPT.format(
         decision_memory=decision_memory,
         ticker_signals=ticker_signals,
-        current_price=current_price,
+        risk_assessment=risk_assessment,
         current_shares=current_shares,
         remaining_shares=remaining_shares,
     )
@@ -72,7 +89,7 @@ def calculate_ticker_shares(portfolio, current_price, ticker) -> float:
         current_position_value = current_shares * current_price
     total_portfolio_value = portfolio.cashflow + sum(portfolio.positions[t].value for t in portfolio.positions)
     
-    # single ticker position should be less than 25% of total portfolio value
+    # single ticker position should be less than max_position of total portfolio value
     position_limit = total_portfolio_value * thresholds["position_factor_gt"]
     remaining_position_limit = position_limit - current_position_value
     # round down to the nearest integer

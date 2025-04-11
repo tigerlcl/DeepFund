@@ -79,10 +79,11 @@ Here are the monetary policy:
 
 
 PORTFOLIO_PROMPT = """
-You are a portfolio manager making final trading decisions based on the decision memory and signals from the analysts.
+You are a portfolio manager making final trading decisions based on the decision memory, signals from the analysts, and the provided risk assessment..
 
 If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
 If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
+Consider the risk assessment's max position and stop-loss price to ensure the purchase aligns with the overall risk tolerance.
 
 Here are the recent decisions:
 {decision_memory}
@@ -90,7 +91,13 @@ Here are the recent decisions:
 Here are the analyst signals:
 {ticker_signals}
 
-Current Price: {current_price}
+Here is the risk assessment:
+
+Current Price: {risk_assessment.current_price}
+Stop-Loss Price: {risk_assessment.stop_loss}
+Maximum Position: {risk_assessment.max_position}
+Justification: {risk_assessment.justification}
+
 Holding Shares at current: {current_shares}
 Remaining Shares Allowed For Purchases: {remaining_shares}
 
@@ -115,4 +122,21 @@ Here are the available analysts:
 You must provide your decision as a structured output with the following fields:
 - analysts: selected one or at most 5 analysts
 - justification: brief explanation of your selection
+"""
+
+RISK_CONTROL_PROMPT = """
+You are a professional risk control analyst. Please evaluate the risk of the stock and provide risk control recommendations based on the following information:
+
+Analyst signals:
+{ticker_signals}
+
+Current price: {current_price}
+
+You must provide your decision as a structured output with the following fields:
+- current_price: The current price of the ticker
+- stop_loss: The price at which the stock should be sold to limit losses according to the ticker signals.
+- max_position: The maximum allowed holding position, float number between 0 and 0.8, the more bullish the signal, the larger max_position.
+- justification: A brief explanation of your decision
+
+Your response should be well-reasoned and consider all aspects of the analysis.
 """

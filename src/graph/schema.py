@@ -46,6 +46,25 @@ class Position(BaseModel):
         description="Shares for the position."
     )
 
+class RiskAssessment(BaseModel):
+    """Risk assessment for a single ticker"""
+    current_price: float = Field(
+        description="Current price of the stock",
+        default=0.0
+    )
+    stop_loss: float = Field(
+        description="The price at which the stock should be sold to limit losses",
+        default=0.0
+    )
+    max_position: float = Field(
+        description="The maximum allowed holding position, float number between 0 and 0.8, the more bullish the signal, the larger max_position",
+        default=0.0
+    )
+    justification: str = Field(
+        description="Detailed risk assessment rationale explaining the recommendations",
+        default="No assessment provided due to insufficient data"
+    )
+
 class Portfolio(BaseModel):
     """Portfolio state when running the workflow."""
     id: str = Field(description="Portfolio id.")
@@ -67,4 +86,5 @@ class FundState(TypedDict):
     analyst_signals: Annotated[List[AnalystSignal], operator.add]
     # portfolio manager output
     decision: Decision
+    risk_assessment: RiskAssessment
     
