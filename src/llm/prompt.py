@@ -73,20 +73,18 @@ Here are the monetary policy:
 
 
 PORTFOLIO_PROMPT = """
-You are a portfolio manager making final trading decisions based on the decision memory and signals from the analysts.
+You are a portfolio manager making final trading decisions based on decision memory, and the provided optimal position ratio.
 
-If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
-If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
-
-Here are the recent decisions:
+Here is the decision memory:
 {decision_memory}
 
-Here are the analyst signals:
-{ticker_signals}
-
 Current Price: {current_price}
-Holding Shares at current: {current_shares}
-Remaining Shares Allowed For Purchases: {remaining_shares}
+Holding Shares: {current_shares}
+Remaining Shares: {remaining_shares}
+
+If the value of remaining shares is positive, you can buy more shares.
+If the value of remaining shares is negative, you can sell some shares.
+If the value of remaining shares is close to 0, you can hold.
 
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
@@ -109,4 +107,27 @@ Here are the available analysts:
 You must provide your decision as a structured output with the following fields:
 - analysts: selected one or at most 5 analysts
 - justification: brief explanation of your selection
+"""
+
+RISK_CONTROL_PROMPT = """
+You are a professional risk control analyst. Please evaluate the risk of the ticker based on analyst signals and portfolio state.
+
+Here is the ticker:
+{ticker}
+
+Here are the analyst signals on {ticker}:
+{ticker_signals}
+
+Here is the portfolio state:
+{portfolio}
+
+The position ratio range: {position_ratio_gt} - {position_ratio_lt}
+If you obeserve more bullish signals, you can set a larger position ratio.
+If you obeserve more bearish signals, you can set a smaller position ratio.
+
+You must provide your control recommendation as a structured output with the following fields:
+- optimal_position_ratio: The optimal ratio of the position value to the total portfolio value
+- justification: A brief explanation of your recommendation
+
+Your response should be well-reasoned and consider all aspects of the analysis.
 """

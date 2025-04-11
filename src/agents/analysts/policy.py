@@ -42,8 +42,8 @@ def policy_agent(state: FundState):
         return state
 
     # Analyze news sentiment via LLM
-    fiscal_policy_dict = [m.model_dump() for m in fiscal_policy]
-    monetary_policy_dict = [m.model_dump() for m in monetary_policy]
+    fiscal_policy_dict = [m.model_dump_json() for m in fiscal_policy]
+    monetary_policy_dict = [m.model_dump_json() for m in monetary_policy]
     prompt = POLICY_PROMPT.format(fiscal_policy=fiscal_policy_dict, monetary_policy=monetary_policy_dict)
 
     # Get LLM signal
