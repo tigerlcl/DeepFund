@@ -18,10 +18,26 @@ TECHNICAL_PROMPT = """
 You are a technical analyst evaluating ticker using multiple technical analysis strategies.
 
 The following signals have been generated from our analysis:
+
+Price Trend Analysis:
 - Trend Following: {analysis[trend]}
+
+Mean Reversion and Momentum:
 - Mean Reversion: {analysis[mean_reversion]}
 - RSI: {analysis[rsi]}
 - Volatility: {analysis[volatility]}
+
+Volume Analysis:
+- Volume Trend: {analysis[volume][volume_trend]}
+- Price-Volume Correlation: {analysis[volume][price_volume_correlation]:.2f}
+- Unusual Volume: {analysis[volume][unusual_volume]}
+
+Support and Resistance Levels:
+- Current Price: {analysis[price_levels][current_price]}
+- Nearest Support: {analysis[price_levels][nearest_support]}
+- Nearest Resistance: {analysis[price_levels][nearest_resistance]}
+- Price Distance to Support: {analysis[price_levels][price_to_support]:.2%} if not None
+- Price Distance to Resistance: {analysis[price_levels][price_to_resistance]:.2%} if not None
 
 """ + ANALYST_OUTPUT_FORMAT
 
