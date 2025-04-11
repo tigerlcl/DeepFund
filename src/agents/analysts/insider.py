@@ -37,7 +37,7 @@ def insider_agent(state: FundState):
         return state
 
     # Analyze insider trading signal via LLM
-    trades_dict = [m.model_dump() for m in insider_trades]
+    trades_dict = [m.model_dump_json() for m in insider_trades]
     prompt = INSIDER_PROMPT.format(num_trades=thresholds["num_trades"],trades=trades_dict)
 
     signal = agent_call(

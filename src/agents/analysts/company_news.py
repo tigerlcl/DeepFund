@@ -33,7 +33,7 @@ def company_news_agent(state: FundState):
         return state
 
     # Analyze news sentiment via LLM
-    news_dict = [m.model_dump() for m in company_news]
+    news_dict = [m.model_dump_json() for m in company_news]
     prompt = COMPANY_NEWS_PROMPT.format(news=news_dict)
 
     # Get LLM signal
