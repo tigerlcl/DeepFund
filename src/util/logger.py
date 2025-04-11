@@ -1,7 +1,7 @@
 import os
 import logging
 from datetime import datetime
-from graph.schema import Decision, AnalystSignal, Portfolio, RiskAssessment
+from graph.schema import Decision, AnalystSignal, Portfolio, PositionRisk
 
 class DeepFundLogger:
     """Logger for the Deep Fund application."""
@@ -81,9 +81,9 @@ class DeepFundLogger:
         """Log the portfolio."""
         self.info(f"{msg}: {portfolio}")
 
-    def log_risk(self, ticker: str, risk_assessment: RiskAssessment):
+    def log_risk(self, ticker: str, position_risk: PositionRisk):
         """Log the risk assessment of a ticker."""
-        msg = f"Risk Assessment for {ticker}| Max Position: {risk_assessment.max_position} | Stop-Loss: {risk_assessment.stop_loss} | Justification: {risk_assessment.justification}"
+        msg = f"Risk Control for {ticker}| Optimal Position Ratio: {position_risk.optimal_position_ratio} | Justification: {position_risk.justification}"
         self.info(msg)
         
 # Create a global logger instance

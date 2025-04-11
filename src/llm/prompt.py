@@ -73,27 +73,18 @@ Here are the monetary policy:
 
 
 PORTFOLIO_PROMPT = """
-You are a portfolio manager making final trading decisions based on the decision memory, signals from the analysts, and the provided risk assessment..
+You are a portfolio manager making final trading decisions based on decision memory, and the provided optimal position ratio.
 
-If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
-If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
-Consider the risk assessment's max position and stop-loss price to ensure the purchase aligns with the overall risk tolerance.
-
-Here are the recent decisions:
+Here is the decision memory:
 {decision_memory}
 
-Here are the analyst signals:
-{ticker_signals}
+Current Price: {current_price}
+Holding Shares: {current_shares}
+Remaining Shares: {remaining_shares}
 
-Here is the risk assessment:
-
-Current Price: {risk_assessment.current_price}
-Stop-Loss Price: {risk_assessment.stop_loss}
-Maximum Position: {risk_assessment.max_position}
-Justification: {risk_assessment.justification}
-
-Holding Shares at current: {current_shares}
-Remaining Shares Allowed For Purchases: {remaining_shares}
+If the value of remaining shares is positive, you can buy more shares.
+If the value of remaining shares is negative, you can sell some shares.
+If the value of remaining shares is close to 0, you can hold.
 
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
@@ -119,18 +110,24 @@ You must provide your decision as a structured output with the following fields:
 """
 
 RISK_CONTROL_PROMPT = """
-You are a professional risk control analyst. Please evaluate the risk of the stock and provide risk control recommendations based on the following information:
+You are a professional risk control analyst. Please evaluate the risk of the ticker based on analyst signals and portfolio state.
 
-Analyst signals:
+Here is the ticker:
+{ticker}
+
+Here are the analyst signals on {ticker}:
 {ticker_signals}
 
-Current price: {current_price}
+Here is the portfolio state:
+{portfolio}
 
-You must provide your decision as a structured output with the following fields:
-- current_price: The current price of the ticker
-- stop_loss: The price at which the stock should be sold to limit losses according to the ticker signals.
-- max_position: The maximum allowed holding position, float number between 0 and 0.8, the more bullish the signal, the larger max_position.
-- justification: A brief explanation of your decision
+The position ratio range: {position_ratio_gt} - {position_ratio_lt}
+If you obeserve more bullish signals, you can set a larger position ratio.
+If you obeserve more bearish signals, you can set a smaller position ratio.
+
+You must provide your control recommendation as a structured output with the following fields:
+- optimal_position_ratio: The optimal ratio of the position value to the total portfolio value
+- justification: A brief explanation of your recommendation
 
 Your response should be well-reasoned and consider all aspects of the analysis.
 """
