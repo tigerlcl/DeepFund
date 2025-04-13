@@ -103,9 +103,13 @@ def calculate_ticker_shares(portfolio, current_price, ticker, optimal_position_r
     # single ticker position should be less than optimal_position_ratio of total portfolio value
     position_value_limit = total_portfolio_value * optimal_position_ratio
     remaining_position_limit = position_value_limit - current_position_value
-    
-    # round down to the nearest integer
-    remaining_shares = int(remaining_position_limit // current_price)
+    # remaining shares should not exceed the cashflow
+    if remaining_position_limit < 0:
+        remaining_shares = int(remaining_position_limit // current_price)
+    if remaining_position_limit < portfolio.cashflow:
+        remaining_shares = int(remaining_position_limit // current_price)
+    else:
+        remaining_shares = int(portfolio.cashflow // current_price)
         
     return current_shares, remaining_shares
-    
+
