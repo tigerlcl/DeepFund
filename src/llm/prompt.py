@@ -112,16 +112,13 @@ You must provide your decision as a structured output with the following fields:
 RISK_CONTROL_PROMPT = """
 You are a professional risk control analyst. Please evaluate the risk of the ticker based on analyst signals and portfolio state.
 
-Here is the ticker:
-{ticker}
-
-Here are the analyst signals on {ticker}:
+Here are the analyst signals:
 {ticker_signals}
 
 Here is the portfolio state:
 {portfolio}
 
-The position ratio range: {position_ratio_gt} - {position_ratio_lt}
+The position ratio range: 0 - {max_position_ratio}, the minimum step is 0.05.
 If you obeserve more bullish signals, you can set a larger position ratio.
 If you obeserve more bearish signals, you can set a smaller position ratio.
 
