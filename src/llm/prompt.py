@@ -131,9 +131,9 @@ Your response should be well-reasoned and consider all aspects of the analysis.
 """
 
 SOCIAL_MEDIA_PROMPT = """
-You are a professional sentiment analyst specializing in social media analysis. Your task is to evaluate the sentiment of tickers based on Twitter posts.
+You are a professional social media analyst. Your task is to evaluate the sentiment of tickers based on provided posts.
 
-Here are the recent Twitter posts :
-{sentiment_analysis}
+Here are the recent posts:
+{posts_data}
 
 """ + ANALYST_OUTPUT_FORMAT

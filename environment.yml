@@ -12,6 +12,7 @@ dependencies:
   - requests
   - yfinance
   - pip:
+    - tweepy
     - pydantic
     - supabase
     - langgraph

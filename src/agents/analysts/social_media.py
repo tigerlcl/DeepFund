@@ -6,6 +6,10 @@ from apis.router import Router, APISource
 from llm.prompt import SOCIAL_MEDIA_PROMPT
 from llm.inference import agent_call
 
+thresholds = {
+    "tweets_count": 10
+}
+
 def social_media_agent(state: FundState):
     """Twitter Sentiment Analysis"""
     agent_name = AgentKey.SOCIAL_MEDIA
@@ -13,46 +17,26 @@ def social_media_agent(state: FundState):
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
 
-    # Get db instance
+    logger.log_agent_status(agent_name, ticker, "Fetching social media sentiment")
     db = get_db()
 
-    thresholds = {
-        "social_media_post_count": 10
-    }
-
-    logger.log_agent_status(agent_name, ticker, "Fetching social media sentiment")
-    
     # Get social media sentiment
     router = Router(APISource.TWITTER)
     try:
-        twitter_posts = router.get_twitter_posts(ticker, thresholds["social_media_post_count"])
+        twitter_posts = router.get_twitter_posts(ticker, thresholds["tweets_count"])
     except Exception as e:
-        logger.error(f"Failed to fetch social media sentiment: {e}")
+        logger.error(f"Failed to fetch social media posts: {e}")
         return state
     
-    if not twitter_posts:
-        logger.error(f"Failed to fetch sentiment analysis")
+    if twitter_posts is None:
+        logger.error(f"No social media posts found for {ticker}")
         return state
-    
-    # Extract only content and platform from posts
-    posts_data = []
-    for post in twitter_posts:
-        posts_data.append({
-            "platform": post.platform,
-            "content": post.content
-        })
-    
-    sentiment_data = {
-        "social_media": {
-            "posts_data": posts_data,
-            "total_posts": len(twitter_posts)
-        }
-    }
 
     prompt = SOCIAL_MEDIA_PROMPT.format(
         ticker=ticker,
-        sentiment_analysis=sentiment_data
+        posts_data=twitter_posts.model_dump_json()
     )
+
     signal = agent_call(
         prompt=prompt,
         llm_config=llm_config,

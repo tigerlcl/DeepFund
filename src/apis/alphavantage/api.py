@@ -17,6 +17,9 @@ class AlphaVantageAPI:
 
     def __init__(self):
         self.api_key = os.environ.get("ALPHA_VANTAGE_API_KEY")
+        if not self.api_key:
+            raise ValueError("Alpha Vantage API key not configured.")
+
         self.entitlement = os.environ.get("ALPHA_VANTAGE_ENTITLEMENT", None) # Premium feature only
         self.base_url = f"https://www.alphavantage.co/query?apikey={self.api_key}"
         if self.entitlement:

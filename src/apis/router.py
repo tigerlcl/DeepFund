@@ -52,9 +52,9 @@ class Router():
         """Get economic indicators."""
         return self.api.get_economic_indicators()
 
-    def get_twitter_sentiment(self, ticker: str, post_limit: int = 50):
-        """Get Twitter sentiment for a ticker"""
+    def get_twitter_posts(self, ticker: str, post_limit: int):
+        """Get Twitter posts for a ticker"""
         if isinstance(self.api, TwitterAPI):
-            return self.api.get_twitter_sentiment(ticker, post_limit)
+            return self.api.get_twitter_posts(ticker, post_limit)
         else:
             raise ValueError("Twitter API is not initialized")
