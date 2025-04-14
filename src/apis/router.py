@@ -1,11 +1,10 @@
 """Router for APIs"""
 
-from apis import YFinanceAPI, AlphaVantageAPI
+from apis import YFinanceAPI, AlphaVantageAPI, TwitterAPI
 
 class APISource:
     YFINANCE = "yfinance"
     ALPHA_VANTAGE = "alpha_vantage"
-    # TODO: add API for sentiment analysis
     TWITTER = "twitter"
 
 class Router():
@@ -16,7 +15,8 @@ class Router():
             self.api = YFinanceAPI()
         elif source == APISource.ALPHA_VANTAGE:
             self.api = AlphaVantageAPI()
-        # TODO: add other APIs
+        elif source == APISource.TWITTER:
+            self.api = TwitterAPI()
         else:
             raise ValueError(f"Invalid API source: {source}")
     
@@ -52,13 +52,9 @@ class Router():
         """Get economic indicators."""
         return self.api.get_economic_indicators()
 
-
-class 
-    # TODO
-    def get_us_stock_sentiment(self, ticker: str, sentiment_count: int = 100):
-        """Get sentiment for a ticker."""
-        return self.api.get_us_stock_sentiment(ticker, sentiment_count)
-    
-    def get_social_media_sentiment(self, ticker: str, post_limit: int = 50):
-        """Get social media sentiment (Twitter/X) for a ticker."""
-        return self.api.get_social_media_sentiment(ticker, post_limit)
+    def get_twitter_sentiment(self, ticker: str, post_limit: int = 50):
+        """Get Twitter sentiment for a ticker"""
+        if isinstance(self.api, TwitterAPI):
+            return self.api.get_twitter_sentiment(ticker, post_limit)
+        else:
+            raise ValueError("Twitter API is not initialized")

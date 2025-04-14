@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
 
 class InsiderTrade(BaseModel):
     """insider trade model."""
@@ -66,28 +65,6 @@ class MacroEconomic(BaseModel):
     federal_funds_rate: dict #default monthly. Strings daily, weekly, and monthly are accepted.
     unemployment: dict #monthly
     nonfarm_payrolls: dict #monthly
-
-# TODO: 
-class SocialMediaPost(BaseModel):
-    """Social media post model for retail investor sentiment analysis."""
-    platform: str  # 'reddit' or 'twitter'
-    post_id: str
-    author: str
-    content: str
-    publish_time: str
-    upvotes: Optional[int] = None
-    comments: Optional[int] = None
-    likes: Optional[int] = None
-    retweets: Optional[int] = None
-
-class SocialMediaSentiment(BaseModel):
-    """Model for storing Reddit and Twitter retail investor sentiment data."""
-    ticker: str
-    total_posts: int
-    posts: List[SocialMediaPost]
-    reddit_sentiment: Optional[float] = None
-    twitter_sentiment: Optional[float] = None
-
 
 
 

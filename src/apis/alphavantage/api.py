@@ -10,9 +10,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from apis.common_model import OHLCVCandle, MediaNews
-from .api_model import InsiderTrade, Fundamentals, MacroEconomic, SocialMediaPost, SocialMediaSentiment
-
-import yaml
+from .api_model import InsiderTrade, Fundamentals, MacroEconomic
 
 class AlphaVantageAPI:
     """Alpha Vantage API Wrapper."""
@@ -23,14 +21,6 @@ class AlphaVantageAPI:
         self.base_url = f"https://www.alphavantage.co/query?apikey={self.api_key}"
         if self.entitlement:
             self.base_url += f"&entitlement={self.entitlement}"
-        # ------------------
-        # self.reddit_api_key = os.environ.get("REDDIT_API_KEY") 
-        self.twitter_api_key = os.environ.get("TWITTER_API_KEY")
-        
-        # Load config
-        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config', 'dev.yaml')
-        with open(config_path, 'r') as f:
-            self.config = yaml.safe_load(f)
 
     def _get_daily_candles(self, ticker: str, trading_date: datetime) -> list[OHLCVCandle]: 
         """Get daily candles for a ticker. Filter candles by trading_date."""
@@ -235,35 +225,3 @@ class AlphaVantageAPI:
         except requests.exceptions.RequestException as e:
             print(f"Error fetching {function}: {str(e)}")
             return None
-
-<<<<<<< Updated upstream
-=======
-    
-    def get_market_news(self, topic: str,limit: int) -> list[MediaNews]:
-        """
-        Get different topics news from Alpha Vantage.
-        supported topics: https://www.alphavantage.co/documentation/#news-sentiment
-        """
-        response = requests.get(
-            url=self.base_url,
-            params={
-                "function": "NEWS_SENTIMENT",
-                "topics": topic,
-                "limit": limit
-            }
-        )
-
-        if response.status_code != 200:
-            response.raise_for_status()
-
-        news_list = []
-        for news in response.json()["feed"]:
-            news_list.append(MediaNews(
-                title=news["title"],
-                publish_time=news["time_published"],
-                summary=news["summary"],
-                publisher=news["source"]
-            ))
-        return news_list
-
->>>>>>> Stashed changes

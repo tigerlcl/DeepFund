@@ -1,14 +1,11 @@
 # Deep Fund Configuration
-exp_name: "sentiment-test"
+exp_name: "dev"
 
 # Trading settings
 cashflow: 100000
 tickers:
   - TSLA
   - NVDA
-  # - MSFT
-  # - NVDA
-  - TSLA
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
@@ -18,21 +15,9 @@ workflow_analysts:
   - company_news
   - insider
   - policy
-  # - fundamental
-  # - company_news
-  # - technical
-  # - insider
-  - sentiment
+  - social_media
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
   provider: "DeepSeek" 
   model: "deepseek-chat" # DeepSeek-V3
-
-# Social media data collection settings
-social_media:
-  # test
-  time_range:
-    start_time: "2025-04-10T00:00:00Z"
-    end_time: "2025-04-11T23:59:59Z"
-

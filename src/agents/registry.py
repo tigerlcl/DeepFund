@@ -18,7 +18,7 @@ class AgentRegistry:
         AgentKey.COMPANY_NEWS,
         AgentKey.MACROECONOMIC,
         AgentKey.POLICY,
-        AgentKey.SENTIMENT
+        AgentKey.SOCIAL_MEDIA
     ]
 
     @classmethod
@@ -96,9 +96,9 @@ class AgentRegistry:
         )
 
         cls.register_agent(
-            key=AgentKey.SENTIMENT,
-            agent_func=sentiment_agent,
-            agent_doc="Sentiment analysis specialist focusing on sentiment analysis of the ticker."
+            key=AgentKey.SOCIAL_MEDIA,
+            agent_func=social_media_agent,
+            agent_doc="Social media analyst focus on collecting Twitter posts related to target ticker."
         )
 
     @classmethod
