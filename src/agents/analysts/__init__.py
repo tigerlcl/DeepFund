@@ -4,12 +4,13 @@ from .company_news import company_news_agent
 from .fundamental import fundamental_agent
 from .macroeconomic import macroeconomic_agent
 from .policy import policy_agent
-
+from .sentiment import sentiment_agent
 __all__ = [
     "technical_agent", 
     "insider_agent", 
     "company_news_agent", 
     "fundamental_agent", 
     "macroeconomic_agent",
-    "policy_agent"
+    "policy_agent",
+    "sentiment_agent"
     ] 

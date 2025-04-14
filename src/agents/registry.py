@@ -17,7 +17,8 @@ class AgentRegistry:
         AgentKey.INSIDER,
         AgentKey.COMPANY_NEWS,
         AgentKey.MACROECONOMIC,
-        AgentKey.POLICY
+        AgentKey.POLICY,
+        AgentKey.SENTIMENT
     ]
 
     @classmethod
@@ -92,6 +93,12 @@ class AgentRegistry:
             key=AgentKey.POLICY,
             agent_func=policy_agent,
             agent_doc="Policy analysis specialist focusing on fiscal and monetary policy."
+        )
+
+        cls.register_agent(
+            key=AgentKey.SENTIMENT,
+            agent_func=sentiment_agent,
+            agent_doc="Sentiment analysis specialist focusing on sentiment analysis of the ticker."
         )
 
     @classmethod

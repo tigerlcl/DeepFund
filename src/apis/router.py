@@ -5,6 +5,8 @@ from apis import YFinanceAPI, AlphaVantageAPI
 class APISource:
     YFINANCE = "yfinance"
     ALPHA_VANTAGE = "alpha_vantage"
+    # TODO: add API for sentiment analysis
+    TWITTER = "twitter"
 
 class Router():
     """Router for APIs"""
@@ -14,6 +16,7 @@ class Router():
             self.api = YFinanceAPI()
         elif source == APISource.ALPHA_VANTAGE:
             self.api = AlphaVantageAPI()
+        # TODO: add other APIs
         else:
             raise ValueError(f"Invalid API source: {source}")
     
@@ -49,3 +52,13 @@ class Router():
         """Get economic indicators."""
         return self.api.get_economic_indicators()
 
+
+class 
+    # TODO
+    def get_us_stock_sentiment(self, ticker: str, sentiment_count: int = 100):
+        """Get sentiment for a ticker."""
+        return self.api.get_us_stock_sentiment(ticker, sentiment_count)
+    
+    def get_social_media_sentiment(self, ticker: str, post_limit: int = 50):
+        """Get social media sentiment (Twitter/X) for a ticker."""
+        return self.api.get_social_media_sentiment(ticker, post_limit)

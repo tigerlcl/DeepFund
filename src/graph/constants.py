@@ -8,6 +8,9 @@ class AgentKey:
     COMPANY_NEWS = "company_news"
     MACROECONOMIC = "macroeconomic"
     POLICY = "policy"
+    # sentiment analysis
+    SENTIMENT = "sentiment"
+    
     # workflow keys
     PORTFOLIO = "portfolio manager"
     PLANNER = "analyst planner" 
