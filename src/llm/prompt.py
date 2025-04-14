@@ -130,10 +130,10 @@ You must provide your control recommendation as a structured output with the fol
 Your response should be well-reasoned and consider all aspects of the analysis.
 """
 
-SENTIMENT_PROMPT = """
-You are a professional sentiment analyst specializing in social media analysis. Your task is to evaluate the sentiment of {ticker} based on Twitter posts.
+SOCIAL_MEDIA_PROMPT = """
+You are a professional sentiment analyst specializing in social media analysis. Your task is to evaluate the sentiment of tickers based on Twitter posts.
 
-Here are the recent Twitter posts about {ticker}:
+Here are the recent Twitter posts :
 {sentiment_analysis}
 
 """ + ANALYST_OUTPUT_FORMAT
