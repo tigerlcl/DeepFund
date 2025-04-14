@@ -72,6 +72,7 @@ class FundState(TypedDict):
     ticker: str = Field(description="Ticker in-the-flow.")
     llm_config: Dict[str, Any] = Field(description="LLM configuration.")
     portfolio: Portfolio = Field(description="Portfolio for the fund.")
+    num_tickers: int = Field(description="Number of tickers in the fund.")
 
     # updated by workflow
     # ticker -> signal of all analysts

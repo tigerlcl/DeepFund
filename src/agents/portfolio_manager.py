@@ -8,8 +8,6 @@ from util.logger import logger
 
 # Portfolio Manager Thresholds
 thresholds = {
-    "position_ratio_gt": 0, 
-    "position_ratio_lt": 0.8,
     "decision_memory_limit": 5
 }
 
@@ -22,6 +20,7 @@ def portfolio_agent(state: FundState):
     trading_date = state["trading_date"]
     analyst_signals = state["analyst_signals"]
     llm_config = state["llm_config"]
+    num_tickers = state["num_tickers"]
 
     # Get database instance
     db = get_db()
@@ -34,14 +33,19 @@ def portfolio_agent(state: FundState):
         logger.error(f"Failed to fetch price data for {ticker}: {e}")
         raise RuntimeError(f"Failed to make decision")
     
+    # calculate the max position ratio
+    max_position_ratio = 1
+    if num_tickers > 1:
+        # suppose a single ticker can occupy its own base allocation (1/N) plus that of one other ticker maximally, round to the nearest 0.05
+        max_position_ratio = round(2 / num_tickers * 20) / 20
+    
 
     # risk control
     risk_prompt = RISK_CONTROL_PROMPT.format(
-        ticker=ticker,
         ticker_signals=analyst_signals,
         portfolio=portfolio.model_dump_json(),
-        position_ratio_gt=thresholds["position_ratio_gt"],
-        position_ratio_lt=thresholds["position_ratio_lt"],
+        max_position_ratio=max_position_ratio,
+
     )
 
     position_risk = agent_call(
@@ -54,12 +58,12 @@ def portfolio_agent(state: FundState):
     logger.log_risk(ticker, position_risk)
 
     # verify the position ratio if it is in the range
-    if position_risk.optimal_position_ratio > thresholds["position_ratio_lt"]:
+    if position_risk.optimal_position_ratio > max_position_ratio:
         # too bullish, set to the max
-        position_risk.optimal_position_ratio = thresholds["position_ratio_lt"]
-    elif position_risk.optimal_position_ratio < thresholds["position_ratio_gt"]:
+        position_risk.optimal_position_ratio = max_position_ratio
+    elif position_risk.optimal_position_ratio < 0:
         # too bearish, set to the min
-        position_risk.optimal_position_ratio = thresholds["position_ratio_gt"]
+        position_risk.optimal_position_ratio = 0
 
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
@@ -103,9 +107,12 @@ def calculate_ticker_shares(portfolio, current_price, ticker, optimal_position_r
     # single ticker position should be less than optimal_position_ratio of total portfolio value
     position_value_limit = total_portfolio_value * optimal_position_ratio
     remaining_position_limit = position_value_limit - current_position_value
-    
-    # round down to the nearest integer
-    remaining_shares = int(remaining_position_limit // current_price)
+    # remaining shares should not exceed the cashflow
+    if remaining_position_limit < portfolio.cashflow:
+        remaining_shares = int(remaining_position_limit // current_price)
+    else:
+        remaining_shares = int(portfolio.cashflow // current_price)
         
     return current_shares, remaining_shares
+
     

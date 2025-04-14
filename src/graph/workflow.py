@@ -98,7 +98,8 @@ class AgentWorkflow:
                 trading_date = self.trading_date,
                 llm_config = self.llm_config,
                 portfolio = portfolio,
-            ) 
+                num_tickers = len(self.tickers)
+            )
 
             # build the workflow
             workflow = self.build()
