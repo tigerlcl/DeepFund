@@ -136,9 +136,4 @@ You are a professional sentiment analyst specializing in social media analysis. 
 Here are the recent Twitter posts about {ticker}:
 {sentiment_analysis}
 
-You must provide your analysis as a structured output with the following fields:
-- signal: One of ["Bullish", "Bearish", "Neutral"]
-- justification: A detailed explanation of your analysis, including:
-
-Your response should be well-reasoned and consider all aspects of the social media analysis.
-"""
+""" + ANALYST_OUTPUT_FORMAT
