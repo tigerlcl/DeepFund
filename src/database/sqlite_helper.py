@@ -100,7 +100,7 @@ class SQLiteDB(BaseDB):
             cursor.execute('''
                 SELECT trading_date FROM portfolio 
                 WHERE config_id = ? AND trading_date IS NOT NULL
-                ORDER BY trading_date DESC 
+                ORDER BY updated_at DESC 
                 LIMIT 1
             ''', (config_id,))
             
@@ -126,7 +126,7 @@ class SQLiteDB(BaseDB):
             cursor.execute('''
                 SELECT * FROM portfolio 
                 WHERE config_id = ? AND trading_date IS NOT NULL
-                ORDER BY trading_date DESC 
+                ORDER BY updated_at DESC 
                 LIMIT 1
             ''', (config_id,))
             
@@ -323,7 +323,7 @@ class SQLiteDB(BaseDB):
             cursor.execute('''
                 SELECT id FROM portfolio 
                 WHERE config_id = ? AND trading_date IS NOT NULL
-                ORDER BY trading_date DESC
+                ORDER BY updated_at DESC
                 LIMIT ?
             ''', (config_id, limit))
             
@@ -361,7 +361,7 @@ class SQLiteDB(BaseDB):
             query = f'''
                 SELECT * FROM decision 
                 WHERE portfolio_id IN ({placeholders}) AND ticker = ?
-                ORDER BY trading_date DESC
+                ORDER BY updated_at DESC
             '''
             
             # Combine portfolio_ids and ticker into parameters
