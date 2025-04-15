@@ -99,6 +99,7 @@ tickers:
   - ticker_b
 
 # Analysts to run, refer to graph.constants.py
+planner_mode: true/false
 workflow_analysts:
   - analyst_a
   - analyst_b
@@ -111,10 +112,10 @@ llm:
 ```
 
 
-### Static vs Dynamic Workflow
-We use `workflow_analysts` configs to switch the mode:
-- **Static mode**: If specified, predefined analysts are running in parallel without orchestration.
-- **Dynamic mode**: If not specified, planner agent orchestrates which analysts to run from all registered analysts.
+### Planner Mode
+We use `planner_mode` configs to switch the mode:
+- **True**: Planner agent orchestrates which analysts to run from `workflow_analysts`.
+- **False**: All workflow analysts are running in parallel without orchestration.
 
 ### Remarks
 - `exp_name` is **unique identifier** for each experiment. You shall use another one for different experiments when configs are changed.
@@ -139,22 +140,24 @@ deepfund/
 ├── ...
 ```
 
-## Introduction to Analyst Agents
+##  Analyst Breakdown
 
-| Analyst       | Function                                                     | Input Source                                                 | Output                                               |
-| ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
-| company_news  | Analyzes company news.                                       | Company news.                                                |                                                      |
-| fundamental   | Analyzes financial metrics.                                  | Company profitability, growth, cashflow and financial health. |                                                      |
-| insider       | Analyzes insider trading activity.                           | The latest and historical insider transactions made by key stakeholders. | Analyst signal saved to database and added to state. |
-| macroeconomic | Analyzes macroeconomic indicators.                           | US economic indicators GDP, CPI, rate, unemployment, etc.    |                                                      |
-| policy        | Analyzes policy news.                                        | Fiscal and monetary policy news.                             |                                                      |
-| technical     | Analyzes technical indicators  for short to medium-term price movement predictions. | Technical indicators trend, mean reversion, RSI, volatility, volume, support resistance. |                                                      |
+|    Name     |   Function  | Upstream Source | 
+| ----------- | ----------- | ----------- | 
+| company_news  | Analyzes company news. | Lately Company news.  | 
+| fundamental   | Analyzes financial metrics. | Company profitability, growth, cashflow and financial health. |
+| insider       | Analyzes insider trading activity. | Recent insider transactions made by key stakeholders. |
+| macroeconomic | Analyzes macroeconomic indicators. | US economic indicators GDP, CPI, rate, unemployment, etc.    |
+| policy        | Analyzes policy news. | Fiscal and monetary policy news. |
+| technical     | Analyzes technical indicators  for short to medium-term price movement predictions. | Technical indicators trend, mean reversion, RSI, volatility, volume, support resistance. |
+----
+**Unified Output**: Signal=(Bullish, Bearish, Neutral), Justification=...
 
 ## System Dependencies
 
 ### LLM Providers
 - Official API: OpenAI, DeepSeek, Anthropic, etc.
-- LLM Proxy API: Fireworks, AiHubMix, YiZhan, etc.
+- LLM Proxy API: Fireworks AI, AiHubMix, YiZhan, etc.
 - Local API: Ollama, etc.
 
 ### Financial Data Source 
