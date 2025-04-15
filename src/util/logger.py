@@ -79,7 +79,8 @@ class DeepFundLogger:
 
     def log_portfolio(self, msg: str, portfolio: Portfolio):
         """Log the portfolio."""
-        self.info(f"{msg}: {portfolio}")
+        asset_value = portfolio.cashflow + sum(position.value for position in portfolio.positions.values())
+        self.info(f"{msg}: {portfolio} | Total Asset Value: {asset_value:.2f}")
 
     def log_risk(self, ticker: str, position_risk: PositionRisk):
         """Log the risk assessment of a ticker."""

@@ -71,7 +71,7 @@ class SupabaseDB(BaseDB):
                 .select('trading_date') \
                 .eq('config_id', config_id) \
                 .not_.is_("trading_date", None) \
-                .order('trading_date', desc=True) \
+                .order('updated_at', desc=True) \
                 .execute()
         
             if response.data and len(response.data) > 0:
@@ -89,7 +89,7 @@ class SupabaseDB(BaseDB):
                 .select('id, cashflow, positions') \
                 .eq('config_id', config_id) \
                 .not_.is_("trading_date", None) \
-                .order('trading_date', desc=True) \
+                .order('updated_at', desc=True) \
                 .limit(1) \
                 .execute()
             
@@ -220,7 +220,7 @@ class SupabaseDB(BaseDB):
                 .select('id') \
                 .eq('config_id', config_id) \
                 .not_.is_("trading_date", None) \
-                .order('trading_date', desc=True) \
+                .order('updated_at', desc=True) \
                 .limit(limit) \
                 .execute()
             
@@ -249,7 +249,7 @@ class SupabaseDB(BaseDB):
                 .select('trading_date, action, shares, price') \
                 .in_('portfolio_id', portfolio_ids) \
                 .eq('ticker', ticker) \
-                .order('trading_date', desc=True) \
+                .order('updated_at', desc=True) \
                 .execute()
             
             decisions = []
