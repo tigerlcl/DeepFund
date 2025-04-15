@@ -4,7 +4,7 @@ exp_name: "planner-test"
 # Trading settings
 cashflow: 100000
 tickers:
-  - MSFT
+  - TSLA
   - NVDA
 
 # true: run planner agent, choose from workflow_analysts

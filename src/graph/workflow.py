@@ -81,7 +81,9 @@ class AgentWorkflow:
         """
         if self.planner_mode:
             logger.info("Using planner agent to select analysts from verified list")
-            self.selected_analysts = planner_agent(ticker, self.llm_config, self.workflow_analysts)
+            self.current_analysts = planner_agent(ticker, self.llm_config, self.workflow_analysts)
+            if not self.current_analysts:
+                raise ValueError("No analysts selected by planner")
         else:
             logger.info("Using all verified analysts")
             self.current_analysts = self.workflow_analysts.copy()
@@ -120,9 +122,8 @@ class AgentWorkflow:
             portfolio = self.update_portfolio_ticker(portfolio, ticker, final_state["decision"])
             logger.log_portfolio(f"{ticker} position update", portfolio)
 
-            # clean analysts
             if self.planner_mode:
-                self.workflow_analysts = None
+                self.current_analysts = None # clean and reset current_analysts
 
         logger.log_portfolio("Final Portfolio", portfolio)
         logger.info("Updating portfolio to Database")
