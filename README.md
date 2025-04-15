@@ -156,7 +156,7 @@ deepfund/
 ## System Dependencies
 
 ### LLM Providers
-- Official API: OpenAI, DeepSeek, Anthropic, etc.
+- Official API: OpenAI, DeepSeek, Anthropic, Zhipu, etc.
 - LLM Proxy API: Fireworks AI, AiHubMix, YiZhan, etc.
 - Local API: Ollama, etc.
 
