@@ -62,21 +62,21 @@ def portfolio_agent(state: FundState):
         # too bullish, set to the max
         position_risk.optimal_position_ratio = max_position_ratio
     elif position_risk.optimal_position_ratio < 0:
-        # too bearish, set to the min
+        # too bearish, set to 0
         position_risk.optimal_position_ratio = 0
 
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
     # Get decision memory
     decision_memory = db.get_decision_memory(exp_name, ticker, thresholds["decision_memory_limit"])
-    current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker, position_risk.optimal_position_ratio)
+    current_shares, tradable_shares = calculate_ticker_shares(portfolio, current_price, ticker, position_risk.optimal_position_ratio)
 
     # make trading decision
     prompt = PORTFOLIO_PROMPT.format(
         decision_memory=decision_memory,
         current_price=current_price,
         current_shares=current_shares,
-        remaining_shares=remaining_shares,
+        tradable_shares=tradable_shares,
     )
 
     # Generate the trading decision
@@ -94,25 +94,27 @@ def portfolio_agent(state: FundState):
 
 
 def calculate_ticker_shares(portfolio, current_price, ticker, optimal_position_ratio):
-    """calculate the remaining shares for a given ticker based on portfolio"""
+    """calculate the tradable shares for a given ticker based on portfolio"""
 
     # Get current position value (0 if no position exists)
-    current_position_value = 0
     current_shares = 0 
     if ticker in portfolio.positions:
         current_shares = portfolio.positions[ticker].shares
-        current_position_value = current_shares * current_price
+    # current value for the ticker
+    current_value = current_shares * current_price
+    # total portfolio value
     total_portfolio_value = portfolio.cashflow + sum(portfolio.positions[t].value for t in portfolio.positions)
+    # position limit for the ticker
+    position_limit = total_portfolio_value * optimal_position_ratio
+    # position value gap
+    position_value_gap = position_limit - current_value
+
+    if position_value_gap > 0: # still have room to buy, maximum tradable cash is the minor between position_value_gap and cashflow
+        tradable_shares = min(position_value_gap, portfolio.cashflow) // current_price
+    else: # need to sell, maximun selling shares is the minor between position gap and current shares
+        tradable_shares = max(position_value_gap // current_price, -current_shares)
     
-    # single ticker position should be less than optimal_position_ratio of total portfolio value
-    position_value_limit = total_portfolio_value * optimal_position_ratio
-    remaining_position_limit = position_value_limit - current_position_value
-    # remaining shares should not exceed the cashflow
-    if remaining_position_limit < portfolio.cashflow:
-        remaining_shares = int(remaining_position_limit // current_price)
-    else:
-        remaining_shares = int(portfolio.cashflow // current_price)
+    return current_shares, tradable_shares
         
-    return current_shares, remaining_shares
 
     

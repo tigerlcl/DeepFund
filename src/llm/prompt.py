@@ -80,11 +80,11 @@ Here is the decision memory:
 
 Current Price: {current_price}
 Holding Shares: {current_shares}
-Remaining Shares: {remaining_shares}
+Tradable Shares: {tradable_shares}
 
-If the value of remaining shares is positive, you can buy more shares.
-If the value of remaining shares is negative, you can sell some shares.
-If the value of remaining shares is close to 0, you can hold.
+If the value of tradable shares is positive, you can buy more shares.
+If the value of tradable shares is negative, you can sell some shares.
+If the value of tradable shares is close to 0, you can hold.
 
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
