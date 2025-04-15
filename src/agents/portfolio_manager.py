@@ -1,6 +1,6 @@
 from graph.constants import AgentKey
-from llm.prompt import PORTFOLIO_PROMPT
-from graph.schema import Decision, FundState
+from llm.prompt import PORTFOLIO_PROMPT, RISK_CONTROL_PROMPT
+from graph.schema import Decision, FundState, PositionRisk
 from llm.inference import agent_call
 from apis.router import Router, APISource
 from util.db_helper import get_db
@@ -8,7 +8,7 @@ from util.logger import logger
 
 # Portfolio Manager Thresholds
 thresholds = {
-    "position_factor_gt": 0.25, 
+    "decision_memory_limit": 5
 }
 
 def portfolio_agent(state: FundState):
@@ -17,32 +17,66 @@ def portfolio_agent(state: FundState):
     portfolio = state["portfolio"]
     ticker = state["ticker"]
     exp_name = state["exp_name"]
+    trading_date = state["trading_date"]
     analyst_signals = state["analyst_signals"]
     llm_config = state["llm_config"]
+    num_tickers = state["num_tickers"]
 
     # Get database instance
     db = get_db()
 
     # Get price data
     router = Router(APISource.ALPHA_VANTAGE)
-    current_price = router.get_us_stock_last_close_price(ticker=ticker)
-    if current_price is None:
-        return {"decision": Decision(ticker=ticker)}
+    try:
+        current_price = router.get_us_stock_last_close_price(ticker=ticker, trading_date=trading_date)
+    except Exception as e:
+        logger.error(f"Failed to fetch price data for {ticker}: {e}")
+        raise RuntimeError(f"Failed to make decision")
     
-    current_shares, remaining_shares = calculate_ticker_shares(portfolio, current_price, ticker)
+    # calculate the max position ratio
+    max_position_ratio = 1
+    if num_tickers > 1:
+        # suppose a single ticker can occupy its own base allocation (1/N) plus that of one other ticker maximally, round to the nearest 0.05
+        max_position_ratio = round(2 / num_tickers * 20) / 20
+    
 
-    # Get decision memory
-    decision_memory = db.get_decision_memory(exp_name, ticker)
+    # risk control
+    risk_prompt = RISK_CONTROL_PROMPT.format(
+        ticker_signals=analyst_signals,
+        portfolio=portfolio.model_dump_json(),
+        max_position_ratio=max_position_ratio,
+
+    )
+
+    position_risk = agent_call(
+        prompt=risk_prompt,
+        llm_config=llm_config,
+        pydantic_model=PositionRisk,
+    )
+    
+    logger.log_agent_status(agent_name, ticker, "Risk control")
+    logger.log_risk(ticker, position_risk)
+
+    # verify the position ratio if it is in the range
+    if position_risk.optimal_position_ratio > max_position_ratio:
+        # too bullish, set to the max
+        position_risk.optimal_position_ratio = max_position_ratio
+    elif position_risk.optimal_position_ratio < 0:
+        # too bearish, set to 0
+        position_risk.optimal_position_ratio = 0
+
     logger.log_agent_status(agent_name, ticker, "Making trading decisions")
 
-    # make prompt
-    ticker_signals = "\n".join([f"Signal: {s.signal}\nJustification: {s.justification}" for s in analyst_signals])
+    # Get decision memory
+    decision_memory = db.get_decision_memory(exp_name, ticker, thresholds["decision_memory_limit"])
+    current_shares, tradable_shares = calculate_ticker_shares(portfolio, current_price, ticker, position_risk.optimal_position_ratio)
+
+    # make trading decision
     prompt = PORTFOLIO_PROMPT.format(
         decision_memory=decision_memory,
-        ticker_signals=ticker_signals,
         current_price=current_price,
         current_shares=current_shares,
-        remaining_shares=remaining_shares,
+        tradable_shares=tradable_shares,
     )
 
     # Generate the trading decision
@@ -51,35 +85,36 @@ def portfolio_agent(state: FundState):
         llm_config=llm_config,
         pydantic_model=Decision
     )
-
-    if ticker_decision.price is None:
-        ticker_decision.price = current_price
         
     # save decision
     logger.log_decision(ticker, ticker_decision)
-    db.save_decision(portfolio.id, ticker, prompt, ticker_decision)
+    db.save_decision(portfolio.id, ticker, prompt, ticker_decision, trading_date)
 
     return {"decision": ticker_decision}
 
 
-def calculate_ticker_shares(portfolio, current_price, ticker) -> float:
-    """calculate the remaining shares allowed for purchases for a given ticker based on portfolio composition"""
+def calculate_ticker_shares(portfolio, current_price, ticker, optimal_position_ratio):
+    """calculate the tradable shares for a given ticker based on portfolio"""
 
     # Get current position value (0 if no position exists)
-    current_position_value = 0
     current_shares = 0 
     if ticker in portfolio.positions:
         current_shares = portfolio.positions[ticker].shares
-        current_position_value = current_shares * current_price
+    # current value for the ticker
+    current_value = current_shares * current_price
+    # total portfolio value
     total_portfolio_value = portfolio.cashflow + sum(portfolio.positions[t].value for t in portfolio.positions)
+    # position limit for the ticker
+    position_limit = total_portfolio_value * optimal_position_ratio
+    # position value gap
+    position_value_gap = position_limit - current_value
+
+    if position_value_gap > 0: # still have room to buy, maximum tradable cash is the minor between position_value_gap and cashflow
+        tradable_shares = min(position_value_gap, portfolio.cashflow) // current_price
+    else: # need to sell, maximun selling shares is the minor between position gap and current shares
+        tradable_shares = max(position_value_gap // current_price, -current_shares)
     
-    # single ticker position should be less than 25% of total portfolio value
-    position_limit = total_portfolio_value * thresholds["position_factor_gt"]
-    remaining_position_limit = position_limit - current_position_value
-    # round down to the nearest integer
-    remaining_shares = remaining_position_limit // current_price
-    if remaining_shares < 1:
-        remaining_shares = 0
+    return current_shares, tradable_shares
         
-    return current_shares, remaining_shares
+
     

@@ -18,10 +18,20 @@ TECHNICAL_PROMPT = """
 You are a technical analyst evaluating ticker using multiple technical analysis strategies.
 
 The following signals have been generated from our analysis:
+
+Price Trend Analysis:
 - Trend Following: {analysis[trend]}
+
+Mean Reversion and Momentum:
 - Mean Reversion: {analysis[mean_reversion]}
 - RSI: {analysis[rsi]}
 - Volatility: {analysis[volatility]}
+
+Volume Analysis:
+{analysis[volume]}
+
+Support and Resistance Levels:
+{analysis[price_levels]}
 
 """ + ANALYST_OUTPUT_FORMAT
 
@@ -63,20 +73,18 @@ Here are the monetary policy:
 
 
 PORTFOLIO_PROMPT = """
-You are a portfolio manager making final trading decisions based on the decision memory and signals from the analysts.
+You are a portfolio manager making final trading decisions based on decision memory, and the provided optimal position ratio.
 
-If your action is "Buy", you should choose a proper volume within the remaining shares allowed for purchases when the analyst signals are not consistent with a bullish trend.
-If your action is "Sell", you should choose a proper volume within the shares you hold when the analyst signals are not consistent with a bearish trend.
-
-Here are the recent decisions:
+Here is the decision memory:
 {decision_memory}
 
-Here are the analyst signals:
-{ticker_signals}
-
 Current Price: {current_price}
-Holding Shares at current: {current_shares}
-Remaining Shares Allowed For Purchases: {remaining_shares}
+Holding Shares: {current_shares}
+Tradable Shares: {tradable_shares}
+
+If the value of tradable shares is positive, you can buy more shares.
+If the value of tradable shares is negative, you can sell some shares.
+If the value of tradable shares is close to 0, you can hold.
 
 You must provide your decision as a structured output with the following fields:
 - action: One of ["Buy", "Sell", "Hold"]
@@ -97,6 +105,27 @@ Here are the available analysts:
 {analysts}
 
 You must provide your decision as a structured output with the following fields:
-- analysts: selected one or at most 5 analysts
+- analysts: selected analyst_name list
 - justification: brief explanation of your selection
+"""
+
+RISK_CONTROL_PROMPT = """
+You are a professional risk control analyst.
+Please evaluate the risk of the ticker and set the optimal position ratio based on analyst signals and portfolio state.
+
+Here are the analyst signals:
+{ticker_signals}
+
+Here is the portfolio state:
+{portfolio}
+
+The position ratio range:  [0, {max_position_ratio}], the minimum step is 0.05.
+If you obeserve more bullish signals, you can set a larger position ratio.
+If you obeserve more bearish signals, you can set a smaller position ratio.
+
+You must provide your control recommendation as a structured output with the following fields:
+- optimal_position_ratio: The optimal ratio of the position value to the total portfolio value
+- justification: A brief explanation of your recommendation
+
+Your response should be well-reasoned and consider all aspects of the analysis.
 """

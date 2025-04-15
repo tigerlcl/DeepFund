@@ -1,24 +1,19 @@
 # Deep Fund Configuration
-exp_name: "dev"
+exp_name: "zhipu-test"
 
 # Trading settings
 cashflow: 100000
 tickers:
-  - TSLA
+  - MSFT
   - NVDA
-
+  - TSLA
 
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
-  - fundamental
-  - macroeconomic
   - technical
   - company_news
-  - insider
-  - policy
 
 # LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
-  provider: "DeepSeek" 
-  model: "deepseek-chat" # DeepSeek-V3
-
+  provider: "ZhiPu" 
+  model: "glm-4-air-250414"

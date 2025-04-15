@@ -29,7 +29,17 @@ thresholds = {
     "volatility": {
         "bullish": 0.8,
         "bearish": 1.2,
+    },
+    "volume": {
+        "trend": 20,
+        "correlation": 20,
+        "unusual_volume": 2.0,
+    },
+    "support_resistance": {
+        "pivot_window": 5,
+        "lookback_period": 20,
     }
+
 }
 
 
@@ -37,6 +47,7 @@ def technical_agent(state: FundState):
     """Technical analysis specialist that excels at short to medium-term price movement predictions."""
     agent_name = AgentKey.TECHNICAL
     ticker = state["ticker"]
+    trading_date = state["trading_date"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
     
@@ -47,9 +58,10 @@ def technical_agent(state: FundState):
 
     # Get the price data
     router = Router(APISource.ALPHA_VANTAGE)
-    prices_df = router.get_us_stock_daily_candles_df(ticker=ticker)
-    if prices_df is None:
-        logger.error(f"Failed to fetch price data for {ticker}")
+    try:
+        prices_df = router.get_us_stock_daily_candles_df(ticker=ticker, trading_date=trading_date)
+    except Exception as e:
+        logger.error(f"Failed to fetch price data for {ticker}: {e}")
         return state
 
     # Analyze technical indicators
@@ -58,6 +70,8 @@ def technical_agent(state: FundState):
         "mean_reversion": get_mean_reversion_signal(prices_df, thresholds["mean_reversion"]),
         "rsi": get_rsi_signal(prices_df, thresholds["rsi"]),
         "volatility":  get_volatility_signal(prices_df, thresholds["volatility"]),
+        "volume": get_volume_analysis(prices_df, thresholds["volume"]),
+        "price_levels": get_support_resistance(prices_df, thresholds["support_resistance"]),
     }
 
     # Make prompt
@@ -190,3 +204,74 @@ def get_volatility_signal(prices_df, params):
         signal = Signal.NEUTRAL
 
     return signal
+
+
+def get_volume_analysis(prices_df, params):
+    """Analyze volume characteristics"""
+    volume = prices_df['volume']
+    price = prices_df['close']
+    
+    # Calculate volume moving average
+    vol_ma = volume.rolling(window=params["trend"]).mean()
+    
+    # Calculate price-volume relationship
+    price_volume_corr = price.rolling(window=params["correlation"]).corr(volume)
+    
+    # Calculate volume trend
+    vol_trend = (volume > vol_ma.shift(1)).astype(int)
+    
+    result = f"- Volume trend: {Signal.BULLISH if vol_trend.iloc[-1] == 1 else Signal.BEARISH}\n"
+    result += f"- Price-volume correlation: {price_volume_corr.iloc[-1]}\n"
+    result += f"- Unusual volume: {volume.iloc[-1] > (vol_ma.iloc[-1] * params['unusual_volume'])}\n"
+    return result
+
+
+def get_support_resistance(prices_df, params):
+    """Calculate support and resistance levels"""
+    def _is_level(prices: pd.Series, i: int, level_type: str, pivot_window: int = params["pivot_window"]) -> bool:
+        """Check if the price point is a support/resistance level by comparing with surrounding prices"""
+        start_idx = max(0, i - pivot_window)
+        end_idx = min(len(prices), i + pivot_window + 1)
+        window_prices = prices.iloc[start_idx:end_idx]
+        current_price = prices.iloc[i]
+        
+        left_prices = window_prices.iloc[:pivot_window]
+        right_prices = window_prices.iloc[pivot_window+1:]
+        
+        if level_type == 'support':
+            return (len(left_prices[left_prices > current_price]) >= 2 and 
+                   len(right_prices[right_prices > current_price]) >= 2)
+        elif level_type == 'resistance':
+            return (len(left_prices[left_prices < current_price]) >= 2 and 
+                   len(right_prices[right_prices < current_price]) >= 2)
+        # else:
+        #     raise ValueError("level_type must be 'support' or 'resistance'")
+    
+    def _find_levels(prices: pd.Series, lookback_period: int = params["lookback_period"]):
+        levels = []
+        for i in range(lookback_period, len(prices)):
+            if _is_level(prices, i, 'support'):
+                levels.append((i, prices.iloc[i]))
+            elif _is_level(prices, i, 'resistance'):
+                levels.append((i, prices.iloc[i]))
+        return levels
+    
+    price_data = prices_df['close']
+    current_price = price_data.iloc[-1]
+    levels = _find_levels(price_data)
+    
+    support_levels = [price for _, price in levels if price < current_price]
+    resistance_levels = [price for _, price in levels if price > current_price]
+    
+    support = max(support_levels) if support_levels else None
+    resistance = min(resistance_levels) if resistance_levels else None
+
+    if support is None or resistance is None:
+        return "Failed to analyze support and resistance levels"
+    else:
+        result = f"- Current price: {current_price}\n"
+        result += f"- Nearest support: {support}\n"
+        result += f"- Nearest resistance: {resistance}\n"
+        result += f"- Price to support: {(current_price - support) / support}\n"
+        result += f"- Price to resistance: {(resistance - current_price) / current_price}\n"
+        return result

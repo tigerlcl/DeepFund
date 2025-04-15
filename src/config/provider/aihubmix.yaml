@@ -1,5 +1,5 @@
 # Deep Fund Configuration
-exp_name: "yizhan-test"
+exp_name: "aihubmix-test"
 
 # Trading settings
 cashflow: 100000
@@ -15,5 +15,5 @@ workflow_analysts:
 # YiZhan is a unified API proxy for all LLM models
 llm:
   provider: "AiHubMix" 
-  model: "claude-3-7-sonnet-20250219" 
+  model: "gpt-4.1-mini"
 

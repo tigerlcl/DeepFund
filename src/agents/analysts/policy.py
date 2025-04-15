@@ -15,6 +15,7 @@ def policy_agent(state: FundState):
     """policy specialist analyzing market news to provide a signal."""
     agent_name = AgentKey.POLICY
     ticker = state["ticker"]
+    trading_date = state["trading_date"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
 
@@ -25,13 +26,24 @@ def policy_agent(state: FundState):
     
     # Get the policy news
     router = Router(APISource.ALPHA_VANTAGE)
-
-    fiscal_policy = router.get_topic_news(topic="economy_fiscal", news_count=thresholds["news_count"])
-    monetary_policy = router.get_topic_news(topic="economy_monetary", news_count=thresholds["news_count"])
+    try:
+        fiscal_policy = router.get_market_news(
+            topic="economy_fiscal", 
+            trading_date=trading_date, 
+            news_count=thresholds["news_count"]
+            )
+        monetary_policy = router.get_market_news(
+            topic="economy_monetary", 
+                trading_date=trading_date, 
+                news_count=thresholds["news_count"]
+            )
+    except Exception as e:
+        logger.error(f"Failed to fetch policy news for {ticker}: {e}")
+        return state
 
     # Analyze news sentiment via LLM
-    fiscal_policy_dict = [m.model_dump() for m in fiscal_policy]
-    monetary_policy_dict = [m.model_dump() for m in monetary_policy]
+    fiscal_policy_dict = [m.model_dump_json() for m in fiscal_policy]
+    monetary_policy_dict = [m.model_dump_json() for m in monetary_policy]
     prompt = POLICY_PROMPT.format(fiscal_policy=fiscal_policy_dict, monetary_policy=monetary_policy_dict)
 
     # Get LLM signal

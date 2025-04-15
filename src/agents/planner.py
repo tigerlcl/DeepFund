@@ -10,22 +10,24 @@ from util.logger import logger
 class PlannerOutput(BaseModel):
     """Pydantic model for planner agent output."""
     analysts: List[str] = Field(
-        description="List of selected analysts",
-        default=AgentRegistry.get_all_analyst_keys()
+        description="Name list of selected analysts"
     )
     justification: str = Field(
         description="Explanation for the analyst selection",
         default="No justification provided due to error"
     )
 
-def planner_agent(ticker: str, llm_config: Dict[str, Any]) -> List[str]:
+def planner_agent(ticker: str, llm_config: Dict[str, Any], workflow_analysts: List[str]) -> List[str]:
     """
     Planner agent that decides which analysts to use based on self-knowledge.
     It functions as a pre-requisite for the agentic workflow.
     """
     
     logger.log_agent_status(AgentKey.PLANNER, ticker, "Planning")
-    analyst_info = AgentRegistry.get_analyst_info()
+    analyst_info = [
+        {"analyst_name": key,
+         "analyst_info": AgentRegistry.get_analyst_info(key)
+         } for key in workflow_analysts]
 
     prompt = PLANNER_PROMPT.format(
         ticker=ticker,
@@ -38,5 +40,5 @@ def planner_agent(ticker: str, llm_config: Dict[str, Any]) -> List[str]:
         pydantic_model=PlannerOutput
     )
 
-    logger.info(f"Planner agent selected {result.analysts}\nJustification: {result.justification}")
+    logger.info(f"Planner agent selected {result.analysts} | Justification: {result.justification}")
     return result.analysts

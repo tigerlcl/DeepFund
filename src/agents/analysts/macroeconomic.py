@@ -20,9 +20,10 @@ def macroeconomic_agent(state: FundState):
 
     # Get the economic indicators
     router = Router(APISource.ALPHA_VANTAGE)
-    economic_indicators = router.get_us_economic_indicators()
-    if not economic_indicators:
-        logger.error(f"Failed to fetch economic indicators")
+    try:
+        economic_indicators = router.get_us_economic_indicators()
+    except Exception as e:
+        logger.error(f"Failed to fetch economic indicators for {ticker}: {e}")
         return state
     
     prompt = MACROECONOMIC_PROMPT.format(economic_indicators=economic_indicators)

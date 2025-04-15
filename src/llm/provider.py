@@ -22,6 +22,7 @@ class Provider(str, Enum):
     OPENAI = "OpenAI"
     ANTHROPIC = "Anthropic"
     DEEPSEEK = "DeepSeek"
+    ZHIPU = "ZhiPu"
     OLLAMA = "Ollama"
     FIREWORKS= "Fireworks"
     YIZHAN = "YiZhan"
@@ -42,6 +43,11 @@ class Provider(str, Enum):
             Provider.DEEPSEEK: ModelConfig(
                 model_class=ChatDeepSeek,
                 env_key="DEEPSEEK_API_KEY",
+            ),
+            Provider.ZHIPU: ModelConfig(
+                model_class=ChatOpenAI,
+                base_url="https://open.bigmodel.cn/api/paas/v4",
+                env_key="ZHIPU_API_KEY",
             ),
             Provider.OLLAMA: ModelConfig(
                 model_class=ChatOllama,

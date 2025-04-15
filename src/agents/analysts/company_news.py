@@ -15,6 +15,7 @@ def company_news_agent(state: FundState):
     """News specialist analyzing company news to provide a signal."""
     agent_name = AgentKey.COMPANY_NEWS
     ticker = state["ticker"]
+    trading_date = state["trading_date"]
     llm_config = state["llm_config"]
     portfolio_id = state["portfolio"].id
 
@@ -25,12 +26,14 @@ def company_news_agent(state: FundState):
     
     # Get the company news
     router = Router(APISource.ALPHA_VANTAGE)
-    company_news = router.get_us_stock_news(ticker, thresholds["news_count"])
-    if not company_news:
+    try:
+        company_news = router.get_us_stock_news(ticker, trading_date, thresholds["news_count"])
+    except Exception as e:
+        logger.error(f"Failed to fetch company news for {ticker}: {e}")
         return state
 
     # Analyze news sentiment via LLM
-    news_dict = [m.model_dump() for m in company_news]
+    news_dict = [m.model_dump_json() for m in company_news]
     prompt = COMPANY_NEWS_PROMPT.format(news=news_dict)
 
     # Get LLM signal

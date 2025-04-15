@@ -1,5 +1,6 @@
 import operator
-from typing import  List, Dict, Any, Optional
+from datetime import datetime
+from typing import  List, Dict, Any
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
 from graph.constants import Signal, Action
@@ -26,9 +27,8 @@ class Decision(BaseModel):
         description="Number of shares to buy or sell, set 0 for hold",
         default=0
     )
-    price: Optional[float] = Field(
-        description="Trading price for the ticker.",
-        default=None
+    price: float = Field(
+        description="Current price for the ticker",
     )
     justification: str = Field(
         description="Brief explanation for the decision",
@@ -46,6 +46,17 @@ class Position(BaseModel):
         description="Shares for the position."
     )
 
+class PositionRisk(BaseModel):
+    """Risk assessment for a single ticker"""
+    optimal_position_ratio: float = Field(
+        description="The optimal ratio of the position value to the total portfolio value",
+        default=0.0
+    )
+    justification: str = Field(
+        description="Detailed risk assessment rationale explaining the recommendations",
+        default="No assessment provided due to insufficient data"
+    )
+
 class Portfolio(BaseModel):
     """Portfolio state when running the workflow."""
     id: str = Field(description="Portfolio id.")
@@ -57,9 +68,11 @@ class FundState(TypedDict):
 
     # from environment
     exp_name: str = Field(description="Experiment name.")
+    trading_date: datetime = Field(description="Trading date.")
     ticker: str = Field(description="Ticker in-the-flow.")
-    portfolio: Portfolio = Field(description="Portfolio for the fund.")
     llm_config: Dict[str, Any] = Field(description="LLM configuration.")
+    portfolio: Portfolio = Field(description="Portfolio for the fund.")
+    num_tickers: int = Field(description="Number of tickers in the fund.")
 
     # updated by workflow
     # ticker -> signal of all analysts

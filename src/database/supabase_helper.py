@@ -64,12 +64,31 @@ class SupabaseDB(BaseDB):
             logger.error(f"Error creating config: {e}")
             return None
 
+    def get_latest_trading_date(self, config_id: str) -> Optional[datetime]:
+        """Get the latest trading date for a config."""
+        try:
+            response = self.client.table('portfolio') \
+                .select('trading_date') \
+                .eq('config_id', config_id) \
+                .not_.is_("trading_date", None) \
+                .order('updated_at', desc=True) \
+                .execute()
+        
+            if response.data and len(response.data) > 0:
+                dt = datetime.fromisoformat(response.data[0]['trading_date'])
+                return dt.replace(tzinfo=None)
+            return None
+        except Exception as e:
+            logger.error(f"Error getting latest trading date: {e}")
+            return None
+
     def get_latest_portfolio(self, config_id: str) -> Optional[Dict]:
         """Get the latest portfolio for a config."""
         try:
             response = self.client.table('portfolio') \
                 .select('id, cashflow, positions') \
                 .eq('config_id', config_id) \
+                .not_.is_("trading_date", None) \
                 .order('updated_at', desc=True) \
                 .limit(1) \
                 .execute()
@@ -86,14 +105,15 @@ class SupabaseDB(BaseDB):
             logger.error(f"Portfolio not found: {e}")
             return None
 
-    def create_portfolio(self, config_id: str, cashflow: float) -> Optional[Dict]:
+    def create_portfolio(self, config_id: str, cashflow: float, trading_date: datetime) -> Optional[Dict]:
         """Create a new portfolio."""
         try:
             data = {
                 'config_id': config_id,
                 'cashflow': cashflow,
                 'total_assets': cashflow,
-                'positions': {}
+                'positions': {},
+                'trading_date': trading_date.isoformat()
             }
             
             response = self.client.table('portfolio').insert(data).execute()
@@ -109,12 +129,13 @@ class SupabaseDB(BaseDB):
             logger.error(f"Error creating portfolio: {e}")
             return None
         
-    def copy_portfolio(self, config_id: str, portfolio: Dict) -> Optional[Dict]:
+    def copy_portfolio(self, config_id: str, portfolio: Dict, trading_date: datetime) -> Optional[Dict]:
         """Copy a portfolio."""
         try:
             total_assets = portfolio['cashflow'] + sum(position['value'] for position in portfolio['positions'].values())
             data = {
                 'config_id': config_id,
+                'trading_date': trading_date.isoformat(),
                 'cashflow': portfolio['cashflow'],  
                 'total_assets': total_assets,
                 'positions': portfolio['positions']
@@ -128,13 +149,14 @@ class SupabaseDB(BaseDB):
             logger.error(f"Error copying portfolio: {e}")
             return None
 
-    def update_portfolio(self, config_id: str, portfolio: Dict) -> bool:
+    def update_portfolio(self, config_id: str, portfolio: Dict, trading_date: datetime) -> bool:
         """Update portfolio."""
         try:
             total_assets = portfolio['cashflow'] + sum(position['value'] for position in portfolio['positions'].values())
             data = {
                 'config_id': config_id,
-                'updated_at': datetime.now(timezone.utc).isoformat(), # UTC time
+                'updated_at': datetime.now(timezone.utc).isoformat(),
+                'trading_date': trading_date.isoformat(),
                 'cashflow': portfolio['cashflow'],
                 'total_assets': total_assets,
                 'positions': portfolio['positions']
@@ -147,18 +169,18 @@ class SupabaseDB(BaseDB):
             logger.error(f"Error updating portfolio: {e}")
             return False
 
-    def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: Decision) -> Optional[str]:
+    def save_decision(self, portfolio_id: str, ticker: str, prompt: str, decision: Decision, trading_date: datetime) -> Optional[str]:
         """Save a new decision."""
         try:
-            decision_price = decision.price if decision.price else 0
             data = {
                 'portfolio_id': portfolio_id,
                 'ticker': ticker,
                 'llm_prompt': prompt,
                 'action': str(decision.action),
                 'shares': decision.shares,
-                'price': decision_price,
-                'justification': decision.justification
+                'price': decision.price,
+                'justification': decision.justification,
+                'trading_date': trading_date.isoformat(),
             }
             
             response = self.client.table('decision').insert(data).execute()
@@ -191,12 +213,13 @@ class SupabaseDB(BaseDB):
             logger.error(f"Error saving signal: {e}")
             return None
 
-    def get_recent_portfolio_ids_by_config_id(self, config_id: str, limit: int = 5) -> List[str]:
+    def get_recent_portfolio_ids_by_config_id(self, config_id: str, limit: int) -> List[str]:
         """Get recent portfolio ids by config id."""
         try:
             response = self.client.table('portfolio') \
                 .select('id') \
                 .eq('config_id', config_id) \
+                .not_.is_("trading_date", None) \
                 .order('updated_at', desc=True) \
                 .limit(limit) \
                 .execute()
@@ -206,7 +229,7 @@ class SupabaseDB(BaseDB):
             logger.error(f"Error getting portfolio ids: {e}")
             return []
 
-    def get_decision_memory(self, exp_name: str, ticker: str) -> List[Dict]:
+    def get_decision_memory(self, exp_name: str, ticker: str, limit: int) -> List[Dict]:
         """Get recent 5 decisions for a ticker."""
         try:
             # Step 1: Get config id by exp_name
@@ -216,14 +239,14 @@ class SupabaseDB(BaseDB):
                 return []
             
             # Step 2: Get recent 5 portfolio transactions
-            portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id, limit=5)
+            portfolio_ids = self.get_recent_portfolio_ids_by_config_id(config_id, limit)
             if not portfolio_ids:
                 logger.error(f"Portfolio not found for {config_id}")
                 return []
             
             # Step 3: Get decision memory by portfolio ids and ticker
             response = self.client.table('decision') \
-                .select('updated_at, action, shares, price') \
+                .select('trading_date, action, shares, price') \
                 .in_('portfolio_id', portfolio_ids) \
                 .eq('ticker', ticker) \
                 .order('updated_at', desc=True) \
@@ -232,7 +255,7 @@ class SupabaseDB(BaseDB):
             decisions = []
             for row in response.data:
                 decisions.append({
-                    'updated_at': row['updated_at'],
+                    'trading_date': row['trading_date'],
                     'action': row['action'],
                     'shares': row['shares'],
                     'price': float(row['price']),  # Convert Decimal to float

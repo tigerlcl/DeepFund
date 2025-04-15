@@ -21,12 +21,13 @@ def fundamental_agent(state: FundState):
 
     # Get the financial metrics
     router = Router(APISource.ALPHA_VANTAGE)
-    fundamentals = router.get_us_stock_fundamentals(ticker=ticker)
-    if not fundamentals:
-        logger.error(f"Failed to fetch financial metrics for {ticker}")
+    try:
+        fundamentals = router.get_us_stock_fundamentals(ticker=ticker)
+    except Exception as e:
+        logger.error(f"Failed to fetch financial metrics for {ticker}: {e}")
         return state
     
-    prompt = FUNDAMENTAL_PROMPT.format(fundamentals=fundamentals.model_dump())
+    prompt = FUNDAMENTAL_PROMPT.format(fundamentals=fundamentals.model_dump_json())
     signal = agent_call(
         prompt=prompt, 
         llm_config=llm_config, 

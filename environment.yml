@@ -13,11 +13,11 @@ dependencies:
   - yfinance
   - pip:
     - pydantic
-    - typing-extensions 
+    - supabase
     - langgraph
+    - typing-extensions 
     - langchain-openai
     - langchain-anthropic
     - langchain-deepseek
     - langchain-ollama
     - langchain-fireworks
-    - supabase
