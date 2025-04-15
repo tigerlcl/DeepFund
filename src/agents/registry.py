@@ -36,6 +36,11 @@ class AgentRegistry:
         return key in cls.ANALYST_KEYS
 
     @classmethod
+    def get_analyst_info(cls, key: str) -> str:
+        """Get analyst info."""
+        return cls.agent_doc_mapping[key]
+
+    @classmethod
     def register_agent(cls, key: str, agent_func: Callable, agent_doc: str) -> None:
         """
         Register a new agent.
@@ -93,8 +98,3 @@ class AgentRegistry:
             agent_func=policy_agent,
             agent_doc="Policy analysis specialist focusing on fiscal and monetary policy."
         )
-
-    @classmethod
-    def get_analyst_info(cls) -> str:
-        """Get analyst info."""
-        return "\n".join([f"{key}: {cls.agent_doc_mapping[key]}" for key in cls.ANALYST_KEYS])

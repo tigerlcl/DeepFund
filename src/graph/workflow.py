@@ -31,13 +31,24 @@ class AgentWorkflow:
         self.init_portfolio = Portfolio(**new_portfolio)
         logger.info(f"New portfolio ID: {self.init_portfolio.id}")
         
-        # Workflow analysts
-        if config.get('workflow_analysts'):
-            self.workflow_analysts = config['workflow_analysts']
-            self.planner_mode = False
-        else:
-            self.workflow_analysts = None
-            self.planner_mode = True
+        # Initialize workflow configuration
+        self.planner_mode = config.get('planner_mode', False)
+        
+        # Verify workflow analysts
+        if not config.get('workflow_analysts'):
+            raise ValueError("workflow_analysts must be provided in config")
+            
+        # Validate analysts and remove invalid ones
+        self.workflow_analysts = config['workflow_analysts']
+        invalid_analysts = [a for a in self.workflow_analysts if not AgentRegistry.check_agent_key(a)]
+        if invalid_analysts:
+            logger.warning(f"Invalid analyst keys removed: {invalid_analysts}")
+            self.workflow_analysts = [a for a in self.workflow_analysts if a not in invalid_analysts]
+            
+        if not self.workflow_analysts:
+            raise ValueError("No valid analysts remaining after validation")
+            
+        logger.info(f"Verified analysts: {self.workflow_analysts}")
 
 
     def build(self) -> StateGraph:
@@ -49,7 +60,7 @@ class AgentWorkflow:
         graph.add_node(AgentKey.PORTFOLIO, portfolio_agent)
         
         # create node for each analyst and add edge
-        for analyst in self.workflow_analysts:
+        for analyst in self.current_analysts:
             agent_func = AgentRegistry.get_agent_func_by_key(analyst)
             graph.add_node(analyst, agent_func)
             graph.add_edge(START, analyst)
@@ -64,23 +75,18 @@ class AgentWorkflow:
 
     def load_analysts(self, ticker: str):
         """
-        Load the analysts. It can:
-        - verify and remove invalid analysts.
-        - call planner agent to select analysts.
+        Load the analysts for processing:
+        - If planner_mode is True: use planner to select from verified workflow_analysts
+        - If planner_mode is False: use all verified workflow_analysts
         """
-        
-        # pre-defined analysts
-        if self.workflow_analysts:
-            for analyst in self.workflow_analysts:
-                if not AgentRegistry.check_agent_key(analyst):
-                    logger.warning(f"Invalid analyst key: {analyst}, Removed for analysis.")
-                    self.workflow_analysts.remove(analyst)
-
-        # Otherwise, use planner agent
+        if self.planner_mode:
+            logger.info("Using planner agent to select analysts from verified list")
+            self.selected_analysts = planner_agent(ticker, self.llm_config, self.workflow_analysts)
         else:
-            logger.warning("No analysts provided, using planner agent to select.")
-            analysts = planner_agent(ticker, self.llm_config)
-            self.workflow_analysts = analysts
+            logger.info("Using all verified analysts")
+            self.current_analysts = self.workflow_analysts.copy()
+            
+        logger.info(f"Active analysts for {ticker}: {self.current_analysts}")
     
     def run(self, config_id: str) -> float:
         """Run the workflow."""
