@@ -47,8 +47,6 @@ class AgentWorkflow:
             
         if not self.workflow_analysts:
             raise ValueError("No valid analysts remaining after validation")
-            
-        logger.info(f"Verified analysts: {self.workflow_analysts}")
 
 
     def build(self) -> StateGraph:
