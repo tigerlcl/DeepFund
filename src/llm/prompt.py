@@ -105,7 +105,7 @@ Here are the available analysts:
 {analysts}
 
 You must provide your decision as a structured output with the following fields:
-- analysts: selected one or at most 5 analysts
+- analysts: selected analyst_name list
 - justification: brief explanation of your selection
 """
 

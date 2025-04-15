@@ -7,6 +7,7 @@ tickers:
   - TSLA
   - NVDA
 
+
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental

@@ -20,10 +20,10 @@ def load_portfolio_config(cfg: Dict[str, Any], db):
     return config_id
 
 def main():
-    """Main entry point for the DeepFund multi-agent system."""
+    """Main entry point for the DeepFund System."""
 
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Run the deep fund trading system")
+    parser = argparse.ArgumentParser(description="Run the DeepFund System")
     parser.add_argument("--config", type=str, required=True, help="Path to configuration file")
     parser.add_argument("--trading-date", type=str, required=True, help="Trading date in format YYYY-MM-DD")
     parser.add_argument("--local-db", action="store_true", help="Use local SQLite database")
