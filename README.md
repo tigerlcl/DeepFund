@@ -139,7 +139,19 @@ deepfund/
 ├── ...
 ```
 
+## Introduction to Analyst Agents
+
+| Analyst       | Function                                                     | Input Source                                                 | Output                                               |
+| ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
+| company_news  | Analyzes company news.                                       | Company news.                                                |                                                      |
+| fundamental   | Analyzes financial metrics.                                  | Company profitability, growth, cashflow and financial health. |                                                      |
+| insider       | Analyzes insider trading activity.                           | The latest and historical insider transactions made by key stakeholders. | Analyst signal saved to database and added to state. |
+| macroeconomic | Analyzes macroeconomic indicators.                           | US economic indicators GDP, CPI, rate, unemployment, etc.    |                                                      |
+| policy        | Analyzes policy news.                                        | Fiscal and monetary policy news.                             |                                                      |
+| technical     | Analyzes technical indicators  for short to medium-term price movement predictions. | Technical indicators trend, mean reversion, RSI, volatility, volume, support resistance. |                                                      |
+
 ## System Dependencies
+
 ### LLM Providers
 - Official API: OpenAI, DeepSeek, Anthropic, etc.
 - LLM Proxy API: Fireworks, AiHubMix, YiZhan, etc.
@@ -156,22 +168,22 @@ deepfund/
 To add a new analyst to the DeepFund system, follow these general steps:
 
 1.  **Build the Analyst:**
-  Create a new Python file for your analyst within the `src/agents/analysts` directory. Implement the core logic for your analyst within this file. This typically involves defining an agent function that takes relevant inputs (like tickers, market data), performs analysis (potentially using LLMs or specific APIs), and returns signals.
+    Create a new Python file for your analyst within the `src/agents/analysts` directory. Implement the core logic for your analyst within this file. This typically involves defining an agent function that takes relevant inputs (like tickers, market data), performs analysis (potentially using LLMs or specific APIs), and returns signals.
 
 2.  **Define Prompts:**
-  If your analyst is driven by an LLM, define the prompt(s) it will use. These might go in the `src/graph/prompts/` directory or a similar location.
+    If your analyst is driven by an LLM, define the prompt(s) it will use. These might go in the `src/graph/prompts/` directory or a similar location.
 
 3.  **Register the Analyst:**
-  Make the system aware of your new analyst. This might involve adding its name or reference to a central registry in `src/graph/constants.py` or within the agent registration logic in `src/agents/registry.py`. Check these files for patterns used by existing analysts.
+    Make the system aware of your new analyst. This might involve adding its name or reference to a central registry in `src/graph/constants.py` or within the agent registration logic in `src/agents/registry.py`. Check these files for patterns used by existing analysts.
 
 4.  **Update Configuration:**
-  Add the unique name or key of your new analyst to the `workflow_analysts` list in your desired configuration file (e.g., `src/config/my_config.yaml`).
+    Add the unique name or key of your new analyst to the `workflow_analysts` list in your desired configuration file (e.g., `src/config/my_config.yaml`).
 
 5.  **Add Data Dependencies (if any):**
-  If your analyst requires new external data sources (e.g., a specific API), add the necessary API client logic in the `src/apis/` directory, and update environment variable handling (`.env.example`, `.env`) if API keys are needed.
+    If your analyst requires new external data sources (e.g., a specific API), add the necessary API client logic in the `src/apis/` directory, and update environment variable handling (`.env.example`, `.env`) if API keys are needed.
 
 6.  **Testing:**
-  Thoroughly test your new analyst by running the system with a configuration that includes it. Check the database tables (`Decision`, `Signal`) to ensure it produces the expected output and integrates correctly with the portfolio manager.
+    Thoroughly test your new analyst by running the system with a configuration that includes it. Check the database tables (`Decision`, `Signal`) to ensure it produces the expected output and integrates correctly with the portfolio manager.
 
 Remember to consult the existing analyst implementations in `src/agents/` and the workflow definitions in `src/graph/` for specific patterns and conventions used in this project.
 
