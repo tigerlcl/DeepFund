@@ -3,7 +3,8 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2503.18313-b31b1b.svg?style=flat)](https://arxiv.org/abs/2503.18313)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat)](https://www.python.org/downloads/release/python-3110/)
 
-![Arena](./image/arenafig.png)
+![Arena](./image/arena_v1.png)
+> 🔔 Car-racing is for illustration only. Model performance is subject to the actual financial market.
 
 This project serves as an ideal solution to the below key question:
 
