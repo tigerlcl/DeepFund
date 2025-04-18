@@ -147,14 +147,16 @@ deepfund/
 | ----------- | ----------- | ----------- | 
 | company_news  | Analyzes company news. | Lately Company news.  | 
 | fundamental   | Analyzes financial metrics. | Company profitability, growth, cashflow and financial health. |
-| insider       | Analyzes insider trading activity. | Recent insider transactions made by key stakeholders. |
+| insider       | Analyzes company insider trading activity. | Recent insider transactions made by key stakeholders. |
 | macroeconomic | Analyzes macroeconomic indicators. | US economic indicators GDP, CPI, rate, unemployment, etc.    |
 | policy        | Analyzes policy news. | Fiscal and monetary policy news. |
 | technical     | Analyzes technical indicators  for short to medium-term price movement predictions. | Technical indicators trend, mean reversion, RSI, volatility, volume, support resistance. |
-----
-**Unified Output**: Signal=(Bullish, Bearish, Neutral), Justification=...
 
-Currently, analyst **company_news**, **insider**, **policy**, and **technical** support specifying historical timestamps for backdated execution, while fundamental and macroeconomic operate on data with minimal short-term variability and do not require time overrides.
+#### Remarks:
+**Unified Output**: All analysts output the same format: Signal=(Bullish, Bearish, Neutral), Justification=...
+
+**Time-sensitive Analysts**: Because of the constraints of upstream API service, analyst **company_news**, **insider**, **policy**, and **technical** support  historical data analysis via `trading-date` option, while other analysts can only retrieve the latest data.
+
 
 ## System Dependencies
 
