@@ -22,6 +22,7 @@ class Provider(str, Enum):
     OPENAI = "OpenAI"
     ANTHROPIC = "Anthropic"
     DEEPSEEK = "DeepSeek"
+    ALIBABA = "Alibaba"
     ZHIPU = "ZhiPu"
     OLLAMA = "Ollama"
     FIREWORKS= "Fireworks"
@@ -43,6 +44,11 @@ class Provider(str, Enum):
             Provider.DEEPSEEK: ModelConfig(
                 model_class=ChatDeepSeek,
                 env_key="DEEPSEEK_API_KEY",
+            ),
+            Provider.ALIBABA: ModelConfig(
+                model_class=ChatOpenAI,
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+                env_key="QWEN_API_KEY",
             ),
             Provider.ZHIPU: ModelConfig(
                 model_class=ChatOpenAI,
