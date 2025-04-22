@@ -1,5 +1,5 @@
 # Deep Fund Configuration
-exp_name: "ollama-test"
+exp_name: "openai-test"
 
 # Trading settings
 cashflow: 100000
@@ -10,10 +10,10 @@ tickers:
 # Analysts to run, refer to graph.constants.py
 workflow_analysts:
   - fundamental
+  - technical
 
-# Ollama is a community-driven LLM provider
-# you should have a local ollama server running
+# LLM model settings, refer to llm/inference.py: LLMConfig
 llm:
-  provider: "Ollama" 
-  model: "llama3.1:8b" 
+  provider: "OpenAI" 
+  model: "gpt-4o-mini"
 
