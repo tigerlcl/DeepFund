@@ -29,6 +29,7 @@ class Decision(BaseModel):
     )
     price: float = Field(
         description="Current price for the ticker",
+        default=0
     )
     justification: str = Field(
         description="Brief explanation for the decision",
