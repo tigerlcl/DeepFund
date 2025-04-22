@@ -67,7 +67,6 @@ class SQLiteDB(BaseDB):
             cursor = conn.cursor()
             
             config_id = str(uuid.uuid4())
-            has_planner = not config.get('workflow_analysts', None)
             cursor.execute('''
                 INSERT INTO config (id, exp_name, updated_at, tickers, has_planner, llm_model, llm_provider)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -76,7 +75,7 @@ class SQLiteDB(BaseDB):
                 config["exp_name"],
                 datetime.now(timezone.utc).isoformat(), # UTC time
                 json.dumps(config["tickers"]),
-                has_planner,
+                config["planner_mode"],
                 config["llm"]["model"],
                 config["llm"]["provider"]
             ))
