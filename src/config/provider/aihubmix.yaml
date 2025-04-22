@@ -12,7 +12,7 @@ workflow_analysts:
   - company_news
   - insider
 
-# YiZhan is a unified API proxy for all LLM models
+# AihubMIX is a unified API proxy for all LLM models
 llm:
   provider: "AiHubMix" 
   model: "gpt-4.1-mini"

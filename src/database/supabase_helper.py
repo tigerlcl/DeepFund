@@ -45,12 +45,10 @@ class SupabaseDB(BaseDB):
     def create_config(self, config: Dict) -> Optional[str]:
         """Create a new config entry."""
         try:
-            has_planner = not config.get('workflow_analysts', None)
-            
             data = {
                 'exp_name': config['exp_name'],
                 'tickers': config['tickers'],
-                'has_planner': has_planner,
+                'has_planner': config['planner_mode'],
                 'llm_model': config['llm']['model'],
                 'llm_provider': config['llm']['provider'],
             }

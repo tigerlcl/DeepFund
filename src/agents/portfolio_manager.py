@@ -1,4 +1,4 @@
-from graph.constants import AgentKey
+from graph.constants import AgentKey, Action
 from llm.prompt import PORTFOLIO_PROMPT, RISK_CONTROL_PROMPT
 from graph.schema import Decision, FundState, PositionRisk
 from llm.inference import agent_call
@@ -85,6 +85,11 @@ def portfolio_agent(state: FundState):
         llm_config=llm_config,
         pydantic_model=Decision
     )
+
+    # post-process the decision due to possible reasoning error
+    ticker_decision.price = current_price
+    if ticker_decision.shares < 0 and ticker_decision.action == Action.SELL:
+        ticker_decision.shares = -ticker_decision.shares
         
     # save decision
     logger.log_decision(ticker, ticker_decision)
